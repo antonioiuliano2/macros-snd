@@ -1,0 +1,10 @@
+executable            = neutrino.sh
+arguments             = $(ClusterID) $(ProcId)
+output                = output/neutrino.$(ClusterId).$(ProcId).out
+error                 = error/neutrino.$(ClusterId).$(ProcId).err
+log                   = log/neutrino.$(ClusterId).log
+getenv = true
+notification = Never
++JobFlavour             ="testmatch"
+queue 100
+
