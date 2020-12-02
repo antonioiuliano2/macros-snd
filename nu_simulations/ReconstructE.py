@@ -1,3 +1,4 @@
+'''Reconstrucing neutrino interaction energy (total for nu_e, hadron only for nu_mu) from hits in SciFi and Muon Filter. Original code from A.Buonaura, start working on it from 2 December 2020 '''
 from __future__ import print_function
 from __future__ import division
 # example for accessing smeared hits and fitted tracks
@@ -17,9 +18,12 @@ from Functions import *
 
 PDG = ROOT.TDatabasePDG.Instance()
 
-path2dir = '/eos/user/a/annship/Tungsten/numu/CCDIS/'
-directories0 = ['0to5E3/','5E3to10E3/']
-
+#path2dir = '/eos/user/a/annship/Tungsten/numu/CCDIS/'
+#directories0 = ['0to5E3/','5E3to10E3/'] 
+nentries = 20315
+trainingfraction = 1/5
+numpyseed = 1 #for numpy random
+path2dir='/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/nueCCDIS_28_11_2020/'
 EvtID = []
 Ehad = []
 nhitScifiTOT = []
@@ -83,8 +87,28 @@ def GetEhadAndNhits(directories):
    nhitMuFilterTOT.append(nhitMuF)
  return Ehad, nhitScifiTOT, nhitMuFilterTOT
 
-Ehad, nhitScifiTOT, nhitMuFilterTOT = GetEhadAndNhits(directories0)
+def ReadHitsTree(inputfile,entries):
+ """ I have put the nhits directly in a tree""" 
+ f = r.TFile.Open(inputfile,"READ")
+ t = f.Get("sndhits")
+ print(" Start loop over {} entries".format(len(entries)))
+ #nentries = t.GetEntries()
+ for ev in entries:
+  t.GetEntry(ev)
+  #get number of hits
+  nhitScifiTOT.append(t.nscifihits)
+  nhitMuFilterTOT.append(t.nmufilterhits)
+  #get neutrino energy 
+  nuE = r.TMath.Sqrt(t.nu_px * t.nu_px + t.nu_py * t.nu_py + t.nu_pz * t.nu_pz)
+  Ehad.append(nuE)
+ #end of loop returning output
+ return Ehad, nhitScifiTOT, nhitMuFilterTOT
 
+#Ehad, nhitScifiTOT, nhitMuFilterTOT = GetEhadAndNhits(directories0)
+entrylist = np.linspace(nentries,0,nentries-1,dtype=int)
+np.random.seed(numpyseed)
+np.random.shuffle(entrylist) #randomly shuffle it
+Ehad, nhitScifiTOT, nhitMuFilterTOT = ReadHitsTree(path2dir+"nuhits_SND.root",entrylist[:int(nentries *trainingfraction)])
 
 def CreateElementsForLinearRegression(Ehad,nhitScifiTOT,nhitMuFilterTOT):
  y = np.array(Ehad, dtype=np.float64).reshape(len(Ehad),1)
@@ -182,8 +206,9 @@ plt.show(block=False)
 print("h(x) ="+str(round(theta[0,0],2))+" + "+str(round(theta[1,0],2))+"x1 + "+str(round(theta[2,0],2))+"x2")
 
 #Run over the remaining directories:
-directories1 = ['10E3to15E3/','15E3to20E3/','25E3to30E3/','35E3to40E3/','40E3to45E3/','45E3to50E3/']
-Ehad, nhitScifiTOT, nhitMuFilterTOT = GetEhadAndNhits(directories1)
+#directories1 = ['10E3to15E3/','15E3to20E3/','25E3to30E3/','35E3to40E3/','40E3to45E3/','45E3to50E3/']
+#Ehad, nhitScifiTOT, nhitMuFilterTOT = GetEhadAndNhits(directories1)
+Ehad, nhitScifiTOT, nhitMuFilterTOT = ReadHitsTree(path2dir+"nuhits_SND.root",entrylist[int(nentries *trainingfraction):])
 y_test,X_test = CreateElementsForLinearRegression(Ehad,nhitScifiTOT,nhitMuFilterTOT)
 
 
@@ -214,6 +239,7 @@ Ehad_rec = predict(X_test,theta)
 
 res = (y_test-Ehad_rec)/y_test
 
+outputfile = r.TFile(path2dir+("reshisto_shuffleseed{}.root".format(numpyseed)),"RECREATE")
 h_res = r.TH1F('h_res','Resolution; #Delta E/E;',20,-1,1)
 for i in range(len(res)):
  h_res.Fill(res[i])
@@ -228,3 +254,6 @@ f1.SetParameter(2,0)
 f1.SetParameter(3,0.3)
 h_res.Fit(f1)
 f1.Draw("sames")
+h_res.Write()
+
+outputfile.Close()
