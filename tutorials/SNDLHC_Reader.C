@@ -26,15 +26,18 @@ bool CheckNeutrinoVertexPosition(TVector3 nu_vertex){
 
 void SNDLHC_Reader::Loop()
 {
-//   In a ROOT session, you can do:
-//      root> .L SNDLHC_Reader.C
+//   How to launch the loop, from a folder with simulation file "ship.conical.Genie-TGeant4.root"
+//      root> .L /yourpath/SNDLHC_Reader.C
 //      root> SNDLHC_Reader t
+//      root> t.Loop();       // Loop on all entries
+//
+//      Other useful code structures
 //      root> t.GetEntry(12); // Fill t data members with entry number 12
 //      root> t.Show();       // Show values of entry 12
 //      root> t.Show(16);     // Read and show values of entry 16
-//      root> t.Loop();       // Loop on all entries
+//      root> t.fChain;     // Get tree for quick inspection 
+//      (t.fChain->Scan("MCTrack.fPdgCode:MCTrack.fMotherId"), t.fChain->Draw("MCTrack.fStartX"), etc.)
 //
-
 //     This is the loop skeleton where:
 //    jentry is the global entry number in the chain
 //    ientry is the entry number in the current Tree
@@ -102,6 +105,8 @@ void SNDLHC_Reader::Loop()
         TVector3 mufilterhit_pos = TVector3(MuFilterPoint_fX[ihit], MuFilterPoint_fY[ihit], MuFilterPoint_fZ[ihit]);        
         Double32_t charge = GetParticleCharge(MuFilterPoint_fPdgCode[ihit],pdg);
         Int_t detID = MuFilterPoint_fDetectorID[ihit];   
+        //detID notation: 1000-1010 for first 5 layers;
+        //for last 3 layers: 1000-1076 horizontal, 100000-100076 vertical
 
         if (TMath::Abs(charge)>0.){ //usually we are interested only in charged particles
          hmuzy->Fill(mufilterhit_pos.Z(), mufilterhit_pos.Y(), weight);
