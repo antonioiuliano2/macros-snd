@@ -4,7 +4,7 @@
 // from TTree cbmsim//cbmroot
 // found on file: /eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root
 //////////////////////////////////////////////////////////
-
+// Removed all library required branches by A.Iuliano
 #ifndef SNDLHC_Reader_h
 #define SNDLHC_Reader_h
 
@@ -15,11 +15,6 @@
 // Header file for the classes stored in the TTree if any.
 #include "TClonesArray.h"
 #include "TObject.h"
-#include "ShipMCTrack.h"
-#include "FairMultiLinkedData_Interface.h"
-#include "EmulsionDetPoint.h"
-#include "ScifiPoint.h"
-#include "MuFilterPoint.h"
 #include "TNamed.h"
 
 class SNDLHC_Reader {
@@ -54,7 +49,6 @@ public :
    Int_t           EmulsionDetPoint_;
    UInt_t          EmulsionDetPoint_fUniqueID[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
    UInt_t          EmulsionDetPoint_fBits[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   FairMultiLinkedData EmulsionDetPoint_fLink[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];
    Int_t           EmulsionDetPoint_fTrackID[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
    UInt_t          EmulsionDetPoint_fEventId[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
    Double32_t      EmulsionDetPoint_fPx[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
@@ -71,7 +65,6 @@ public :
    Int_t           ScifiPoint_;
    UInt_t          ScifiPoint_fUniqueID[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
    UInt_t          ScifiPoint_fBits[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   FairMultiLinkedData ScifiPoint_fLink[kMaxcbmroot_Scifi_ScifiPoint];
    Int_t           ScifiPoint_fTrackID[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
    UInt_t          ScifiPoint_fEventId[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
    Double32_t      ScifiPoint_fPx[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
@@ -88,7 +81,6 @@ public :
    Int_t           MuFilterPoint_;
    UInt_t          MuFilterPoint_fUniqueID[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
    UInt_t          MuFilterPoint_fBits[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   FairMultiLinkedData MuFilterPoint_fLink[kMaxcbmroot_MuFilter_MuFilterPoint];
    Int_t           MuFilterPoint_fTrackID[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
    UInt_t          MuFilterPoint_fEventId[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
    Double32_t      MuFilterPoint_fPx[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
@@ -102,7 +94,6 @@ public :
    Double32_t      MuFilterPoint_fY[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
    Double32_t      MuFilterPoint_fZ[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
    Int_t           MuFilterPoint_fPdgCode[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   FairMCEventHeader *MCEventHeader_;
    UInt_t          MCEventHeader_TNamed_fUniqueID;
    UInt_t          MCEventHeader_TNamed_fBits;
    TString         MCEventHeader_TNamed_fName;
@@ -140,7 +131,6 @@ public :
    TBranch        *b_cbmroot_EmulsionDet_EmulsionDetPoint_;   //!
    TBranch        *b_EmulsionDetPoint_fUniqueID;   //!
    TBranch        *b_EmulsionDetPoint_fBits;   //!
-   TBranch        *b_EmulsionDetPoint_fLink;   //!
    TBranch        *b_EmulsionDetPoint_fTrackID;   //!
    TBranch        *b_EmulsionDetPoint_fEventId;   //!
    TBranch        *b_EmulsionDetPoint_fPx;   //!
@@ -157,7 +147,6 @@ public :
    TBranch        *b_cbmroot_Scifi_ScifiPoint_;   //!
    TBranch        *b_ScifiPoint_fUniqueID;   //!
    TBranch        *b_ScifiPoint_fBits;   //!
-   TBranch        *b_ScifiPoint_fLink;   //!
    TBranch        *b_ScifiPoint_fTrackID;   //!
    TBranch        *b_ScifiPoint_fEventId;   //!
    TBranch        *b_ScifiPoint_fPx;   //!
@@ -174,7 +163,6 @@ public :
    TBranch        *b_cbmroot_MuFilter_MuFilterPoint_;   //!
    TBranch        *b_MuFilterPoint_fUniqueID;   //!
    TBranch        *b_MuFilterPoint_fBits;   //!
-   TBranch        *b_MuFilterPoint_fLink;   //!
    TBranch        *b_MuFilterPoint_fTrackID;   //!
    TBranch        *b_MuFilterPoint_fEventId;   //!
    TBranch        *b_MuFilterPoint_fPx;   //!
@@ -188,7 +176,6 @@ public :
    TBranch        *b_MuFilterPoint_fY;   //!
    TBranch        *b_MuFilterPoint_fZ;   //!
    TBranch        *b_MuFilterPoint_fPdgCode;   //!
-   TBranch        *b_cbmroot_Event_MCEventHeader_;   //!
    TBranch        *b_MCEventHeader_cbmroot_Event_MCEventHeader_TNamed_fUniqueID;   //!
    TBranch        *b_MCEventHeader_cbmroot_Event_MCEventHeader_TNamed_fBits;   //!
    TBranch        *b_MCEventHeader_cbmroot_Event_MCEventHeader_TNamed_fName;   //!
@@ -225,9 +212,9 @@ SNDLHC_Reader::SNDLHC_Reader(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/ship.conical.Genie-TGeant4.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
+         f = new TFile("ship.conical.Genie-TGeant4.root");
       }
       f->GetObject("cbmsim",tree);
 
@@ -270,8 +257,6 @@ void SNDLHC_Reader::Init(TTree *tree)
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
 
-   // Set object pointer
-   MCEventHeader_ = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -297,7 +282,6 @@ void SNDLHC_Reader::Init(TTree *tree)
    fChain->SetBranchAddress("EmulsionDetPoint", &EmulsionDetPoint_, &b_cbmroot_EmulsionDet_EmulsionDetPoint_);
    fChain->SetBranchAddress("EmulsionDetPoint.fUniqueID", &EmulsionDetPoint_fUniqueID, &b_EmulsionDetPoint_fUniqueID);
    fChain->SetBranchAddress("EmulsionDetPoint.fBits", &EmulsionDetPoint_fBits, &b_EmulsionDetPoint_fBits);
-   fChain->SetBranchAddress("EmulsionDetPoint.fLink", &EmulsionDetPoint_fLink, &b_EmulsionDetPoint_fLink);
    fChain->SetBranchAddress("EmulsionDetPoint.fTrackID", &EmulsionDetPoint_fTrackID, &b_EmulsionDetPoint_fTrackID);
    fChain->SetBranchAddress("EmulsionDetPoint.fEventId", &EmulsionDetPoint_fEventId, &b_EmulsionDetPoint_fEventId);
    fChain->SetBranchAddress("EmulsionDetPoint.fPx", &EmulsionDetPoint_fPx, &b_EmulsionDetPoint_fPx);
@@ -314,7 +298,6 @@ void SNDLHC_Reader::Init(TTree *tree)
    fChain->SetBranchAddress("ScifiPoint", &ScifiPoint_, &b_cbmroot_Scifi_ScifiPoint_);
    fChain->SetBranchAddress("ScifiPoint.fUniqueID", ScifiPoint_fUniqueID, &b_ScifiPoint_fUniqueID);
    fChain->SetBranchAddress("ScifiPoint.fBits", ScifiPoint_fBits, &b_ScifiPoint_fBits);
-   fChain->SetBranchAddress("ScifiPoint.fLink", ScifiPoint_fLink, &b_ScifiPoint_fLink);
    fChain->SetBranchAddress("ScifiPoint.fTrackID", ScifiPoint_fTrackID, &b_ScifiPoint_fTrackID);
    fChain->SetBranchAddress("ScifiPoint.fEventId", ScifiPoint_fEventId, &b_ScifiPoint_fEventId);
    fChain->SetBranchAddress("ScifiPoint.fPx", ScifiPoint_fPx, &b_ScifiPoint_fPx);
@@ -331,7 +314,6 @@ void SNDLHC_Reader::Init(TTree *tree)
    fChain->SetBranchAddress("MuFilterPoint", &MuFilterPoint_, &b_cbmroot_MuFilter_MuFilterPoint_);
    fChain->SetBranchAddress("MuFilterPoint.fUniqueID", MuFilterPoint_fUniqueID, &b_MuFilterPoint_fUniqueID);
    fChain->SetBranchAddress("MuFilterPoint.fBits", MuFilterPoint_fBits, &b_MuFilterPoint_fBits);
-   fChain->SetBranchAddress("MuFilterPoint.fLink", MuFilterPoint_fLink, &b_MuFilterPoint_fLink);
    fChain->SetBranchAddress("MuFilterPoint.fTrackID", MuFilterPoint_fTrackID, &b_MuFilterPoint_fTrackID);
    fChain->SetBranchAddress("MuFilterPoint.fEventId", MuFilterPoint_fEventId, &b_MuFilterPoint_fEventId);
    fChain->SetBranchAddress("MuFilterPoint.fPx", MuFilterPoint_fPx, &b_MuFilterPoint_fPx);
@@ -345,7 +327,6 @@ void SNDLHC_Reader::Init(TTree *tree)
    fChain->SetBranchAddress("MuFilterPoint.fY", MuFilterPoint_fY, &b_MuFilterPoint_fY);
    fChain->SetBranchAddress("MuFilterPoint.fZ", MuFilterPoint_fZ, &b_MuFilterPoint_fZ);
    fChain->SetBranchAddress("MuFilterPoint.fPdgCode", MuFilterPoint_fPdgCode, &b_MuFilterPoint_fPdgCode);
-   fChain->SetBranchAddress("MCEventHeader.", &MCEventHeader_, &b_cbmroot_Event_MCEventHeader_);
    fChain->SetBranchAddress("MCEventHeader.TNamed.fUniqueID", &MCEventHeader_TNamed_fUniqueID, &b_MCEventHeader_cbmroot_Event_MCEventHeader_TNamed_fUniqueID);
    fChain->SetBranchAddress("MCEventHeader.TNamed.fBits", &MCEventHeader_TNamed_fBits, &b_MCEventHeader_cbmroot_Event_MCEventHeader_TNamed_fBits);
    fChain->SetBranchAddress("MCEventHeader.TNamed.fName", &MCEventHeader_TNamed_fName, &b_MCEventHeader_cbmroot_Event_MCEventHeader_TNamed_fName);

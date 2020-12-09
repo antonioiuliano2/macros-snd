@@ -34,10 +34,40 @@ void SNDLHC_Reader::Loop()
    Long64_t nentries = fChain->GetEntriesFast();
 
    Long64_t nbytes = 0, nb = 0;
+   //*************HISTOGRAMS AND VARIABLES************
+   TH2D *hbeamxy = new TH2D("hbeamxy", "Simulated profile of the neutrino beam", 80, -40 ,40, 80, -40, 40);
+   TH2D *hxy = new TH2D("hxy", "2D distribution for first Rpc plane",200,-100,100,150,-50,100);
+
+   //*************START LOOP*****************
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
+      //*******loop on tracks****
+      Double32_t neutrinostartx = MCTrack_fStartX[0]; //(itrk 0 is the first neutrino)
+      Double32_t neutrinostarty = MCTrack_fStartY[0];
+        
+      hbeamxy->Fill(neutrinostartx, neutrinostarty);
+      for(int itrk = 0; itrk < MCTrack_;itrk++){
+	//do whatever you need to do with the tracks
+      }
+      //******loop on MuonFilter hits*****
+      for(int ihit = 0; ihit < MuFilterPoint_; ihit++){
+        Double32_t mufilterx = MuFilterPoint_fX[ihit];
+        Double32_t mufiltery = MuFilterPoint_fY[ihit]; 
+
+        if (MuFilterPoint_fDetectorID[ihit] == 10000) hxy->Fill(rpcx,rpcy); //detectorIDs for ShipRpcs: 10000, 10001... 
+      }
       // if (Cut(ientry) < 0) continue;
    }
+   //**************END LOOP******************
+   //drawing histograms
+   TCanvas * c1 = new TCanvas();
+   hbeamxy->Draw("COLZ");
+   hbeamxy->GetXaxis()->SetName("x[cm]");
+   hbeamxy->GetYaxis()->SetName("y[cm]");
+   TCanvas * c2 = new TCanvas();
+   hxy->Draw("COLZ");
+   hxy->GetXaxis()->SetName("x[cm]");
+   hxy->GetYaxis()->SetName("y[cm]");
 }
