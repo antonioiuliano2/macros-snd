@@ -11,6 +11,7 @@ from rootpyPickler import Unpickler
 from decorators import *
 import shipRoot_conf
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from array import array
 sys.path.append('../')
@@ -239,10 +240,32 @@ Ehad_rec = predict(X_test,theta)
 
 res = (y_test-Ehad_rec)/y_test
 
-outputfile = r.TFile(path2dir+("reshisto_shuffleseed{}.root".format(numpyseed)),"RECREATE")
+#now, we can sort entries
+def sort_arrays_by_last(a, b, c):
+ '''sorting three numpy arrays a,b,c according to c values'''
+ sortindexes = np.argsort(c)
+ c = c[sortindexes]
+ b = b[sortindexes]
+ a = a[sortindexes]
+ return a,b,c
+
+#adding a TTree with Erec
+Ehad_rec,y_test,entrylist = sort_arrays_by_last(Ehad_rec, y_test, entrylist)
+
+energydata = {"Erec": Ehad_rec, "Etrue": y_test, "HitsTreeEntry": entrylist}
+
+energydf = r.RDF.MakeNumpyDataFrame(energydata)
+energydf.Snapshot("energytree","reshisto_shuffleseed{}.root".format(numpyseed))
+
+#opening newly created file, adding histograms
+outputfile = r.TFile(path2dir+("reshisto_shuffleseed{}.root".format(numpyseed)),"UPDATE")
 h_res = r.TH1F('h_res','Resolution; #Delta E/E;',20,-1,1)
+h_resvsE = r.TH2F('h_resvsE','Resolution vs Energy;E[GeV];#Delta E', 50,0,5000,20, -1 , 1)
+
 for i in range(len(res)):
+ #fill histograms
  h_res.Fill(res[i])
+ h_resvsE.Fill(y_test[i],res[i])
 
 #Plot and fit
 h_res.SetLineColor(r.kBlack)
@@ -254,6 +277,9 @@ f1.SetParameter(2,0)
 f1.SetParameter(3,0.3)
 h_res.Fit(f1)
 f1.Draw("sames")
+
+#write objects and close file
 h_res.Write()
+h_resvsE.Write()
 
 outputfile.Close()
