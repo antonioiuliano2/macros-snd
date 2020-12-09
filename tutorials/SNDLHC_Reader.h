@@ -30,70 +30,71 @@ public :
    static constexpr Int_t kMaxcbmroot_Event_MCEventHeader = 1;
 
    // Declaration of leaf types
-   Int_t           MCTrack_;
-   UInt_t          MCTrack_fUniqueID[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   UInt_t          MCTrack_fBits[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Int_t           MCTrack_fPdgCode[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Int_t           MCTrack_fMotherId[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fPx[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fPy[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fPz[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fM[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fStartX[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fStartY[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fStartZ[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fStartT[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Double32_t      MCTrack_fW[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Int_t           MCTrack_fProcID[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Int_t           MCTrack_fNPoints[kMaxcbmroot_Stack_MCTrack];   //[cbmroot.Stack.MCTrack_]
-   Int_t           EmulsionDetPoint_;
-   UInt_t          EmulsionDetPoint_fUniqueID[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   UInt_t          EmulsionDetPoint_fBits[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Int_t           EmulsionDetPoint_fTrackID[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   UInt_t          EmulsionDetPoint_fEventId[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fPx[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fPy[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fPz[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fTime[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fLength[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fELoss[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Int_t           EmulsionDetPoint_fDetectorID[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fX[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fY[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Double32_t      EmulsionDetPoint_fZ[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Int_t           EmulsionDetPoint_fPdgCode[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //[cbmroot.EmulsionDet.EmulsionDetPoint_]
-   Int_t           ScifiPoint_;
-   UInt_t          ScifiPoint_fUniqueID[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   UInt_t          ScifiPoint_fBits[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Int_t           ScifiPoint_fTrackID[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   UInt_t          ScifiPoint_fEventId[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fPx[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fPy[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fPz[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fTime[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fLength[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fELoss[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Int_t           ScifiPoint_fDetectorID[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fX[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fY[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Double32_t      ScifiPoint_fZ[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Int_t           ScifiPoint_fPdgCode[kMaxcbmroot_Scifi_ScifiPoint];   //[cbmroot.Scifi.ScifiPoint_]
-   Int_t           MuFilterPoint_;
-   UInt_t          MuFilterPoint_fUniqueID[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   UInt_t          MuFilterPoint_fBits[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Int_t           MuFilterPoint_fTrackID[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   UInt_t          MuFilterPoint_fEventId[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fPx[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fPy[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fPz[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fTime[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fLength[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fELoss[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Int_t           MuFilterPoint_fDetectorID[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fX[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fY[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Double32_t      MuFilterPoint_fZ[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
-   Int_t           MuFilterPoint_fPdgCode[kMaxcbmroot_MuFilter_MuFilterPoint];   //[cbmroot.MuFilter.MuFilterPoint_]
+   Int_t           MCTrack_; //number of tracks stored in the event
+   UInt_t          MCTrack_fUniqueID[kMaxcbmroot_Stack_MCTrack];  
+   UInt_t          MCTrack_fBits[kMaxcbmroot_Stack_MCTrack];   
+   Int_t           MCTrack_fPdgCode[kMaxcbmroot_Stack_MCTrack];   //Code which identifies the particle
+   Int_t           MCTrack_fMotherId[kMaxcbmroot_Stack_MCTrack];   //The ID of mother particle
+   Double32_t      MCTrack_fPx[kMaxcbmroot_Stack_MCTrack];   //Px [GeV/c]
+   Double32_t      MCTrack_fPy[kMaxcbmroot_Stack_MCTrack];   //Py [GeV/c]
+   Double32_t      MCTrack_fPz[kMaxcbmroot_Stack_MCTrack];   //Pz [GeV/c]
+   Double32_t      MCTrack_fM[kMaxcbmroot_Stack_MCTrack];   //Mass [GeV]
+   Double32_t      MCTrack_fStartX[kMaxcbmroot_Stack_MCTrack];   // X coordinate of track initial point (cm)
+   Double32_t      MCTrack_fStartY[kMaxcbmroot_Stack_MCTrack];   // Y coordinate of track initial point (cm)
+   Double32_t      MCTrack_fStartZ[kMaxcbmroot_Stack_MCTrack];   // Z coordinate of track initial point (cm)
+   Double32_t      MCTrack_fStartT[kMaxcbmroot_Stack_MCTrack];   // time of track production (ns)
+   Double32_t      MCTrack_fW[kMaxcbmroot_Stack_MCTrack];   // weight (in GenieGen simulations, same for all tracks of the same event)
+   Int_t           MCTrack_fProcID[kMaxcbmroot_Stack_MCTrack];   // ID of the process with produced the particle (see https://root.cern.ch/doc/master/TMCProcess_8h_source.html)
+   Int_t           MCTrack_fNPoints[kMaxcbmroot_Stack_MCTrack];   
+   Int_t           EmulsionDetPoint_; //number of hits in the emulsion
+   UInt_t          EmulsionDetPoint_fUniqueID[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];  
+   UInt_t          EmulsionDetPoint_fBits[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   
+   Int_t           EmulsionDetPoint_fTrackID[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //ID of the track which produced the hit
+   UInt_t          EmulsionDetPoint_fEventId[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //ID of the event
+   Double32_t      EmulsionDetPoint_fPx[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //Px [GeV/c]
+   Double32_t      EmulsionDetPoint_fPy[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //Py [GeV/c]
+   Double32_t      EmulsionDetPoint_fPz[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //Pz [GeV/c]
+   Double32_t      EmulsionDetPoint_fTime[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //time of the hit [ns]
+   Double32_t      EmulsionDetPoint_fLength[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //Track length since creation [cm]
+   Double32_t      EmulsionDetPoint_fELoss[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //Energy deposit [GeV]
+   Int_t           EmulsionDetPoint_fDetectorID[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //DetectorID
+   Double32_t      EmulsionDetPoint_fX[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //X position of the hit [cm]
+   Double32_t      EmulsionDetPoint_fY[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //Y position of the hit [cm]
+   Double32_t      EmulsionDetPoint_fZ[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //Z position of the hit [cm]
+   Int_t           EmulsionDetPoint_fPdgCode[kMaxcbmroot_EmulsionDet_EmulsionDetPoint];   //Code which identifies the particle
+   Int_t           ScifiPoint_;  //number of hits in SciFi
+   UInt_t          ScifiPoint_fUniqueID[kMaxcbmroot_Scifi_ScifiPoint];   
+   UInt_t          ScifiPoint_fBits[kMaxcbmroot_Scifi_ScifiPoint];   
+   Int_t           ScifiPoint_fTrackID[kMaxcbmroot_Scifi_ScifiPoint];   //ID of the track which produced the hit
+   UInt_t          ScifiPoint_fEventId[kMaxcbmroot_Scifi_ScifiPoint];   //ID of the event
+   Double32_t      ScifiPoint_fPx[kMaxcbmroot_Scifi_ScifiPoint];   //Px [GeV/c]
+   Double32_t      ScifiPoint_fPy[kMaxcbmroot_Scifi_ScifiPoint];   //Py [GeV/c]
+   Double32_t      ScifiPoint_fPz[kMaxcbmroot_Scifi_ScifiPoint];   //Pz [GeV/c]
+   Double32_t      ScifiPoint_fTime[kMaxcbmroot_Scifi_ScifiPoint];  //time of the hit [ns]
+   Double32_t      ScifiPoint_fLength[kMaxcbmroot_Scifi_ScifiPoint];  //Track length since creation [cm]
+   Double32_t      ScifiPoint_fELoss[kMaxcbmroot_Scifi_ScifiPoint];    //Energy deposit [GeV]
+   Int_t           ScifiPoint_fDetectorID[kMaxcbmroot_Scifi_ScifiPoint];    //DetectorID
+   Double32_t      ScifiPoint_fX[kMaxcbmroot_Scifi_ScifiPoint];   //X position of the hit [cm]
+   Double32_t      ScifiPoint_fY[kMaxcbmroot_Scifi_ScifiPoint];   //Y position of the hit [cm]
+   Double32_t      ScifiPoint_fZ[kMaxcbmroot_Scifi_ScifiPoint];   //Z position of the hit [cm]
+   Int_t           ScifiPoint_fPdgCode[kMaxcbmroot_Scifi_ScifiPoint]; //Code which identifies the particle
+   Int_t           MuFilterPoint_;//number of hits in MuonFilter
+   UInt_t          MuFilterPoint_fUniqueID[kMaxcbmroot_MuFilter_MuFilterPoint];   
+   UInt_t          MuFilterPoint_fBits[kMaxcbmroot_MuFilter_MuFilterPoint];   
+   Int_t           MuFilterPoint_fTrackID[kMaxcbmroot_MuFilter_MuFilterPoint];   //ID of the track which produced the hit
+   UInt_t          MuFilterPoint_fEventId[kMaxcbmroot_MuFilter_MuFilterPoint];  //ID of the event
+   Double32_t      MuFilterPoint_fPx[kMaxcbmroot_MuFilter_MuFilterPoint];    //Px [GeV/c]
+   Double32_t      MuFilterPoint_fPy[kMaxcbmroot_MuFilter_MuFilterPoint];    //Py [GeV/c]
+   Double32_t      MuFilterPoint_fPz[kMaxcbmroot_MuFilter_MuFilterPoint];    //Pz [GeV/c]
+   Double32_t      MuFilterPoint_fTime[kMaxcbmroot_MuFilter_MuFilterPoint];   //time of the hit [ns]
+   Double32_t      MuFilterPoint_fLength[kMaxcbmroot_MuFilter_MuFilterPoint];   //Track length since creation [cm]
+   Double32_t      MuFilterPoint_fELoss[kMaxcbmroot_MuFilter_MuFilterPoint];  //Energy deposit [GeV]
+   Int_t           MuFilterPoint_fDetectorID[kMaxcbmroot_MuFilter_MuFilterPoint];   //DetectorID
+   Double32_t      MuFilterPoint_fX[kMaxcbmroot_MuFilter_MuFilterPoint];   //X position of the hit [cm]
+   Double32_t      MuFilterPoint_fY[kMaxcbmroot_MuFilter_MuFilterPoint];  //Y position of the hit [cm]
+   Double32_t      MuFilterPoint_fZ[kMaxcbmroot_MuFilter_MuFilterPoint];     //Z position of the hit [cm]
+   Int_t           MuFilterPoint_fPdgCode[kMaxcbmroot_MuFilter_MuFilterPoint];   //Code which identifies the particle
+   //additional information for the event
    UInt_t          MCEventHeader_TNamed_fUniqueID;
    UInt_t          MCEventHeader_TNamed_fBits;
    TString         MCEventHeader_TNamed_fName;
