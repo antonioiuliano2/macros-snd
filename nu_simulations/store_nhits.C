@@ -8,12 +8,26 @@ double GetParticleCharge (int pdgcode, TDatabasePDG *pdg){
   return charge;
 }
 
+bool CheckNeutrinoVertexPosition(TVector3 nu_vertex){
+  //target position (to select events in target - values need to be checked for each simulation)
+  const Double32_t targetxmin = 5.; 
+  const Double32_t targetxmax = 50.;
+  const Double32_t targetymin = 15.;
+  const Double32_t targetymax = 59.;
+     
+  if (nu_vertex.X() > targetxmin && nu_vertex.X() < targetxmax && 
+      nu_vertex.Y() > targetymin && nu_vertex.Y() < targetymax) return true;
+  else return false;
+}
+
 void store_nhits(){
  //input files
  TChain treechain("cbmsim"); //adding together simulations of neutrinos and antineutrinos
- treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root"); 
- treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/nueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root");
-
+ //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root"); 
+ //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/nueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root");
+ treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
+ treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anumuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
+ 
  TDatabasePDG *pdg = TDatabasePDG::Instance();
  
  //setting branches to be read
@@ -98,7 +112,9 @@ void store_nhits(){
    hvxy->Fill(Vn[0],Vn[1],weight);
    hvyz->Fill(Vn[2],Vn[1],weight);
 
-   if (Vn.X() < 5. || Vn.X() > 50. || Vn.Y() < 15 || Vn.Y() > 59 ) continue; //geometrical acceptance
+   bool isintarget = CheckNeutrinoVertexPosition(Vn);
+
+   if (!isintarget) continue; //geometrical acceptance
    
    //*********************************START OF TRACKS LOOP************************//
    /*for (const ShipMCTrack& track: tracks){ 

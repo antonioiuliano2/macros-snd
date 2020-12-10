@@ -214,3 +214,11 @@ def GetTauDaughters(t,ev):
   if trk.GetMotherId()==1:
    trk2.append(trk)
  return trk2
+
+def sort_arrays_by_last(a, b, c):
+ '''sorting three numpy arrays a,b,c according to c values'''
+ sortindexes = np.argsort(c)
+ c = c[sortindexes]
+ b = b[sortindexes]
+ a = a[sortindexes]
+ return a,b,c

@@ -240,16 +240,7 @@ Ehad_rec = predict(X_test,theta)
 
 res = (y_test-Ehad_rec)/y_test
 
-#now, we can sort entries
-def sort_arrays_by_last(a, b, c):
- '''sorting three numpy arrays a,b,c according to c values'''
- sortindexes = np.argsort(c)
- c = c[sortindexes]
- b = b[sortindexes]
- a = a[sortindexes]
- return a,b,c
-
-#adding a TTree with Erec
+#now, we can sort entries back again (they were shuffled in entrylist) and add a TTree with Erec and Etrue
 Ehad_rec,y_test,entrylist = sort_arrays_by_last(Ehad_rec, y_test, entrylist)
 
 energydata = {"Erec": Ehad_rec, "Etrue": y_test, "HitsTreeEntry": entrylist}
