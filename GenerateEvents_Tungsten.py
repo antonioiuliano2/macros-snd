@@ -43,10 +43,11 @@ def MakeNtuplesFairShip(nevents, nupdg, targetcode, process):
     of.Close()
 
     
-def makeSplines(nupdg,targetcode):
+def makeSplines(nupdg,targetcode,outdir):
     '''prepare splines'''
     outfile = outdir+names[nupdg]+"_xsec_splines.xml"
-    gmkspl  -p nupdg -t targetcode -n 100 -e 5000 -o numu_xsec_splines.xml    
+    cmd = "gmkspl -p "+nupdg+" -t "+targetcode+" -n 100 -e 5000 -o "+outfile
+    os.system(cmd)    
     
 
 
