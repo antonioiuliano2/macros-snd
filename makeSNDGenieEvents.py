@@ -58,17 +58,18 @@ if __name__ == '__main__':
         targetcode = '1000741840[0.9],1000280580[0.1]'
     else:
         print('no other cross-sections available!')
-    
-    if process==None:
+
+    if (FairShip):
+
+  
+     if process==None:
         print('no process selected, generating with default GENIE processes')
 
-    #Getting input flux and spline path
-    inputfile = filedir+filenames[nupdg]+'.root'
-    spline = splinedir+names[nupdg]+'_xsec_splines.xml'
-    #setting path of outputfile
-    outputfile = outdir+names[nupdg]+"_"+process+"_FairShip.root"
-
-    if ("FairShip"):
+     #Getting input flux and spline path
+     inputfile = filedir+filenames[nupdg]+'.root'
+     spline = splinedir+names[nupdg]+'_xsec_splines.xml'
+     #setting path of outputfile
+     outputfile = outdir+names[nupdg]+"_"+process+"_FairShip.root"
      #generating GENIE simulation
      genieinterface.GenerateGenieEvents(nevents = nevents, nupdg = nupdg, emin = 0, emax = 5000, \
                                        targetcode = targetcode, inputflux = inputfile, \
@@ -79,7 +80,9 @@ if __name__ == '__main__':
      #adding histograms
      genieinterface.addHists(inputflux = inputfile, simfile = outputfile, nupdg = nupdg)
 
-    elif ("MakeSpline"):
+    elif (MakeSpline):
+     #setting path of outputfile
+     outputfile = outdir+names[nupdg]+'_xsec_splines.xml'
      #generating new set of splines, saving them in outputdir
      nupdglist = [nupdg]
      genieinterface.makeSplines(nupdglist = nupdglist,targetcode = targetcode,emax = 5000, outputfile = outputfile)
