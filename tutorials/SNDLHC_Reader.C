@@ -106,19 +106,13 @@ void SNDLHC_Reader::Loop()
 
       //*******loop on tracks****
       for(int itrk = 0; itrk < MCTrack_;itrk++){
-        TVector3 track_P = TVector3(MCTrack_fPx[itrk],MCTrack_fPy[itrk],MCTrack_fPz[itrk]);
-        TVector3 track_S = TVector3(MCTrack_fStartX[itrk],MCTrack_fStartY[itrk],MCTrack_fStartZ[itrk]);
-        //computing kinematical variables
-        Double32_t track_m = MCTrack_fM[itrk];
-        Double32_t track_E = ROOT.TMath::Sqrt(track_P.Mag() * track_P.Mag() + track_m * track_m); 
-        Double32_t track_eta = track_p->Eta();
-
         Int_t trackpdg = MCTrack_fPdgCode[itrk];
+        Int_t procID = MCTrack_fProcID[itrk];
         //looking for muons from pions
         if (itrk > 0){//no sense looking for mother of primary muon
          Int_t motherpdg = GetMotherPdg(itrk);
-         if (TMath::Abs(trackpdg) == 13 && TMath::Abs(motherpdg) == 211){ //muons from pions
-            cout<< track_S.X()<<" "<<track_S.Y() << " "<<track_S.Z()<<" "<<track_E<<" "<<track_eta<<endl;
+         if (TMath::Abs(trackpdg) == 13 && TMath::Abs(motherpdg) == 211 && procID == 4){ //muons from pion decays
+            //cout<< "Event "<<jentry <<" muon ID "<<itrk<< " with pdg "<<trackpdg<<" mother "<<motherpdg<<endl;
          }
          
         }
