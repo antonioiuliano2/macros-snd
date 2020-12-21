@@ -107,10 +107,11 @@ void SNDLHC_Reader::Loop()
       //*******loop on tracks****
       for(int itrk = 0; itrk < MCTrack_;itrk++){
         Int_t trackpdg = MCTrack_fPdgCode[itrk];
+        Int_t procID = MCTrack_fProcID[itrk];
         //looking for muons from pions
         if (itrk > 0){//no sense looking for mother of primary muon
          Int_t motherpdg = GetMotherPdg(itrk);
-         if (TMath::Abs(trackpdg) == 13 && TMath::Abs(motherpdg) == 211){ //muons from pions
+         if (TMath::Abs(trackpdg) == 13 && TMath::Abs(motherpdg) == 211 && procID == 4){ //muons from pion decays
             //cout<< "Event "<<jentry <<" muon ID "<<itrk<< " with pdg "<<trackpdg<<" mother "<<motherpdg<<endl;
          }
          
