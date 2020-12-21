@@ -1,3 +1,4 @@
+process target
 dis_cc p
 dis_cc n
 res_cc p
@@ -9,5 +10,11 @@ res_nc p
 res_nc n
 qel_nc p
 qel_nc n
-
-
+coh cc
+coh nc
+ve nc
+ve ccncmix
+dis_cc p_charm
+dis_cc n_charm
+dis_nc p_charm
+dis_nc n_charm

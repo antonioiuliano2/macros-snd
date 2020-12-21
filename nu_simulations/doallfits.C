@@ -35,24 +35,46 @@ void doallfits(int nupdg){
   const int nneutrinos = 6;
   fstream splinelist("listsplines_tofit.txt",fstream::in);
   //internal ordering, using for arrays in fitspline
-  map <int, int> nuordering = {{12,0},{14,1},{16,2},{-12,3},{-14,4},{-16,5}}; 
-    
+  map <int, int> nuordering = {{12,0},{14,1},{16,2},{-12,3},{-14,4},{-16,5}};
+  
   TString process, target;
   TString nuname[nneutrinos] = {"nue","numu","nutau","anue","anumu","anutau"};
+
+  fstream fittedsplinelist((nuname[nuordering[nupdg]] + TString("_fittedsplines.txt")).Data(),fstream::out);
 
   TString filename = nuname[nuordering[nupdg]] + TString("_fittedsplines.root");
   
   TFile *outputfile = new TFile(filename.Data(),"RECREATE");
   TGraph * fitgraph;
+  float p0, p1;
   //reading list
+  bool inheader = true;
   while (!splinelist.eof() ){
+    //prepare header
+    if (inheader){
+      splinelist >> process;
+      splinelist >> target;
+      fittedsplinelist << process <<" "<<target<<" "<<"p0 p1"<<endl;
+      inheader = false;
+    }
+    
     splinelist >> process;
     splinelist >> target;
-
+    
     if (process.Length() > 0 ){
       fitgraph = fitspline(nuordering[nupdg],process,target);
       outputfile->cd();
-      fitgraph->Write();
+      if(fitgraph){
+
+	fitgraph->Write();
+	p0 = fitgraph->GetFunction("pol1")->GetParameter(0);
+	p1 = fitgraph->GetFunction("pol1")->GetParameter(1);
+	fittedsplinelist << process <<" "<<target<<" "<<p0<<" "<<p1<<endl;
+
+      }
+      else{
+	fittedsplinelist << process <<" "<<target<<" "<<-1<<" "<<-1<<endl;
+      }
     } //end check
     
   }//end loop
