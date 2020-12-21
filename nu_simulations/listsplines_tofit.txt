@@ -1,0 +1,13 @@
+dis_cc p
+dis_cc n
+res_cc p
+res_cc n
+qel_cc n
+dis_nc p
+dis_nc n
+res_nc p
+res_nc n
+qel_nc p
+qel_nc n
+
+
