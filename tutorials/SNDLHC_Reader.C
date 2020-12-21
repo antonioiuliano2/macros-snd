@@ -24,6 +24,15 @@ bool CheckNeutrinoVertexPosition(TVector3 nu_vertex){
   else return false;
 }
 
+Int_t SNDLHC_Reader::GetMotherPdg(Int_t trackID){
+  if (trackID <= 0){
+    cout<<"GetMotherPdg: Error, non positive trackID: "<<trackID<<endl;
+    return 0;
+  }
+  int motherId = MCTrack_fMotherId[trackID];
+  return MCTrack_fPdgCode[motherId];
+}
+
 void SNDLHC_Reader::Loop()
 {
 //   How to launch the loop, from a folder with simulation file "ship.conical.Genie-TGeant4.root"
@@ -97,6 +106,22 @@ void SNDLHC_Reader::Loop()
 
       //*******loop on tracks****
       for(int itrk = 0; itrk < MCTrack_;itrk++){
+        TVector3 track_P = TVector3(MCTrack_fPx[itrk],MCTrack_fPy[itrk],MCTrack_fPz[itrk]);
+        TVector3 track_S = TVector3(MCTrack_fStartX[itrk],MCTrack_fStartY[itrk],MCTrack_fStartZ[itrk]);
+        //computing kinematical variables
+        Double32_t track_m = MCTrack_fM[itrk];
+        Double32_t track_E = ROOT.TMath::Sqrt(track_P.Mag() * track_P.Mag() + track_m * track_m); 
+        Double32_t track_eta = track_p->Eta();
+
+        Int_t trackpdg = MCTrack_fPdgCode[itrk];
+        //looking for muons from pions
+        if (itrk > 0){//no sense looking for mother of primary muon
+         Int_t motherpdg = GetMotherPdg(itrk);
+         if (TMath::Abs(trackpdg) == 13 && TMath::Abs(motherpdg) == 211){ //muons from pions
+            cout<< track_S.X()<<" "<<track_S.Y() << " "<<track_S.Z()<<" "<<track_E<<" "<<track_eta<<endl;
+         }
+         
+        }
 	    //here you can do whatever you need to do with the tracks, for now leaving blank
       } //***end of loop over tracks***  
 
