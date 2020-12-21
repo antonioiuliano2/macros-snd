@@ -20,13 +20,15 @@ TGraph* fitspline(int neutrino, TString process, TString target){
   const float Emax = 5000.;
   
   //TF1 *fitfunc = new TF1((TString("xsecfit_")+process+TString("_")+target).Data(),"pol1",Emin,Emax);
-  
+  TF1 * xsecfunc = new TF1("xsecfunc","pol1",0,5000);
+  xsecfunc->SetParLimits(0,0,1e+10);
+
   TCanvas *c0 = new TCanvas();
   g1->GetXaxis()->SetTitle("E[GeV]");
   g1->GetYaxis()->SetTitle("Differential cross section [10^-38 cm^2 /GeV]");
   g1->Draw("AP*");
 
-  g1->Fit("pol1");
+  g1->Fit(xsecfunc,"B");
 
   return g1;
 }
@@ -67,8 +69,8 @@ void doallfits(int nupdg){
       if(fitgraph){
 
 	fitgraph->Write();
-	p0 = fitgraph->GetFunction("pol1")->GetParameter(0);
-	p1 = fitgraph->GetFunction("pol1")->GetParameter(1);
+	p0 = fitgraph->GetFunction("xsecfunc")->GetParameter(0);
+	p1 = fitgraph->GetFunction("xsecfunc")->GetParameter(1);
 	fittedsplinelist << process <<" "<<target<<" "<<p0<<" "<<p1<<endl;
 
       }
