@@ -85,7 +85,7 @@ if __name__ == '__main__':
      outputfile = outdir+names[nupdg]+'_xsec_splines.xml'
      #generating new set of splines, saving them in outputdir
      nupdglist = [nupdg]
-     genieinterface.makeSplines(nupdglist = nupdglist,targetcode = targetcode,emax = 5000, outputfile = outputfile)
+     genieinterface.makeSplines(nupdglist = nupdglist,targetcode = targetcode,emax = 5000, nknots = 100, outputfile = outputfile)
     
     else:
      print('Please choice if you want to generate events for FairShip (--FS) or a new set of splines (--MS)')
