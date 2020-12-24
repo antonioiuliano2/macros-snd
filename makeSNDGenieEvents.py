@@ -4,7 +4,7 @@ import argparse
 import genie_interface
 
 defaultfiledir = '/afs/cern.ch/work/a/aiuliano/public/Generate_GENIEinput_AnnaritaSND/NeutrinoFiles/'
-defaultsplinedir = '/afs/cern.ch/work/a/aiuliano/public/Generate_GENIEinput_AnnaritaSND/SplinesTungsten/'
+defaultsplinedir = '/afs/cern.ch/work/a/aiuliano/public/Generate_GENIEinput_AnnaritaSND/SplinesTungstenTP/'
 names = {14:'numu',12:'nue', 16:'nutau', -14:'anumu',-12:'anue', -16:'anutau'}
 filenames = {14:'NeutMuon',12:'NeutElec',16:'NeutTau_filter',-14:'AntiNeutMuon',-12:'AntiNeutElec',-16:'AntiNeutTau_filter'}
 
