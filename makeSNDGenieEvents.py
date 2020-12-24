@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import ROOT,os,sys,time
 import argparse
-import FairShipGenieInterface as genieinterface
+import genie_interface
 
 defaultfiledir = '/afs/cern.ch/work/a/aiuliano/public/Generate_GENIEinput_AnnaritaSND/NeutrinoFiles/'
 defaultsplinedir = '/afs/cern.ch/work/a/aiuliano/public/Generate_GENIEinput_AnnaritaSND/SplinesTungsten/'
@@ -71,21 +71,21 @@ if __name__ == '__main__':
      #setting path of outputfile
      outputfile = outdir+names[nupdg]+"_"+process+"_FairShip.root"
      #generating GENIE simulation
-     genieinterface.GenerateGenieEvents(nevents = nevents, nupdg = nupdg, emin = 0, emax = 5000, \
+     genie_interface.generate_genie_events(nevents = nevents, nupdg = nupdg, emin = 0, emax = 5000, \
                                        targetcode = targetcode, inputflux = inputfile, \
                                         spline = spline, process = process )
      #converting GENIE simulation into FairShip compatible format
-     genieinterface.makeNtuples("gntp.0.ghep.root", outputfile)
+     genie_interface.make_ntuples("gntp.0.ghep.root", outputfile)
 
      #adding histograms
-     genieinterface.addHists(inputflux = inputfile, simfile = outputfile, nupdg = nupdg)
+     genie_interface.add_hists(inputflux = inputfile, simfile = outputfile, nupdg = nupdg)
 
     elif (MakeSpline):
      #setting path of outputfile
      outputfile = outdir+names[nupdg]+'_xsec_splines.xml'
      #generating new set of splines, saving them in outputdir
      nupdglist = [nupdg]
-     genieinterface.makeSplines(nupdglist = nupdglist,targetcode = targetcode,emax = 5000, nknots = 100, outputfile = outputfile)
+     genie_interface.make_splines(nupdglist = nupdglist,targetcode = targetcode,emax = 5000, nknots = 100, outputfile = outputfile)
     
     else:
      print('Please choice if you want to generate events for FairShip (--FS) or a new set of splines (--MS)')
