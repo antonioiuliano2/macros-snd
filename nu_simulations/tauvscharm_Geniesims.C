@@ -42,6 +42,16 @@ int GetCharmValueInt(ROOT::RVec<int> array, ROOT::RVec<int> pdgarray){
     ROOT::RVec<double> doublearray = array;
     return (int) GetCharmValue(array,pdgarray);
 }
+
+double angledifference(double ang1, double ang2){
+  //it cannot go over pi, I need to take the shortest one
+  double delta = ang1 - ang2;
+  double pi = TMath::Pi();
+  if (delta < pi && delta > (-1 * pi)) delta = delta; //do nothing
+  else if (delta > pi) delta = 2 * pi - delta; //positive, but more than 180°
+  else delta = -2 * pi - delta; //negative, but less than 180°
+  return delta;
+}
 //get array content for charm
 void tauvscharm_Geniesims(){
     //****************************tau (signal)***************************************
@@ -67,14 +77,14 @@ void tauvscharm_Geniesims(){
     //getting ideal phi of tau lepton
     auto dftau6 = dftau5.Define("phil","TMath::ATan2(pyl,pxl)");
     //deltaphi
-    auto dftau7 = dftau6.Define("deltaphi","phil - phif_tot");
+    auto dftau7 = dftau6.Define("deltaphi",angledifference,{"phil","phif_tot"});
 
     //getting detected phi (phi_det) of tau lepton from angles
     auto dftau8 = dftau7.Define("phil_det","TMath::ATan2(tyl,txl)");
     //getting detected phi from angles of final hadronic system
     auto dftau9 = dftau8.Define("phif_tot_det","TMath::ATan2(tyf_tot, txf_tot)");
     //deltaphi
-    auto dftau_final = dftau9.Define("deltaphi_det","phil_det - phif_tot_det");
+    auto dftau_final = dftau9.Define("deltaphi_det",angledifference,{"phil_det","phif_tot_det"});
 
     //****************************charm (background) (charm is NOT always pdgf[0], we add a step to find its momenta)*********************************
     ROOT::RDataFrame dfcharm("gst","/home/utente/Simulations/sim_snd/GenieEvents_SNDAcceptance/CharmCCDIS/numu/numu_CharmCCDIS_FairShip.root");
@@ -93,9 +103,11 @@ void tauvscharm_Geniesims(){
                             .Define("tycharm","pycharm/pzcharm");
     auto dfcharm3 = dfcharm2.Define("txf","pxf/pzf")
                             .Define("tyf","pyf/pzf");
+    auto dfcharm3bis = dfcharm3.Define("txl","pxl/pzl")
+                             .Define("tyl","pyl/pzl");
                             
     //sum of angles for final hadronic state
-    auto dfcharm4 = dfcharm3.Define("txf_tot",SumArray_NoCharm,{"txf","pdgf"})
+    auto dfcharm4 = dfcharm3bis.Define("txf_tot",SumArray_NoCharm,{"txf","pdgf"})
                             .Define("tyf_tot",SumArray_NoCharm,{"tyf","pdgf"});
 
     //getting ideal phi of final hadronic system in the ideal case of momenta
@@ -103,21 +115,25 @@ void tauvscharm_Geniesims(){
     //getting ideal phi of charm
     auto dfcharm6 = dfcharm5.Define("phicharm","TMath::ATan2(pycharm,pxcharm)");
     //deltaphi
-    auto dfcharm7 = dfcharm6.Define("deltaphi","phicharm - phif_tot");
+    auto dfcharm7 = dfcharm6.Define("deltaphi",angledifference,{"phicharm","phif_tot"});
 
     //getting detected phi (phi_det) of charm lepton
     auto dfcharm8 = dfcharm7.Define("phicharm_det","TMath::ATan2(tycharm,txcharm)");
     //getting detected phi of final hadronic system
     auto dfcharm9 = dfcharm8.Define("phif_tot_det","TMath::ATan2(tyf_tot, txf_tot)");
     //deltaphi
-    auto dfcharm_final = dfcharm9.Define("deltaphi_det","phicharm_det - phif_tot_det");
+    auto dfcharm_final = dfcharm9.Define("deltaphi_det",angledifference,{"phicharm_det","phif_tot_det"});
 
     //drawing histograms
-    auto hdeltaphitau = dftau_final.Histo1D({"hdeltaphitau","Phi difference Tau;#Delta#phi[rad]",70,-3.5,3.5},"deltaphi");
-    auto hdeltaphicharm = dfcharm_final.Histo1D({"hdeltaphicharm","Phi difference Charm;#Delta#phi[rad]",70,-3.5,3.5},"deltaphi");
+    auto hdeltaphitau = dftau_final.Define("deltaphi_deg","deltaphi * TMath::RadToDeg()")
+                                   .Histo1D({"hdeltaphitau","Phi difference Tau;#Delta#phi[rad]",72,-180,180},"deltaphi_deg");
+    auto hdeltaphicharm = dfcharm_final.Define("deltaphi_deg","deltaphi * TMath::RadToDeg()")
+                                       .Histo1D({"hdeltaphicharm","Phi difference Charm;#Delta#phi[rad]",72,-180,180},"deltaphi_deg");
 
-    auto hdeltaphitau_det = dftau_final.Histo1D({"hdeltaphitau_det","Realistic Phi difference Tau;#Delta#phi[rad]",70,-3.5,3.5},"deltaphi_det");
-    auto hdeltaphicharm_det = dfcharm_final.Histo1D({"hdeltaphicharm_det","Realistic Phi difference Charm;#Delta#phi[rad]",70,-3.5,3.5},"deltaphi_det");
+    auto hdeltaphitau_det = dftau_final.Define("deltaphi_det_deg","deltaphi_det * TMath::RadToDeg()")
+                                       .Histo1D({"hdeltaphitau_det","Realistic Phi difference Tau;#Delta#phi[rad]",72,-180,180},"deltaphi_det_deg");
+    auto hdeltaphicharm_det = dfcharm_final.Define("deltaphi_det_deg","deltaphi_det * TMath::RadToDeg()")
+                                           .Histo1D({"hdeltaphicharm_det","Realistic Phi difference Charm;#Delta#phi[rad]",72,-180,180},"deltaphi_det_deg");
 
     TCanvas *cdeltaphi = new TCanvas();
     hdeltaphitau->SetLineColor(kRed);
