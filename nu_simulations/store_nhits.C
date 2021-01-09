@@ -22,11 +22,13 @@ bool CheckNeutrinoVertexPosition(TVector3 nu_vertex){
 
 void store_nhits(){
  //input files
+ TString filepath("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/nueNCDIS_SND_7_January_2020/");
  TChain treechain("cbmsim"); //adding together simulations of neutrinos and antineutrinos
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root"); 
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/nueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root");
- treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
- treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anumuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
+ //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
+ //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anumuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
+ treechain.Add((filepath+TString("ship.conical.Genie-TGeant4.root")).Data());
  
  TDatabasePDG *pdg = TDatabasePDG::Instance();
  
@@ -40,7 +42,7 @@ void store_nhits(){
  TTreeReaderArray<ScifiPoint> scifipoints(reader,"ScifiPoint");
  TTreeReaderArray<MuFilterPoint> mufilterpoints(reader, "MuFilterPoint");
 
- const int nentries =200000.;
+ const int nentries =100000.;
  //const int nentries =treechain.GetEntries();
  //treechain.LoadTree(-1); //loading first tree of the chain, preparing for loop (otherwise root prints warning due to the GetEntries() before this line)
 
@@ -65,7 +67,7 @@ void store_nhits(){
 
  TProfile2D *E_nhits = new TProfile2D("E_nhits", "Energy vs number of Scifi and Mufilter hits;# SciFi Hits; # MuFilter Hits; E[GeV]", 100, 0, 20000, 100, 0, 20000, 0., 10000.);
 
- TFile *outputfile = new TFile("nuhits_SND.root","RECREATE");
+ TFile *outputfile = new TFile((filepath+TString("nuhits_SND.root")).Data(),"RECREATE");
  TTree *outputtree = new TTree("sndhits","Hits from neutrino interactions in SND at LHC");
 
  Int_t MCEventID;
