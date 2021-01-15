@@ -78,11 +78,11 @@ def print_info(path, node, level, currentlevel, print_sub_det_info=False):
 
   for subnode in node.GetNodes():
     name = subnode.GetName()
-    names.append(name)
     fullInfo[name] = local2Global(path + '/' + name)
     sub_nodes[name] = fullInfo[name]['origin'][2]
 
   for name, _ in sorted(list(sub_nodes.items()), key=operator.itemgetter(1)):
+    names.append(name)
     boundingbox = fullInfo[name]['boundingbox']
 
     dx.append(abs(boundingbox[0][0]-boundingbox[0][1])/2.)
@@ -146,7 +146,6 @@ if options.moreInfo:
   extralabels = ['cubicmeter','weight']
   extradata = {'cubicmeter':cubicmeter,'weight':weight}
   extradf = pd.DataFrame(extradata, columns = extralabels)
-
-df = pd.concat([df,extradf],axis = 1)
+  df = pd.concat([df,extradf],axis = 1)
 
 print(df)
