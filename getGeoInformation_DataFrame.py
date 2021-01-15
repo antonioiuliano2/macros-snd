@@ -19,6 +19,7 @@ names = []
 dx = []
 dy = []
 dz = []
+zC = []
 xstart = []
 xend = []
 ystart = []
@@ -97,6 +98,9 @@ def print_info(path, node, level, currentlevel, print_sub_det_info=False):
     zstart.append(boundingbox[2][0])
     zend.append(boundingbox[2][1])
     
+    zcenter = fullInfo[name]['origin'][2]
+    zC.append(zcenter)
+    
     material.append(fullInfo[name]['material'])
 
     if options.moreInfo:
@@ -133,8 +137,8 @@ top = fGeo.GetTopVolume()
 currentlevel = 0
 print_info("", top, int(options.level), currentlevel)
 #building dataframe
-labels = ['name','dx','xstart','xend','dy','ystart','yend','dz','zstart','zend','material']
-geometrydata = {'name' : np.array(names),
+labels = ['name','z(midpoint)','dz','zstart','zend','dx','xstart','xend','dy','ystart','yend','material']
+geometrydata = {'name' : np.array(names), 'z(midpoint)': np.array(zC),
                 'dx' : np.array(dx), 'xstart' : np.array(xstart), 'xend' : np.array(xend),
                 'dy' : np.array(dy), 'ystart' : np.array(ystart), 'yend' : np.array(yend),
                 'dz' : np.array(dz), 'zstart' : np.array(zstart), 'zend' : np.array(zend),
