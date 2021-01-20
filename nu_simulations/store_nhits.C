@@ -22,7 +22,7 @@ bool CheckNeutrinoVertexPosition(TVector3 nu_vertex){
 
 void store_nhits(){
  //input files
- TString filepath("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/nueNCDIS_SND_7_January_2020/");
+ TString filepath("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anueCCDIS_28_11_2020/");
  TChain treechain("cbmsim"); //adding together simulations of neutrinos and antineutrinos
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root"); 
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/nueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root");

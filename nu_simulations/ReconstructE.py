@@ -109,7 +109,7 @@ def ReadHitsTree(inputfile,entries):
 entrylist = np.linspace(nentries,0,nentries-1,dtype=int)
 np.random.seed(numpyseed)
 np.random.shuffle(entrylist) #randomly shuffle it
-Ehad, nhitScifiTOT, nhitMuFilterTOT = ReadHitsTree(path2dir+"nuhits_SND.root",entrylist[:int(nentries *trainingfraction)])
+Ehad, nhitScifiTOT, nhitMuFilterTOT = ReadHitsTree(path2dir+"nuhits_SND_total_nuanu.root",entrylist[:int(nentries *trainingfraction)])
 
 def CreateElementsForLinearRegression(Ehad,nhitScifiTOT,nhitMuFilterTOT):
  y = np.array(Ehad, dtype=np.float64).reshape(len(Ehad),1)
@@ -209,7 +209,7 @@ print("h(x) ="+str(round(theta[0,0],2))+" + "+str(round(theta[1,0],2))+"x1 + "+s
 #Run over the remaining directories:
 #directories1 = ['10E3to15E3/','15E3to20E3/','25E3to30E3/','35E3to40E3/','40E3to45E3/','45E3to50E3/']
 #Ehad, nhitScifiTOT, nhitMuFilterTOT = GetEhadAndNhits(directories1)
-Ehad, nhitScifiTOT, nhitMuFilterTOT = ReadHitsTree(path2dir+"nuhits_SND.root",entrylist[int(nentries *trainingfraction):])
+Ehad, nhitScifiTOT, nhitMuFilterTOT = ReadHitsTree(path2dir+"nuhits_SND_total_nuanu.root",entrylist[int(nentries *trainingfraction):])
 y_test,X_test = CreateElementsForLinearRegression(Ehad,nhitScifiTOT,nhitMuFilterTOT)
 
 
