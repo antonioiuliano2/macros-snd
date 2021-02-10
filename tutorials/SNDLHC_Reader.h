@@ -23,10 +23,10 @@ public :
    Int_t           fCurrent; //!current Tree number in a TChain
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
-   static constexpr Int_t kMaxcbmroot_Stack_MCTrack = 33077;
-   static constexpr Int_t kMaxcbmroot_EmulsionDet_EmulsionDetPoint = 1;
-   static constexpr Int_t kMaxcbmroot_Scifi_ScifiPoint = 11802;
-   static constexpr Int_t kMaxcbmroot_MuFilter_MuFilterPoint = 18578;
+   static constexpr Int_t kMaxcbmroot_Stack_MCTrack = 100000;
+   static constexpr Int_t kMaxcbmroot_EmulsionDet_EmulsionDetPoint = 100000;
+   static constexpr Int_t kMaxcbmroot_Scifi_ScifiPoint = 100000;
+   static constexpr Int_t kMaxcbmroot_MuFilter_MuFilterPoint = 100000;
    static constexpr Int_t kMaxcbmroot_Event_MCEventHeader = 1;
 
    // Declaration of leaf types
