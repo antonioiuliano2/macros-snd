@@ -10,10 +10,10 @@ double GetParticleCharge (int pdgcode, TDatabasePDG *pdg){
 
 bool CheckNeutrinoVertexPosition(TVector3 nu_vertex){
   //target position (to select events in target - values need to be checked for each simulation)
-  const Double32_t targetxmin = 8.; 
-  const Double32_t targetxmax = 49.;
-  const Double32_t targetymin = 15.5;
-  const Double32_t targetymax = 56.5;
+  const Double32_t targetxmin = -47.6000; 
+  const Double32_t targetxmax = -8.0000;
+  const Double32_t targetymin = 15.5000;
+  const Double32_t targetymax = 55.1000;
      
   if (nu_vertex.X() > targetxmin && nu_vertex.X() < targetxmax && 
       nu_vertex.Y() > targetymin && nu_vertex.Y() < targetymax) return true;
@@ -38,19 +38,19 @@ int whichwall(double vz){
 }
 
 int whichscifi(double scifihitz){
-  const double zmin1 = -17.0933;
-  const double zmax1 = -14.0933;
-  const double zmax2 = -3.6977;
-  const double zmax3 = 6.6978;
-  const double zmax4 = 17.0933;
-  const double zmax5 = 27.4888;
+  const double zmin0 = -17.6850;
+  const double zmax0 = -14.6850;
+  const double zmax1 = -3.8950;
+  const double zmax2 =  6.8950;
+  const double zmax3 = 17.6850;
+  const double zmax4 = 28.4750;
 
-  if (scifihitz < zmin1) return -1;
-  else if (scifihitz < zmax1) return 0;
-  else if (scifihitz < zmax2) return 1;
-  else if (scifihitz < zmax3) return 2;
-  else if (scifihitz < zmax4) return 3;
-  else if (scifihitz < zmax5) return 4;
+  if (scifihitz < zmin0) return -1;
+  else if (scifihitz < zmax0) return 0;
+  else if (scifihitz < zmax1) return 1;
+  else if (scifihitz < zmax2) return 2;
+  else if (scifihitz < zmax3) return 3;
+  else if (scifihitz < zmax4) return 4;
   else return -1;
 }
 
@@ -60,7 +60,7 @@ void store_nhits(){
  bool domuonloop = false;
  bool writetree = false;
  //input files
- TString filepath("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anueCCDIS_28_11_2020/");
+ TString filepath("./");
  TChain treechain("cbmsim"); //adding together simulations of neutrinos and antineutrinos
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root"); 
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/nueCCDIS_28_11_2020/ship.conical.Genie-TGeant4.root");
@@ -68,12 +68,12 @@ void store_nhits(){
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anumuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
  treechain.Add((filepath+TString("ship.conical.Genie-TGeant4.root")).Data());
  //paramaters for scifi (geometry needs to be automatically received in future)
- const double xscifimin = 8.0000;
- const double xscifimax = 49.0000;
+ const double xscifimin = -47.5000;
+ const double xscifimax = -8.0000;
  const double binsxwidth = 0.0250;
  const int nbinsx = (xscifimax - xscifimin)/binsxwidth;
  const double yscifimin = 15.5000;
- const double yscifimax = 56.5000;
+ const double yscifimax = 55.0000;
  const double binsywidth = 0.0250; //250 micron
  const int nbinsy = (yscifimax - yscifimin)/binsywidth;
 
@@ -103,8 +103,8 @@ void store_nhits(){
  TTreeReaderArray<ScifiPoint> scifipoints(reader,"ScifiPoint");
  TTreeReaderArray<MuFilterPoint> mufilterpoints(reader, "MuFilterPoint");
 
- const int nentries =10000.;
- //const int nentries =treechain.GetEntries();
+ //const int nentries =10000.;
+ const int nentries =treechain.GetEntries();
  //treechain.LoadTree(-1); //loading first tree of the chain, preparing for loop (otherwise root prints warning due to the GetEntries() before this line)
 
  cout<<"Number of events "<<nentries<<endl;
