@@ -60,7 +60,7 @@ void store_nhits(){
  bool domuonloop = false;
  bool writetree = false;
  bool writescifihistograms = false;
- const int nmax1_nneutrinos = 35; //maximum number of SciFi hits in first wall
+ const int nmax1_nneutrinos = 100; //maximum number of SciFi hits in first wall
  //input files
  TString filepath("./");
  TChain treechain("cbmsim"); //adding together simulations of neutrinos and antineutrinos
@@ -87,12 +87,12 @@ void store_nhits(){
  TH1D *hxscifich_event[nscifi], *hyscifich_event[nscifi]; //cleaned in each event
  TH1I *hmaxscifix = new TH1I("hmaxscifix","Number of maximum hits in a channel along x",200,0,200);
  TH1I *hmaxscifiy = new TH1I("hmaxscifiy","Number of maximum hits in a channel along y",200,0,200);
- TH1I *hnxscifich[nscifi], *hnyscifich[nscifi];
+ TH1D *hnxscifich[nscifi], *hnyscifich[nscifi];
  for (int iscifi=0; iscifi<nscifi;iscifi++){
    n_neutrinos[iscifi] = 0;
    hxyscifich[iscifi] = new TH2D(TString::Format("hxyscifich[%i]",iscifi),"2D distribution scifi channels;x[cm];y[cm]", nbinsx, xscifimin, xscifimax, nbinsy, yscifimin, yscifimax);
-   hnxscifich[iscifi] = new TH1I(TString::Format("hnxscifich[%i]",iscifi),"Number of hits per channel",50,0, 50);
-   hnyscifich[iscifi] = new TH1I(TString::Format("hnyscifich[%i]",iscifi),"Number of hits per channel",50,0, 50);
+   hnxscifich[iscifi] = new TH1D(TString::Format("hnxscifich[%i]",iscifi),"Number of hits per X channels",50,0, 50);
+   hnyscifich[iscifi] = new TH1D(TString::Format("hnyscifich[%i]",iscifi),"Number of hits per Y channels",50,0, 50);
    hxscifich_event[iscifi] = new TH1D(TString::Format("hxscifich[%i]_event",iscifi),"X Distribution scifi channels per event;x[cm]", nbinsx, xscifimin, xscifimax);
    hyscifich_event[iscifi] = new TH1D(TString::Format("hyscifich[%i]_event",iscifi),"Y Distribution scifi channels per event;y[cm]", nbinsy, yscifimin, yscifimax);
  }
@@ -254,11 +254,11 @@ void store_nhits(){
       //loop over bins, how many per bin (tracks per channel), fraction over nchannels?
       for (int ibin = 1; ibin <= nbinsx; ibin++){ 
         int nx = hxscifich_event[iscifi]->GetBinContent(ibin);
-        if (nx > 0) hnxscifich[iscifi]->Fill(nx);
+        hnxscifich[iscifi]->Fill(nx);
       }
       for (int ibin = 1; ibin <= nbinsy; ibin++){
         int ny = hyscifich_event[iscifi]->GetBinContent(ibin);
-        if (ny > 0) hnyscifich[iscifi]->Fill(ny);
+        hnyscifich[iscifi]->Fill(ny);
       }
     }
     if(nu_wall == 0){
@@ -328,9 +328,9 @@ void store_nhits(){
  TCanvas *cnbins = new TCanvas();
  cnbins->Divide(1,2);
  cnbins->cd(1);
- hnxscifich[0]->Scale(1./n_neutrinos[0]);
+ hnxscifich[0]->Scale(1./(n_neutrinos[0]));
  hnxscifich[0]->Draw("histo");
  cnbins->cd(2);
- hnyscifich[0]->Scale(1./n_neutrinos[0]);
+ hnyscifich[0]->Scale(1./(n_neutrinos[0]));
  hnyscifich[0]->Draw("histo");
 } //end of main program
