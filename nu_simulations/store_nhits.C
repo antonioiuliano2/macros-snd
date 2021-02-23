@@ -10,10 +10,10 @@ double GetParticleCharge (int pdgcode, TDatabasePDG *pdg){
 
 bool CheckNeutrinoVertexPosition(TVector3 nu_vertex){
   //target position (to select events in target - values need to be checked for each simulation)
-  const Double32_t targetxmin = -47.6000; 
+  const Double32_t targetxmin = -47.5000; //instead of -47.6000, 1mm border
   const Double32_t targetxmax = -8.0000;
   const Double32_t targetymin = 15.5000;
-  const Double32_t targetymax = 55.1000;
+  const Double32_t targetymax = 55.0000; //instead of 55.1, 1mm border
      
   if (nu_vertex.X() > targetxmin && nu_vertex.X() < targetxmax && 
       nu_vertex.Y() > targetymin && nu_vertex.Y() < targetymax) return true;
@@ -59,6 +59,8 @@ void store_nhits(){
  bool doscifiloop = true;
  bool domuonloop = false;
  bool writetree = false;
+ bool writescifihistograms = false;
+ const int nmax1_nneutrinos = 35; //maximum number of SciFi hits in first wall
  //input files
  TString filepath("./");
  TChain treechain("cbmsim"); //adding together simulations of neutrinos and antineutrinos
@@ -67,6 +69,8 @@ void store_nhits(){
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
  //treechain.Add("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/anumuCCDIS_10_11_2020/ship.conical.Genie-TGeant4.root");
  treechain.Add((filepath+TString("ship.conical.Genie-TGeant4.root")).Data());
+ //const int nentries =10000.;
+ const int nentries =treechain.GetEntries();
  //paramaters for scifi (geometry needs to be automatically received in future)
  const double xscifimin = -47.5000;
  const double xscifimax = -8.0000;
@@ -78,15 +82,19 @@ void store_nhits(){
  const int nbinsy = (yscifimax - yscifimin)/binsywidth;
 
  const int nscifi = 5;
- const int nmax1_nneutrinos = 100;
  int n_neutrinos[nscifi];
  TH2D *hxyscifich[nscifi];
- TH2D *hxyscifich_event[nscifi]; //cleaned in each event
- TH1I *hmaxscifi = new TH1I("hmaxscifi","Number of maximum hits in a channel",50,0,50);
+ TH1D *hxscifich_event[nscifi], *hyscifich_event[nscifi]; //cleaned in each event
+ TH1I *hmaxscifix = new TH1I("hmaxscifix","Number of maximum hits in a channel along x",200,0,200);
+ TH1I *hmaxscifiy = new TH1I("hmaxscifiy","Number of maximum hits in a channel along y",200,0,200);
+ TH1I *hnxscifich[nscifi], *hnyscifich[nscifi];
  for (int iscifi=0; iscifi<nscifi;iscifi++){
    n_neutrinos[iscifi] = 0;
    hxyscifich[iscifi] = new TH2D(TString::Format("hxyscifich[%i]",iscifi),"2D distribution scifi channels;x[cm];y[cm]", nbinsx, xscifimin, xscifimax, nbinsy, yscifimin, yscifimax);
-   hxyscifich_event[iscifi] = new TH2D(TString::Format("hxyscifich[%i]_event",iscifi),"2D distribution scifi channels per event;x[cm];y[cm]", nbinsx, xscifimin, xscifimax, nbinsy, yscifimin, yscifimax);
+   hnxscifich[iscifi] = new TH1I(TString::Format("hnxscifich[%i]",iscifi),"Number of hits per channel",50,0, 50);
+   hnyscifich[iscifi] = new TH1I(TString::Format("hnyscifich[%i]",iscifi),"Number of hits per channel",50,0, 50);
+   hxscifich_event[iscifi] = new TH1D(TString::Format("hxscifich[%i]_event",iscifi),"X Distribution scifi channels per event;x[cm]", nbinsx, xscifimin, xscifimax);
+   hyscifich_event[iscifi] = new TH1D(TString::Format("hyscifich[%i]_event",iscifi),"Y Distribution scifi channels per event;y[cm]", nbinsy, yscifimin, yscifimax);
  }
  double scifihitz;
  int scifistation;
@@ -103,8 +111,6 @@ void store_nhits(){
  TTreeReaderArray<ScifiPoint> scifipoints(reader,"ScifiPoint");
  TTreeReaderArray<MuFilterPoint> mufilterpoints(reader, "MuFilterPoint");
 
- //const int nentries =10000.;
- const int nentries =treechain.GetEntries();
  //treechain.LoadTree(-1); //loading first tree of the chain, preparing for loop (otherwise root prints warning due to the GetEntries() before this line)
 
  cout<<"Number of events "<<nentries<<endl;
@@ -131,11 +137,15 @@ void store_nhits(){
 
  TProfile2D *E_nhits = new TProfile2D("E_nhits", "Energy vs number of Scifi and Mufilter hits;# SciFi Hits; # MuFilter Hits; E[GeV]", 100, 0, 20000, 100, 0, 20000, 0., 10000.);
 
+ TFile *histofile;
  TFile *outputfile;
  TTree *outputtree;
  Int_t MCEventID;
  Double_t nu_vx, nu_vy, nu_vz;
  Double_t nu_px, nu_py, nu_pz;
+ if (writescifihistograms){
+  histofile = new TFile((filepath+TString("scifihistos.root")).Data(),"RECREATE");
+ }
  if (writetree){
   outputfile = new TFile((filepath+TString("nuhits_SND.root")).Data(),"RECREATE");
   outputtree = new TTree("sndhits","Hits from neutrino interactions in SND at LHC");
@@ -163,9 +173,10 @@ void store_nhits(){
    nscifihits = 0;
    nmufilterhits = 0;
 
-   //clearing scifi histograms
+   //clearing scifi histograms per event
    for (int iscifi = 0; iscifi < nscifi; iscifi++){
-     hxyscifich_event[iscifi]->Reset();
+     hxscifich_event[iscifi]->Reset();
+     hyscifich_event[iscifi]->Reset();
    }
    
    if (ientry % 10000== 0) cout<<"arrived at entry "<<ientry<<endl;
@@ -212,7 +223,8 @@ void store_nhits(){
        scifistation = whichscifi(scifihitz);
        if(scifistation >= 0){ 
          if (nu_wall == scifistation) hxyscifich[scifistation]->Fill(scifipoint.GetX(), scifipoint.GetY());
-         hxyscifich_event[scifistation]->Fill(scifipoint.GetX(), scifipoint.GetY());
+         hxscifich_event[scifistation]->Fill(scifipoint.GetX());
+         hyscifich_event[scifistation]->Fill(scifipoint.GetY());
        }
       hscifiyz->Fill(scifipoint.GetZ(), scifipoint.GetY());
      }
@@ -234,11 +246,25 @@ void store_nhits(){
    if (writetree) outputtree->Fill();
 
    if (doscifiloop){ //which is the most full scifi channel?
-    int maxscifi = 0;
+    int maxscifix = 0, maxscifiy = 0;
     for (int iscifi = 0; iscifi< nscifi; iscifi++){
-      if (hxyscifich_event[iscifi]->GetMaximum() > maxscifi) maxscifi = hxyscifich_event[iscifi]->GetMaximum();
+      if (nu_wall != iscifi) continue; //filling only scifi at wall immediately after nu interaction!
+      if (hxscifich_event[iscifi]->GetMaximum() > maxscifix) maxscifix = hxscifich_event[iscifi]->GetMaximum();
+      if (hyscifich_event[iscifi]->GetMaximum() > maxscifiy) maxscifiy = hxscifich_event[iscifi]->GetMaximum();
+      //loop over bins, how many per bin (tracks per channel), fraction over nchannels?
+      for (int ibin = 1; ibin <= nbinsx; ibin++){ 
+        int nx = hxscifich_event[iscifi]->GetBinContent(ibin);
+        if (nx > 0) hnxscifich[iscifi]->Fill(nx);
+      }
+      for (int ibin = 1; ibin <= nbinsy; ibin++){
+        int ny = hyscifich_event[iscifi]->GetBinContent(ibin);
+        if (ny > 0) hnyscifich[iscifi]->Fill(ny);
+      }
     }
-    hmaxscifi->Fill(maxscifi);
+    if(nu_wall == 0){
+     hmaxscifix->Fill(maxscifix);
+     hmaxscifiy->Fill(maxscifiy);
+    }
    }
 
  } //*********************************END OF MAIN LOOP************************************//
@@ -265,6 +291,11 @@ void store_nhits(){
   E_nhits->Write();
   outputfile->Close();
  }
+ gvxy_first->SetMarkerStyle(kFullCircle);
+ gvxy_first->SetMarkerColor(kRed);
+ gvxy_first->SetTitle("xy distribution of neutrino vertices in first wall");
+ gvxy_first->SetName("gvxy_first");
+ //drawing plots in scifi hits (overlapping hits in first wall)
  TCanvas *cscifichannels = new TCanvas();
  cscifichannels->Divide(3,2);
  for (int iscifi = 0; iscifi < nscifi; iscifi++){
@@ -272,13 +303,34 @@ void store_nhits(){
   cout<<"Neutrinos in wall "<<iscifi+1<<" are "<<n_neutrinos[iscifi]<<endl;
   //hxyscifich[iscifi]->Scale(1./n_neutrinos[iscifi]);
   hxyscifich[iscifi]->Draw("COLZ");
-  gvxy_first->SetMarkerStyle(kFullCircle);
-  gvxy_first->SetMarkerColor(kRed);
-  gvxy_first->Draw("SAME");
+  if (writescifihistograms) hxyscifich[iscifi]->Write();
+  if (iscifi==0){
+   gvxy_first->Draw("SAME");
+  }
  }
  TCanvas *cmaxscifi = new TCanvas();
- hmaxscifi->Draw();
+ cmaxscifi->Divide(1,2);
+ cmaxscifi->cd(1);
+ hmaxscifix->Draw();
+ cmaxscifi->cd(2);
+ hmaxscifiy->Draw();
+
+ if (writescifihistograms){ 
+   gvxy_first->Write();
+   hmaxscifix->Write();
+   hmaxscifiy->Write();
+ }
 
  TCanvas *cvz = new TCanvas();
  hvz_first->Draw();
+
+ //scaling histograms over number of neutrinos in first wall and drawing them
+ TCanvas *cnbins = new TCanvas();
+ cnbins->Divide(1,2);
+ cnbins->cd(1);
+ hnxscifich[0]->Scale(1./n_neutrinos[0]);
+ hnxscifich[0]->Draw("histo");
+ cnbins->cd(2);
+ hnyscifich[0]->Scale(1./n_neutrinos[0]);
+ hnyscifich[0]->Draw("histo");
 } //end of main program
