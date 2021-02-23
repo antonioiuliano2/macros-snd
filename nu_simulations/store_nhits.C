@@ -59,7 +59,7 @@ void store_nhits(){
  bool doscifiloop = true;
  bool domuonloop = false;
  bool writetree = false;
- bool writescifihistograms = false;
+ bool writescifihistograms = true;
  const int nmax1_nneutrinos = 100; //maximum number of SciFi hits in first wall
  //input files
  TString filepath("./");
@@ -90,11 +90,11 @@ void store_nhits(){
  TH1D *hnxscifich[nscifi], *hnyscifich[nscifi];
  for (int iscifi=0; iscifi<nscifi;iscifi++){
    n_neutrinos[iscifi] = 0;
-   hxyscifich[iscifi] = new TH2D(TString::Format("hxyscifich[%i]",iscifi),"2D distribution scifi channels;x[cm];y[cm]", nbinsx, xscifimin, xscifimax, nbinsy, yscifimin, yscifimax);
-   hnxscifich[iscifi] = new TH1D(TString::Format("hnxscifich[%i]",iscifi),"Number of hits per X channels",50,0, 50);
-   hnyscifich[iscifi] = new TH1D(TString::Format("hnyscifich[%i]",iscifi),"Number of hits per Y channels",50,0, 50);
-   hxscifich_event[iscifi] = new TH1D(TString::Format("hxscifich[%i]_event",iscifi),"X Distribution scifi channels per event;x[cm]", nbinsx, xscifimin, xscifimax);
-   hyscifich_event[iscifi] = new TH1D(TString::Format("hyscifich[%i]_event",iscifi),"Y Distribution scifi channels per event;y[cm]", nbinsy, yscifimin, yscifimax);
+   hxyscifich[iscifi] = new TH2D(TString::Format("hxyscifich%i",iscifi),"2D distribution scifi channels;x[cm];y[cm]", nbinsx, xscifimin, xscifimax, nbinsy, yscifimin, yscifimax);
+   hnxscifich[iscifi] = new TH1D(TString::Format("hnxscifich%i",iscifi),"Number of hits per X channels",50,0, 50);
+   hnyscifich[iscifi] = new TH1D(TString::Format("hnyscifich%i",iscifi),"Number of hits per Y channels",50,0, 50);
+   hxscifich_event[iscifi] = new TH1D(TString::Format("hxscifich%i_event",iscifi),"X Distribution scifi channels per event;x[cm]", nbinsx, xscifimin, xscifimax);
+   hyscifich_event[iscifi] = new TH1D(TString::Format("hyscifich%i_event",iscifi),"Y Distribution scifi channels per event;y[cm]", nbinsy, yscifimin, yscifimax);
  }
  double scifihitz;
  int scifistation;
@@ -144,7 +144,7 @@ void store_nhits(){
  Double_t nu_vx, nu_vy, nu_vz;
  Double_t nu_px, nu_py, nu_pz;
  if (writescifihistograms){
-  histofile = new TFile((filepath+TString("scifihistos.root")).Data(),"RECREATE");
+  histofile = new TFile((filepath+TString("scifihistos_100events.root")).Data(),"RECREATE");
  }
  if (writetree){
   outputfile = new TFile((filepath+TString("nuhits_SND.root")).Data(),"RECREATE");
@@ -315,22 +315,25 @@ void store_nhits(){
  cmaxscifi->cd(2);
  hmaxscifiy->Draw();
 
+ TCanvas *cvz = new TCanvas();
+ hvz_first->Draw();
+
  if (writescifihistograms){ 
    gvxy_first->Write();
    hmaxscifix->Write();
    hmaxscifiy->Write();
+   //scaling histograms over number of neutrinos in first wall and saving them
+   for (int iscifi = 0; iscifi < nscifi; iscifi++){
+    hnxscifich[iscifi]->Scale(1./(n_neutrinos[0]));
+    hnyscifich[iscifi]->Scale(1./(n_neutrinos[0]));
+    hnxscifich[iscifi]->Write();
+    hnyscifich[iscifi]->Write(); 
+   }
  }
-
- TCanvas *cvz = new TCanvas();
- hvz_first->Draw();
-
- //scaling histograms over number of neutrinos in first wall and drawing them
  TCanvas *cnbins = new TCanvas();
  cnbins->Divide(1,2);
  cnbins->cd(1);
- hnxscifich[0]->Scale(1./(n_neutrinos[0]));
  hnxscifich[0]->Draw("histo");
  cnbins->cd(2);
- hnyscifich[0]->Scale(1./(n_neutrinos[0]));
  hnyscifich[0]->Draw("histo");
 } //end of main program
