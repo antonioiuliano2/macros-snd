@@ -20,6 +20,23 @@ bool CheckNeutrinoVertexPosition(TVector3 nu_vertex){
   else return false;
 }
 
+bool HitWithinNMoliere(double vx, double vy, double hitx, double hity){
+  const double W_RM = 0.9327; //Molière Radius in cm (https://pdg.lbl.gov/2020/AtomicNuclearProperties/HTML/tungsten_W.html)
+  const int Nmax_RM = 3;
+  double R_dist = TMath::Sqrt(pow(hitx - vx,2) + pow(hity - vy, 2));
+  if (R_dist < Nmax_RM * W_RM) return true;
+  else return false;
+}
+
+bool HitWithinNMoliere1D(double vx, double hitx){
+  const double W_RM = 0.9327; //Molière Radius in cm (https://pdg.lbl.gov/2020/AtomicNuclearProperties/HTML/tungsten_W.html)
+  const int Nmax_RM = 3;
+  double dist = hitx - vx;
+  if (TMath::Abs(dist) < Nmax_RM * W_RM) return true;
+  else return false;
+}
+
+
 int whichwall(double vz){
   const double zmin0 = -25.4750;
   const double zmax0 = -17.6850;
@@ -35,6 +52,8 @@ int whichwall(double vz){
   else if (vz < zmax3) return 3;
   else if (vz < zmax4) return 4;
   else return -1;
+
+  return -1; //even if redudant, needed to avoid warnings
 }
 
 int whichscifi(double scifihitz){
@@ -52,6 +71,8 @@ int whichscifi(double scifihitz){
   else if (scifihitz < zmax3) return 3;
   else if (scifihitz < zmax4) return 4;
   else return -1;
+
+  return -1; //even if redudant, needed to avoid warnings
 }
 
 void store_nhits(){
@@ -60,6 +81,7 @@ void store_nhits(){
  bool domuonloop = false;
  bool writetree = false;
  bool writescifihistograms = true;
+ bool require3moliere = true; //scifi hits are only stored if within 3 molière radii (Request by De Lellis)
  const int nmax1_nneutrinos = 100; //maximum number of SciFi hits in first wall
  //input files
  TString filepath("./");
@@ -96,7 +118,7 @@ void store_nhits(){
    hxscifich_event[iscifi] = new TH1D(TString::Format("hxscifich%i_event",iscifi),"X Distribution scifi channels per event;x[cm]", nbinsx, xscifimin, xscifimax);
    hyscifich_event[iscifi] = new TH1D(TString::Format("hyscifich%i_event",iscifi),"Y Distribution scifi channels per event;y[cm]", nbinsy, yscifimin, yscifimax);
  }
- double scifihitz;
+ double scifihitx, scifihity, scifihitz;
  int scifistation;
 
  TDatabasePDG *pdg = TDatabasePDG::Instance();
@@ -144,7 +166,7 @@ void store_nhits(){
  Double_t nu_vx, nu_vy, nu_vz;
  Double_t nu_px, nu_py, nu_pz;
  if (writescifihistograms){
-  histofile = new TFile((filepath+TString("scifihistos_100events.root")).Data(),"RECREATE");
+  histofile = new TFile((filepath+TString("scifihistos_100events_3moliere.root")).Data(),"RECREATE");
  }
  if (writetree){
   outputfile = new TFile((filepath+TString("nuhits_SND.root")).Data(),"RECREATE");
@@ -216,17 +238,26 @@ void store_nhits(){
    //*********************************START OF SCIFI HITS LOOP************************//
     for (const ScifiPoint& scifipoint:scifipoints){
      pdgcode = scifipoint.PdgCode();
+     scifihitx = scifipoint.GetX();
+     scifihity = scifipoint.GetY();
      scifihitz = scifipoint.GetZ();
+     bool withinevent = true;
+     //bool withinevent = HitWithinNMoliere(nu_vx, nu_vy, scifihitx, scifihity); //is the hit within three molère radii?
+     if (!require3moliere) withinevent = true; //if not asked, accept everything
+
      charge = GetParticleCharge(pdgcode, pdg);
-     if (TMath::Abs(charge) > 0.){
+     
+     if (TMath::Abs(charge) > 0. && withinevent){
        nscifihits++;
        scifistation = whichscifi(scifihitz);
        if(scifistation >= 0){ 
-         if (nu_wall == scifistation) hxyscifich[scifistation]->Fill(scifipoint.GetX(), scifipoint.GetY());
-         hxscifich_event[scifistation]->Fill(scifipoint.GetX());
-         hyscifich_event[scifistation]->Fill(scifipoint.GetY());
+         if (nu_wall == scifistation){ 
+           hxyscifich[scifistation]->Fill(scifihitx, scifihity);
+           hxscifich_event[scifistation]->Fill(scifihitx);
+           hyscifich_event[scifistation]->Fill(scifihity);
+         }
        }
-      hscifiyz->Fill(scifipoint.GetZ(), scifipoint.GetY());
+      hscifiyz->Fill(scifihitz, scifihity);
      }
     }  //*******************************END OF SCIFI HITS LOOP************************//
    }
@@ -248,18 +279,24 @@ void store_nhits(){
    if (doscifiloop){ //which is the most full scifi channel?
     int maxscifix = 0, maxscifiy = 0;
     for (int iscifi = 0; iscifi< nscifi; iscifi++){
+
       if (nu_wall != iscifi) continue; //filling only scifi at wall immediately after nu interaction!
+      
       if (hxscifich_event[iscifi]->GetMaximum() > maxscifix) maxscifix = hxscifich_event[iscifi]->GetMaximum();
       if (hyscifich_event[iscifi]->GetMaximum() > maxscifiy) maxscifiy = hxscifich_event[iscifi]->GetMaximum();
+      
       //loop over bins, how many per bin (tracks per channel), fraction over nchannels?
       for (int ibin = 1; ibin <= nbinsx; ibin++){ 
         int nx = hxscifich_event[iscifi]->GetBinContent(ibin);
-        hnxscifich[iscifi]->Fill(nx);
+        if (HitWithinNMoliere1D(nu_vx, hxscifich_event[iscifi]->GetBinCenter(ibin)) || !require3moliere) 
+         hnxscifich[iscifi]->Fill(nx);
       }
       for (int ibin = 1; ibin <= nbinsy; ibin++){
         int ny = hyscifich_event[iscifi]->GetBinContent(ibin);
-        hnyscifich[iscifi]->Fill(ny);
+        if (HitWithinNMoliere1D(nu_vy, hyscifich_event[iscifi]->GetBinCenter(ibin)) || !require3moliere) 
+         hnyscifich[iscifi]->Fill(ny);
       }
+
     }
     if(nu_wall == 0){
      hmaxscifix->Fill(maxscifix);
