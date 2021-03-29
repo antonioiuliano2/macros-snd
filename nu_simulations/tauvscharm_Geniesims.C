@@ -79,8 +79,8 @@ ROOT::RVec<double> angledifferencewitharray(double ang1, ROOT::RVec<double> ang2
 //get array content for charm
 void tauvscharm_Geniesims(){
     //****************************tau (signal)***************************************
-    ROOT::RDataFrame dftau("gst","/home/utente/Simulations/sim_snd/GenieEvents_SNDAcceptance/CCDIS/nutau/nutau_CCDIS_FairShip.root"); 
-
+    //ROOT::RDataFrame dftau("gst","/home/utente/Simulations/sim_snd/GenieEvents_SNDAcceptance/CCDIS/nutau/nutau_CCDIS_FairShip.root"); 
+    ROOT::RDataFrame dftau("gst","/home/utente/Simulations/GenieEventsSHiP/GenieEvents_12_19/CCDIS/nu_tau/genie-nu_tau.root");
     auto dftau1 = dftau.Define("phil","TMath::ATan2(pyl,pxl)");
 
     //computing phi for each particle, deltaphi with respect to charm/tau
@@ -117,7 +117,8 @@ void tauvscharm_Geniesims(){
     auto dftau_final = dftau11.Define("deltaphi_det",angledifference,{"phil_det","phif_tot_det"});
 
     //****************************charm (background) (charm is NOT always pdgf[0], we add a step to find its momenta)*********************************
-    ROOT::RDataFrame dfcharm("gst","/home/utente/Simulations/sim_snd/GenieEvents_SNDAcceptance/CharmCCDIS/numu/numu_CharmCCDIS_FairShip.root");
+    //ROOT::RDataFrame dfcharm("gst","/home/utente/Simulations/sim_snd/GenieEvents_SNDAcceptance/CharmCCDIS/numu/numu_CharmCCDIS_FairShip.root");
+    ROOT::RDataFrame dfcharm("gst","/home/utente/Simulations/GenieEventsSHiP/GenieEvents_12_19/CharmCCDIS/nu_mu/genie-nu_mu.root");
 
     auto dfcharm0 = dfcharm.Define("phif","atan2(pyf,pxf)");
     //find charm momentum 
@@ -159,15 +160,15 @@ void tauvscharm_Geniesims(){
     auto dfcharm_final = dfcharm12.Define("deltaphi_det",angledifference,{"phicharm_det","phif_tot_det"});
 
     //drawing histograms
-    auto hdeltaphitau = dftau_final.Define("deltaphi_deg","deltaphi * TMath::RadToDeg()")
-                                   .Histo1D({"hdeltaphitau","Phi difference Tau;#Delta#phi[rad]",72,-180,180},"deltaphi_deg");
-    auto hdeltaphicharm = dfcharm_final.Define("deltaphi_deg","deltaphi * TMath::RadToDeg()")
-                                       .Histo1D({"hdeltaphicharm","Phi difference Charm;#Delta#phi[rad]",72,-180,180},"deltaphi_deg");
+    auto hdeltaphitau = dftau_final.Define("deltaphi_deg","TMath::Abs(deltaphi * TMath::RadToDeg())")
+                                   .Histo1D({"hdeltaphitau","Phi difference Tau;#Delta#phi[rad]",60,0,180},"deltaphi_deg");
+    auto hdeltaphicharm = dfcharm_final.Define("deltaphi_deg","TMath::Abs(deltaphi * TMath::RadToDeg())")
+                                       .Histo1D({"hdeltaphicharm","Phi difference Charm;#Delta#phi[rad]",60,0,180},"deltaphi_deg");
 
-    auto hdeltaphitau_det = dftau_final.Define("deltaphi_det_deg","deltaphi_det * TMath::RadToDeg()")
-                                       .Histo1D({"hdeltaphitau_det","Realistic Phi difference Tau;#Delta#phi[rad]",72,-180,180},"deltaphi_det_deg");
-    auto hdeltaphicharm_det = dfcharm_final.Define("deltaphi_det_deg","deltaphi_det * TMath::RadToDeg()")
-                                           .Histo1D({"hdeltaphicharm_det","Realistic Phi difference Charm;#Delta#phi[rad]",72,-180,180},"deltaphi_det_deg");
+    auto hdeltaphitau_det = dftau_final.Define("deltaphi_det_deg","TMath::Abs(deltaphi_det * TMath::RadToDeg())")
+                                       .Histo1D({"hdeltaphitau_det","Realistic Phi difference Tau;#Delta#phi[rad]",60,0,180},"deltaphi_det_deg");
+    auto hdeltaphicharm_det = dfcharm_final.Define("deltaphi_det_deg","TMath::Abs(deltaphi_det * TMath::RadToDeg())")
+                                           .Histo1D({"hdeltaphicharm_det","Realistic Phi difference Charm;#Delta#phi[rad]",60,0,180},"deltaphi_det_deg");
 
     TCanvas *cdeltaphi = new TCanvas();
     hdeltaphitau->SetLineColor(kRed);
