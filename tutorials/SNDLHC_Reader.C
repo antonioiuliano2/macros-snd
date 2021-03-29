@@ -3,6 +3,9 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include "TDatabasePDG.h"
+#include <iostream>
+using namespace std;
 
 double GetParticleCharge (int pdgcode, TDatabasePDG *pdg){
   //from PDG, get charge
