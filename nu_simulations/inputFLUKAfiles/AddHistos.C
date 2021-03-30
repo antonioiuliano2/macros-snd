@@ -4,17 +4,17 @@ using namespace TMath;
 
 void AddHistos(string fname)
 {
-	TH1F *h_1014 = new TH1F("1014","nu_mu",250,0,5000);
+	TH1F *h_1014 = new TH1F("1014","nu_mu",500,0,5000);
 	TH2F *h_1214 = new TH2F("1214","nu_mu log10(ptot) vs log10(pt+0.01)",200,0,4,200,-4.,1.);
-	TH1F *h_1012 = new TH1F("1012","nu_e",250,0,5000);
+	TH1F *h_1012 = new TH1F("1012","nu_e",500,0,5000);
 	TH2F *h_1212 = new TH2F("1212","nu_e log10(ptot) vs log10(pt+0.01)",200,0,4,200,-4.,1.);
-	TH1F *h_1016 = new TH1F("1016","#nu_{#tau}",250,0,5000);
+	TH1F *h_1016 = new TH1F("1016","#nu_{#tau}",500,0,5000);
 	TH2F *h_1216 = new TH2F("1216","#nu_{#tau} log10(ptot) vs log10(pt+0.01)",200,0,4,200,-4.,1.);
-	TH1F *h_2014 = new TH1F("2014","#bar{#nu}_{#mu}",250,0,5000);
+	TH1F *h_2014 = new TH1F("2014","#bar{#nu}_{#mu}",500,0,5000);
 	TH2F *h_2214 = new TH2F("2214","#bar{#nu}_{#mu} log10(ptot) vs log10(pt+0.01)",200,0,4,200,-4.,1.);
-	TH1F *h_2012 = new TH1F("2012","#bar{#nu}_{e}",250,0,5000);
+	TH1F *h_2012 = new TH1F("2012","#bar{#nu}_{e}",500,0,5000);
 	TH2F *h_2212 = new TH2F("2212","#bar{#nu}_{e} log10(ptot) vs log10(pt+0.01)",200,0,4,200,-4.,1.);
-	TH1F *h_2016 = new TH1F("2016","#bar{#nu}_{#tau}",250,0,5000);
+	TH1F *h_2016 = new TH1F("2016","#bar{#nu}_{#tau}",500,0,5000);
 	TH2F *h_2216 = new TH2F("2216","#bar{#nu}_{#tau} log10(ptot) vs log10(pt+0.01)",200,0,4,200,-4.,1.);
 
 
