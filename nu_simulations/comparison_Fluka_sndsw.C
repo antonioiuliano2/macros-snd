@@ -1,6 +1,6 @@
 //compare original neutrino distributions from FLUKA with distributions from sndsw
 void makenutree(){
- TString path("/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_SND_9_March_2021/");
+ TString path("/afs/cern.ch/work/a/aiuliano/public/sim_snd/500bins_numusimulation/2/");
  TFile *simfile = TFile::Open((path+TString("ship.conical.Genie-TGeant4.root")).Data());
  TTreeReader reader("cbmsim",simfile);
 
@@ -66,7 +66,7 @@ void comparison_Fluka_sndsw(){
  auto hppt_fluka = FLUKAsim_full.Define("log10ptot","log10(Ekin.EKin)").Define("log10pt","log10(pt+0.01)")
                                 .Histo2D({"hppt_fluka","Neutrinos ppt distribution from FLUKA;log10(ptot);log10(pt+0.01)",200,0,4,200,-4.,1.},"log10ptot","log10pt","weight");
  //***********************sndsw simulation**********************
- ROOT::RDataFrame SNDSWsim("neutrinos","/eos/user/a/aiuliano/public/sims_FairShip/sim_snd/numuCCDIS_SND_9_March_2021/onlyneutrinos.root");
+ ROOT::RDataFrame SNDSWsim("neutrinos","/afs/cern.ch/work/a/aiuliano/public/sim_snd/500bins_numusimulation/2/onlyneutrinos.root");
  //computing cosine x and cosine y
  auto SNDSWsim_full = SNDSWsim.Define("nup","sqrt(nupx*nupx + nupy*nupy + nupz*nupz)")
                       .Define("nupt","sqrt(nupx*nupx + nupy*nupy)")
@@ -76,7 +76,7 @@ void comparison_Fluka_sndsw(){
  auto hxy_sndsw = SNDSWsim_full.Histo2D({"hxy_sndsw","Neutrinos xy distribution from SNDSW;x[cm];y[cm]",200,-100,100,200,-100,100},"nux","nuy");
  auto hcosxy_sndsw = SNDSWsim_full.Histo2D({"hcosxy_sndsw","Neutrino angles from SNDSW;x_cos;y_cos",400,-0.2,0.2,400,-0.2,0.2},"nux_cos","nuy_cos");
  auto hppt_sndsw = SNDSWsim_full.Define("log10ptot","log10(nup)").Define("log10pt","log10(nupt+0.01)")
-                                .Histo2D({"hppt_sndsw","Neutrinos ppt distribution from SNDSW;log10(ptot);log10(pt+0.01)",200,0,4,200,-4,1},"log10ptot","log10pt");
+   .Histo2D({"hppt_sndsw","Neutrinos ppt distribution from SNDSW;log10(ptot);log10(pt+0.01)",200,0,4,200,-4,1},"log10ptot","log10pt");
  //***********************plotting histograms*******************
  TCanvas *c = new TCanvas();
  hxy_fluka->DrawClone();
