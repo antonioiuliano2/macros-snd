@@ -1,7 +1,7 @@
-//Computing cross section as Egenie/Efluka. 28 April 2021
+//Computing cross section as Egenie/Efluka. 28 April 2021. NOw saving in the same file interacting neutrino files
 
 void compute_crosssection(){
- TFile *geniefile = TFile::Open("/home/utente/Simulations/sim_snd/testing_SND_workflow/numu_CCDIS_test.root");
+ TFile *geniefile = TFile::Open("/home/utente/Simulations/sim_snd/testing_SND_workflow/numu_CCDIS_test.root","UPDATE");
  TFile *flukafile = TFile::Open("/home/utente/Simulations/sim_snd/testing_SND_workflow/NeutMuon.root");
 
  //getting distributions
@@ -30,9 +30,10 @@ void compute_crosssection(){
  //starting hit or miss section
  double maxratio = hnuratio->GetMaximum();
 
- TFile *output_nufile = new TFile("NeutMuon_interacted.root","RECREATE");
  TTree *fluka_nutree = (TTree*) flukafile->Get("t");
  TTree *output_nutree = fluka_nutree->CloneTree(0);
+ output_nutree->SetName("fluka_neutrinos_selected");
+ output_nutree->SetTitle("Neutrinos from Fluka simulation after hit and miss selection");
 
  //setting branch of tree for neutrino energy, the one I need for this session
  double Ekin;
@@ -51,9 +52,9 @@ void compute_crosssection(){
 
  }
  //writing tree, closing file
- output_nufile->cd();
+ geniefile->cd();
  output_nutree->Write();
- output_nufile->Close();
+ geniefile->Close();
 
 
 }
