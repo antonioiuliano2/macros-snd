@@ -77,11 +77,11 @@ int whichscifi(double scifihitz){
 
 void store_nhits(){
  // what do we need to do?
- bool doscifiloop = true;
+ bool doscifiloop = false;
  bool domuonloop = false;
- bool writetree = false;
- bool writescifihistograms = true;
- bool require3moliere = true; //scifi hits are only stored if within 3 molière radii (Request by De Lellis)
+ bool writetree = true;
+ bool writescifihistograms = false;
+ bool require3moliere = false; //scifi hits are only stored if within 3 molière radii (Request by De Lellis)
  const int nmax1_nneutrinos = 100; //maximum number of SciFi hits in first wall
  //input files
  TString filepath("./");
@@ -165,6 +165,10 @@ void store_nhits(){
  Int_t MCEventID;
  Double_t nu_vx, nu_vy, nu_vz;
  Double_t nu_px, nu_py, nu_pz;
+ 
+ Int_t itrack;
+ Double_t l_px, l_py, l_pz;
+ Int_t prim_leptonid;
  if (writescifihistograms){
   histofile = new TFile((filepath+TString("scifihistos_100events_3moliere.root")).Data(),"RECREATE");
  }
@@ -181,12 +185,19 @@ void store_nhits(){
   outputtree->Branch("nu_vx",&nu_vx, "nu_vx/D");
   outputtree->Branch("nu_vy",&nu_vy, "nu_vy/D");
   outputtree->Branch("nu_vz",&nu_vz, "nu_vz/D");
+  //primary lepton momenta
+  outputtree->Branch("l_px",&l_px, "l_px/D");
+  outputtree->Branch("l_py",&l_py, "l_py/D");
+  outputtree->Branch("l_pz",&l_pz, "l_pz/D");
+  outputtree->Branch("l_ID",&prim_leptonid, "l_ID/I");
   //event weigth
   outputtree->Branch("weight",&weight,"weight/D");
  
   outputtree->Branch("nmufilterhits",&nmufilterhits, "nmufilterhits/I");
   outputtree->Branch("nscifihits",&nscifihits, "nscifihits/I");
  }
+
+ ROOT::RVec<int> signalpdgs = {11,13,15};
   //***********************************START OF MAIN LOOP*************************//
  for(int ientry = 0;ientry<nentries;ientry++){
   
@@ -194,6 +205,8 @@ void store_nhits(){
    //resetting counters
    nscifihits = 0;
    nmufilterhits = 0;
+   prim_leptonid = -1;
+   itrack = 0;
 
    //clearing scifi histograms per event
    for (int iscifi = 0; iscifi < nscifi; iscifi++){
@@ -232,8 +245,17 @@ void store_nhits(){
    if (nu_wall >= 0) n_neutrinos[nu_wall]++;
 
    //*********************************START OF TRACKS LOOP************************//
-   /*for (const ShipMCTrack& track: tracks){ 
-   }*/ //**************************++*****END OF TRACKS LOOP**************************//
+   for (const ShipMCTrack& track: tracks){
+    pdgcode = track.GetPdgCode();
+    int nprimaryleptons = signalpdgs[signalpdgs==TMath::Abs(pdgcode)].size(); //is this the primary lepton?
+    if ( nprimaryleptons > 0 && track.GetMotherId()==0 && prim_leptonid < 0){
+      prim_leptonid = itrack; //storing the index for possible later usage
+      l_px = track.GetPx();
+      l_py = track.GetPy();
+      l_pz = track.GetPz();
+    }
+    itrack++;  
+   } //**************************++*****END OF TRACKS LOOP**************************//
    if(doscifiloop){
    //*********************************START OF SCIFI HITS LOOP************************//
     for (const ScifiPoint& scifipoint:scifipoints){
