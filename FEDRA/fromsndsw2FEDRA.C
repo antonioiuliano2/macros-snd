@@ -12,9 +12,9 @@ bool efficiency(const float emuefficiency);
 bool efficiency(const float tantheta, TH1D * emuefficiency);
 
 //start script
-void fromFairShip2Fedra(){
+void fromsndsw2FEDRA(){
  
- fromFairShip2Fedra("ship.conical.PG_11-TGeant4.root");
+ fromsndsw2FEDRA("sndLHC.Genie-TGeant4.root");
 }
 
 void set_default(TEnv &cenv){ //setting default parameters, if not presents from file
