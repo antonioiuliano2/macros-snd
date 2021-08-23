@@ -201,7 +201,7 @@ void store_nhits(){
   //***********************************START OF MAIN LOOP*************************//
  for(int ientry = 0;ientry<nentries;ientry++){
   
-   if (n_neutrinos[0] >= nmax1_nneutrinos) break; //Antonia asked only for 100 neutrinos in wall1 
+   //if (n_neutrinos[0] >= nmax1_nneutrinos) break; //Antonia asked only for 100 neutrinos in wall1 
    //resetting counters
    nscifihits = 0;
    nmufilterhits = 0;
