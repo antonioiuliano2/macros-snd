@@ -11,6 +11,8 @@ void smearing (Float_t &TX, Float_t &TY, const float angres);
 bool efficiency(const float emuefficiency);
 bool efficiency(const float tantheta, TH1D * emuefficiency);
 
+int FindBrick(Float_t hitX, Float_t hitY, Float_t hitz); //returning which brick the hit belongs to;
+
 //start script
 void fromsndsw2FEDRA(){
  
@@ -18,8 +20,8 @@ void fromsndsw2FEDRA(){
 }
 
 void set_default(TEnv &cenv){ //setting default parameters, if not presents from file
- cenv.SetValue("FairShip2Fedra.nbrick",1);//to set b00000%i number
- cenv.SetValue("FairShip2Fedra.nplates",29);
+ cenv.SetValue("FairShip2Fedra.nbricks",20);//5 walls in 2x2 configuration
+ cenv.SetValue("FairShip2Fedra.nplates",60);
  cenv.SetValue("FairShip2Fedra.nevents",10000); // number of events to be passed to FEDRA
  cenv.SetValue("FairShip2Fedra.useefficiencymap",0);
  cenv.SetValue("FairShip2Fedra.emuefficiency",0.85); //only if useefficiency map is set to false
@@ -45,7 +47,7 @@ void fromFairShip2Fedra(TString filename){
  //getting options from file
  const Int_t nevents = cenv.GetValue("FairShip2Fedra.nevents",10000);
  const int nplates = cenv.GetValue("FairShip2Fedra.nplates",60);
- int nbrick = cenv.GetValue("FairShip2Fedra.nbrick",1); // to set b00000%i number
+ int nbricks = cenv.GetValue("FairShip2Fedra.nbricks",20); // to set b00000%i number
 
  float angres = cenv.GetValue("FairShip2Fedra.angres",0.003); //Used cases: 3, 5milliradians. Constant value overwritten if useresfunction=true
  float minmomentum = cenv.GetValue("FairShip2Fedra.minmomentum",0.1);
@@ -80,11 +82,13 @@ void fromFairShip2Fedra(TString filename){
  int trackID = 0, motherID = 0, pdgcode = 0;
  // ***********************CREATING FEDRA TREES**************************
  gInterpreter->AddIncludePath("/afs/cern.ch/work/a/aiuliano/public/fedra/include");
- EdbCouplesTree *ect[nplates];
- for (int i = 1; i <= nplates; i++){
-  ect[i-1] = new EdbCouplesTree();
-  if (i <10) ect[i-1]->InitCouplesTree("couples",Form("b00000%i/p00%i/%i.%i.0.0.cp.root",nbrick,i,nbrick,i),"RECREATE");
-  else ect[i-1]->InitCouplesTree("couples",Form("b00000%i/p0%i/%i.%i.0.0.cp.root",nbrick,i,nbrick,i),"RECREATE");
+ EdbCouplesTree *ect[nbricks][nplates]; //2D array->which brick and which plate?
+ for (int nbrick=1; nbrick <= nbricks; nbrick++){
+  for (int i = 1; i <= nplates; i++){
+   ect[nbrick-1][i-1] = new EdbCouplesTree();
+   if (i <10) ect[nbrick-1][i-1]->InitCouplesTree("couples",Form("b00000%i/p00%i/%i.%i.0.0.cp.root",nbrick,i,nbrick,i),"RECREATE");
+   else ect[nbrick-1][i-1]->InitCouplesTree("couples",Form("b00000%i/p0%i/%i.%i.0.0.cp.root",nbrick,i,nbrick,i),"RECREATE");
+  }
  }
  Int_t Flag = 1;
  cout<<"Start processing nevents: "<<nevents<<endl;  
@@ -124,6 +128,7 @@ void fromFairShip2Fedra(TString filename){
       charge = 0.;
       mass = 0.;
       }
+     nbrickhit = FindBrick(emupoint.GetX(), emupoint.GetY(), emupoint.GetZ());
      nfilmhit = emupoint.GetDetectorID(); //getting number of the film
      double kinenergy = TMath::Sqrt(pow(mass,2)+pow(momentum,2)) - mass;
      // *************EXCLUDE HITS FROM BEING SAVED*******************
@@ -143,21 +148,23 @@ void fromFairShip2Fedra(TString filename){
      }
      // **************SAVING HIT IN FEDRA BASE-TRACKS****************
      if (savehit){        
-      ect[nfilmhit-1]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
-      ect[nfilmhit-1]->eS->SetMC(ievent, trackID); //objects used to store MC true information
+      ect[nbrickhit][nfilmhit-1]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
+      ect[nbrickhit][nfilmhit-1]->eS->SetMC(ievent, trackID); //objects used to store MC true information
       //ect[nfilmhit-1]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
-      ect[nfilmhit-1]->eS->SetP(momentum);
-      ect[nfilmhit-1]->eS->SetFlag(pdgcode); //forcing viewID[0] member to store pdgcode information
-      ect[nfilmhit-1]->eS->SetW(ngrains); //need a high weight to do tracking
-      ect[nfilmhit-1]->Fill();
+      ect[nbrickhit][nfilmhit-1]->eS->SetP(momentum);
+      ect[nbrickhit][nfilmhit-1]->eS->SetFlag(pdgcode); //forcing viewID[0] member to store pdgcode information
+      ect[nbrickhit][nfilmhit-1]->eS->SetW(ngrains); //need a high weight to do tracking
+      ect[nbrickhit][nfilmhit-1]->Fill();
       ihit++; //hit entry, increasing as the tree is filled        
       }
      }//end of loop on emulsion points
     ievent++;
    } //end of loop on tree
+ for (int nbrick=0; nbrick < nbricks; nbrick++){
   for (int iplate = 0; iplate < nplates; iplate++){
-   ect[iplate]->Write();  
-   ect[iplate]->Close();  
+   ect[nbrick][iplate]->Write();  
+   ect[nbrick][iplate]->Close();  
+  }
  }
  cout<<"end of script, saving rootrc wih used parameters"<<endl;
  cenv.WriteFile("FairShip2Fedra.save.rootrc");
@@ -189,3 +196,28 @@ bool efficiency(const float tantheta, TH1D * emuefficiency){ //for now, just a c
 /*
 script ispirato a void ReadGEMdata da parte di Annarita
 */
+
+int FindBrick(Float_t hitX, Float_t hitY, Float_t hitz){
+  float xborder = -27.5; //arbitrary, but accurate enough to separate the bricks
+  float yborder = 35.1;
+  int nx, ny, nz;
+  if (hitX < xborder) nx = 0;
+  else nx = 1;
+  if (hitY < yborder) ny = 0;
+  else ny = 1; 
+
+  float z1 = -16;
+  float z2 = -6;
+  float z3 = 6;
+  float z4 = 16;
+
+  if (hitZ < z1) nz = 0;
+  else if(hitZ < z2) nz = 1;
+  else if(hitZ < z3) nz = 2;
+  else if(hitZ < z4) nz = 3;
+  else nz=4;
+
+
+  int nbrick = nx + ny*2 + 10 * nz;
+  return nbrick;
+} //possible numbers: 0, 1, 2, 3, 10,11,12,13, 20,21,22,23, 30,31,32,33, 40,41,42,43
