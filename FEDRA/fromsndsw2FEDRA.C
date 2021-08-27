@@ -6,12 +6,12 @@
 #include <TROOT.h>
 #include "TRandom.h"
 
-void fromFairShip2Fedra(TString filename);
+void fromsndsw2FEDRA(TString filename);
 void smearing (Float_t &TX, Float_t &TY, const float angres);
 bool efficiency(const float emuefficiency);
 bool efficiency(const float tantheta, TH1D * emuefficiency);
 
-int FindBrick(Float_t hitX, Float_t hitY, Float_t hitz); //returning which brick the hit belongs to;
+int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ); //returning which brick the hit belongs to;
 
 //start script
 void fromsndsw2FEDRA(){
@@ -38,7 +38,7 @@ using namespace TMath;
 TRandom3 *grandom = new TRandom3(); //creating every time a TRandom3 is a bad idea
 TFile *file = NULL;
 TH1D *heff = NULL ; //efficiency at different angles
-void fromFairShip2Fedra(TString filename){
+void fromsndsw2FEDRA(TString filename){
  grandom->SetSeed(0);
 
  TEnv cenv("FairShip2Fedra");
@@ -47,7 +47,7 @@ void fromFairShip2Fedra(TString filename){
  //getting options from file
  const Int_t nevents = cenv.GetValue("FairShip2Fedra.nevents",10000);
  const int nplates = cenv.GetValue("FairShip2Fedra.nplates",60);
- int nbricks = cenv.GetValue("FairShip2Fedra.nbricks",20); // to set b00000%i number
+ const int nbricks = cenv.GetValue("FairShip2Fedra.nbricks",20); // to set b00000%i number
 
  float angres = cenv.GetValue("FairShip2Fedra.angres",0.003); //Used cases: 3, 5milliradians. Constant value overwritten if useresfunction=true
  float minmomentum = cenv.GetValue("FairShip2Fedra.minmomentum",0.1);
@@ -77,18 +77,17 @@ void fromFairShip2Fedra(TString filename){
  Float_t tx = 0, ty=0, xem= 0, yem = 0;
  //const Int_t nevents = reader.GetTree()->GetEntries();
  int ihit = 0, ievent = 0;
- int nfilmhit = 0;
+ int nfilmhit = 0, nbrickhit = 0;
  float tantheta, momentum;
  int trackID = 0, motherID = 0, pdgcode = 0;
  // ***********************CREATING FEDRA TREES**************************
  gInterpreter->AddIncludePath("/afs/cern.ch/work/a/aiuliano/public/fedra/include");
  EdbCouplesTree *ect[nbricks][nplates]; //2D array->which brick and which plate?
- for (int nbrick=1; nbrick <= nbricks; nbrick++){
-  for (int i = 1; i <= nplates; i++){
+ int brickIDs[20] = {1,2,3,4,11,12,13,14,21,22,23,24,31,32,33,34,41,42,43,44};
+ int nbrick = 12;
+ for (int i = 1; i <= nplates; i++){
    ect[nbrick-1][i-1] = new EdbCouplesTree();
-   if (i <10) ect[nbrick-1][i-1]->InitCouplesTree("couples",Form("b00000%i/p00%i/%i.%i.0.0.cp.root",nbrick,i,nbrick,i),"RECREATE");
-   else ect[nbrick-1][i-1]->InitCouplesTree("couples",Form("b00000%i/p0%i/%i.%i.0.0.cp.root",nbrick,i,nbrick,i),"RECREATE");
-  }
+   ect[nbrick-1][i-1]->InitCouplesTree("couples",Form("b0000%02i/p0%02i/%i.%i.0.0.cp.root",brickIDs[nbrick-1],i,brickIDs[nbrick-1],i),"RECREATE"); //i learned padding with %0i
  }
  Int_t Flag = 1;
  cout<<"Start processing nevents: "<<nevents<<endl;  
@@ -97,7 +96,7 @@ void fromFairShip2Fedra(TString filename){
  for (int i = 0; i < nevents; i++){
   if (i%1000==0) cout<<"processing event "<<i<<" out of "<<nevents<<endl;
   reader.Next();
-   for (const EmuDESYPoint& emupoint:emulsionhits){   
+   for (const EmulsionDetPoint& emupoint:emulsionhits){   
      bool savehit = true; //by default I save all hits
 //no you don't want to do this//     if (j % 2 == 0) continue;
      momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
@@ -111,8 +110,8 @@ void fromFairShip2Fedra(TString filename){
      xem = emupoint.GetX();
      yem = emupoint.GetY();
 
-     xem = xem* 1E+4 + 62500;
-     yem = yem* 1E+4 + 49500;         
+     xem = xem* 1E+4 + 473000;
+     yem = yem* 1E+4 - 158000;         
      
      tx = emupoint.GetPx()/emupoint.GetPz();
      ty = emupoint.GetPy()/emupoint.GetPz();  
@@ -129,7 +128,8 @@ void fromFairShip2Fedra(TString filename){
       mass = 0.;
       }
      nbrickhit = FindBrick(emupoint.GetX(), emupoint.GetY(), emupoint.GetZ());
-     nfilmhit = emupoint.GetDetectorID(); //getting number of the film
+     if(nbrickhit+1 != nbrick) savehit = false; //saving only one brick at the time
+     nfilmhit = emupoint.GetDetectorID(); //getting number of the film, currently it
      double kinenergy = TMath::Sqrt(pow(mass,2)+pow(momentum,2)) - mass;
      // *************EXCLUDE HITS FROM BEING SAVED*******************
      if (nfilmhit > 1000) savehit = false;
@@ -147,25 +147,23 @@ void fromFairShip2Fedra(TString filename){
       smearing(tx,ty,angres);
      }
      // **************SAVING HIT IN FEDRA BASE-TRACKS****************
-     if (savehit){        
-      ect[nbrickhit][nfilmhit-1]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
-      ect[nbrickhit][nfilmhit-1]->eS->SetMC(ievent, trackID); //objects used to store MC true information
+     if (savehit){       
+      ect[nbrickhit][nfilmhit]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
+      ect[nbrickhit][nfilmhit]->eS->SetMC(ievent, trackID); //objects used to store MC true information
       //ect[nfilmhit-1]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
-      ect[nbrickhit][nfilmhit-1]->eS->SetP(momentum);
-      ect[nbrickhit][nfilmhit-1]->eS->SetFlag(pdgcode); //forcing viewID[0] member to store pdgcode information
-      ect[nbrickhit][nfilmhit-1]->eS->SetW(ngrains); //need a high weight to do tracking
-      ect[nbrickhit][nfilmhit-1]->Fill();
+      ect[nbrickhit][nfilmhit]->eS->SetP(momentum);
+      ect[nbrickhit][nfilmhit]->eS->SetFlag(pdgcode); //forcing viewID[0] member to store pdgcode information
+      ect[nbrickhit][nfilmhit]->eS->SetW(ngrains); //need a high weight to do tracking
+      ect[nbrickhit][nfilmhit]->Fill();
       ihit++; //hit entry, increasing as the tree is filled        
       }
      }//end of loop on emulsion points
     ievent++;
    } //end of loop on tree
- for (int nbrick=0; nbrick < nbricks; nbrick++){
   for (int iplate = 0; iplate < nplates; iplate++){
-   ect[nbrick][iplate]->Write();  
-   ect[nbrick][iplate]->Close();  
+   ect[nbrick-1][iplate]->Write();  
+   ect[nbrick-1][iplate]->Close();  
   }
- }
  cout<<"end of script, saving rootrc wih used parameters"<<endl;
  cenv.WriteFile("FairShip2Fedra.save.rootrc");
 }
@@ -197,7 +195,7 @@ bool efficiency(const float tantheta, TH1D * emuefficiency){ //for now, just a c
 script ispirato a void ReadGEMdata da parte di Annarita
 */
 
-int FindBrick(Float_t hitX, Float_t hitY, Float_t hitz){
+int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ){
   float xborder = -27.5; //arbitrary, but accurate enough to separate the bricks
   float yborder = 35.1;
   int nx, ny, nz;
