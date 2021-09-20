@@ -37,7 +37,7 @@ void read_pythia_ntuple(){
     // Particles are saved as a TParticle class
     // Nu_tau history is saved in Ancstr branch
     // The nu_tau itself is the 0th entry in each branch of TParticles
-    TFile *f = new TFile("/path-to-file/*.root");
+    TFile *f = new TFile("pythia8_hard_PDFpset13.root"); //home/utente/Simulations/sim_snd/pythia8_hard_PDFpfset13.root
     TTree *t1 = (TTree*)f->Get("NuTauTree");
     TParticle *part;
     TClonesArray *ancstr = new TClonesArray("TParticle"); //The branch is a collection of TParticles
@@ -58,6 +58,8 @@ void read_pythia_ntuple(){
     bool isD = false, isB = false;
     double eta{};
     double Tofb=10e-12;
+
+    const double xsecangle = 150e-6;
     
     //read all entries and fill the histograms
     int nentries = t1->GetEntries();
@@ -72,6 +74,14 @@ void read_pythia_ntuple(){
       //start loop over particles, nothing currently done
       for(int j=0; j<nparts;j++){
         part=(TParticle*)ancstr->At(j);
+        TVector3 *partmomentum = new TVector3(part->Px(),part->Py(),part->Pz());
+       // cout<<"Before rotation"<<endl;
+       // cout<<i<<" "<<j<<" "<<part->GetPdgCode()<<" "<<partmomentum->Px()<<" "<<partmomentum->Py()<<" "<<partmomentum->Pz()<<endl;
+        double origpz = partmomentum->Pz();
+        partmomentum->RotateX(xsecangle);
+       // cout<<"After rotation"<<endl;
+       // cout<<i<<" "<<j<<" "<<part->GetPdgCode()<<" "<<partmomentum->Px()<<" "<<partmomentum->Py()<<" "<<partmomentum->Pz()<<endl;
+       // cout<<"Delta z: "<<partmomentum->Pz() - origpz<<endl;
         //cout<<j<<" id "<<part->GetPdgCode()<<endl;
       }	
       part=(TParticle*)ancstr->At(1); //checking particle ID
@@ -97,7 +107,6 @@ void read_pythia_ntuple(){
     }
     hn->Write();
     hXY->Write();
-    hXY_480->Write();
     hZ->Write();
     TCanvas *c1 =new TCanvas();
     hnE->Draw("coltz");
