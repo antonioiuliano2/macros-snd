@@ -22,7 +22,7 @@ void fromsndsw2FEDRA(){
 void set_default(TEnv &cenv){ //setting default parameters, if not presents from file
  cenv.SetValue("FairShip2Fedra.nbricks",20);//5 walls in 2x2 configuration
  cenv.SetValue("FairShip2Fedra.nplates",60);
- cenv.SetValue("FairShip2Fedra.nevents",10000); // number of events to be passed to FEDRA
+ //cenv.SetValue("FairShip2Fedra.nevents",10000); // number of events to be passed to FEDRA
  cenv.SetValue("FairShip2Fedra.useefficiencymap",0);
  cenv.SetValue("FairShip2Fedra.emuefficiency",0.85); //only if useefficiency map is set to false
  cenv.SetValue("FairShip2Fedra.dosmearing",1);
@@ -45,7 +45,7 @@ void fromsndsw2FEDRA(TString filename){
  set_default(cenv);
  cenv.ReadFile("FairShip2Fedra.rootrc" ,kEnvLocal);
  //getting options from file
- const Int_t nevents = cenv.GetValue("FairShip2Fedra.nevents",10000);
+ //const Int_t nevents = cenv.GetValue("FairShip2Fedra.nevents",10000);
  const int nplates = cenv.GetValue("FairShip2Fedra.nplates",60);
  const int nbricks = cenv.GetValue("FairShip2Fedra.nbricks",20); // to set b00000%i number
 
@@ -64,15 +64,6 @@ void fromsndsw2FEDRA(TString filename){
   file = TFile::Open("efficiency_alltracks.root");
   heff = (TH1D*) file->Get("heff");
  }
- // **********************OPENING INPUT FILE***************************
- TFile * inputfile = TFile::Open(filename.Data());
-
- if (!inputfile) return;
-
- //getting tree and arrays
- TTreeReader reader("cbmsim",inputfile);
- TTreeReaderArray<ShipMCTrack> tracks(reader,"MCTrack");
- TTreeReaderArray<EmulsionDetPoint> emulsionhits(reader,"EmulsionDetPoint");
  
  Float_t tx = 0, ty=0, xem= 0, yem = 0;
  //const Int_t nevents = reader.GetTree()->GetEntries();
@@ -84,26 +75,62 @@ void fromsndsw2FEDRA(TString filename){
  gInterpreter->AddIncludePath("/afs/cern.ch/work/a/aiuliano/public/fedra/include");
  EdbCouplesTree *ect[nbricks][nplates]; //2D array->which brick and which plate?
  int brickIDs[20] = {1,2,3,4,11,12,13,14,21,22,23,24,31,32,33,34,41,42,43,44};
- int nbrick = 12;
+
+ TH1I *hbrickID = new TH1I("hbrickID","ID of brick where neutrino interaction happened;brickID",50,0,50);
+
+ int nbrick = 11; //from 0 to 19
+ cout<<"Now converting brick number "<<brickIDs[nbrick]<<endl;
  for (int i = 1; i <= nplates; i++){
-   ect[nbrick-1][i-1] = new EdbCouplesTree();
-   ect[nbrick-1][i-1]->InitCouplesTree("couples",Form("b0000%02i/p0%02i/%i.%i.0.0.cp.root",brickIDs[nbrick-1],i,brickIDs[nbrick-1],i),"RECREATE"); //i learned padding with %0i
+   ect[nbrick][i-1] = new EdbCouplesTree();
+   ect[nbrick][i-1]->InitCouplesTree("couples",Form("b0000%02i/p0%02i/%i.%i.0.0.cp.root",brickIDs[nbrick],i,brickIDs[nbrick],i),"RECREATE"); //i learned padding with %0i
  }
  Int_t Flag = 1;
- cout<<"Start processing nevents: "<<nevents<<endl;  
+
+ //simulation of SND neutrino data
+ const int nflavours = 4; //nue,anue,numu,anumu
+ int nuyield[nflavours] = {730,290,235, 120}; //over all RUN3 (2022-2024) data taking, 150 inverse femtobarns
+ //int nuyield[nflavours] = {0,1020,235,120};
+ //float replaceratio = 25./150.; //assuming we replace every 25 inverse femtobarns
+ float replaceratio = 1.;
+ TString inputpaths[nflavours] = {"/eos/user/a/aiulian/sim_snd/numu_sim_activeemu_7_September_2021/","/eos/user/a/aiulian/sim_snd/anumu_sim_activeemu_8_September_2021/", "/eos/user/a/aiulian/sim_snd/nue_sim_activeemu_10_September_2021/1/", "/eos/user/a/aiulian/sim_snd/anue_sim_activeemu_13_September_2021/1/"};
+
  // ************************STARTING LOOP ON SIMULATION******************  
-// while (reader.Next()){
+for (int iflavour = 0; iflavour < nflavours; iflavour++){
+
+ // **********************OPENING INPUT FILE***************************
+ TFile * inputfile = TFile::Open((inputpaths[iflavour]+filename).Data());
+
+ if (!inputfile) return;
+ cout<<"opening file "<<(inputpaths[iflavour]+filename).Data()<<endl;
+ //getting tree and arrays
+ TTreeReader reader("cbmsim",inputfile);
+ TTreeReaderArray<ShipMCTrack> tracks(reader,"MCTrack");
+ TTreeReaderArray<EmulsionDetPoint> emulsionhits(reader,"EmulsionDetPoint");
+
+ int nevents = nuyield[iflavour] * replaceratio;
+ cout<<"Start processing nevents: "<<nevents<<endl;  
+
+ //temporary fix for inECC file misproduction: using list of event numbers
+ fstream eventlistfile((inputpaths[iflavour]+"inECCevents.txt").Data(), fstream::in);
+ int inECCevent;
+
+ // while (reader.Next()){
  for (int i = 0; i < nevents; i++){
   if (i%1000==0) cout<<"processing event "<<i<<" out of "<<nevents<<endl;
-  reader.Next();
+  eventlistfile>>inECCevent;
+  //reader.Next();
+  reader.SetEntry(inECCevent);//reading next event in ECC
+  int nbrickvertex = FindBrick(tracks[0].GetStartX(), tracks[0].GetStartY(), tracks[0].GetStartZ());
+  cout<<"TEST "<<inECCevent<<" "<<tracks[0].GetStartX()<<" "<<tracks[1].GetStartY()<<" "<<tracks[2].GetStartZ()<<" "<<nbrickvertex<<endl;
+  hbrickID->Fill(nbrickvertex);
+
    for (const EmulsionDetPoint& emupoint:emulsionhits){   
      bool savehit = true; //by default I save all hits
 //no you don't want to do this//     if (j % 2 == 0) continue;
      momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
      pdgcode = emupoint.PdgCode();
      trackID = emupoint.GetTrackID();
-     bool emubasetrackformat = true;
-     
+     bool emubasetrackformat = true;    
      if (trackID >= 0) motherID = tracks[trackID].GetMotherId();
      else motherID = -2; //hope I do not see them
      
@@ -128,7 +155,7 @@ void fromsndsw2FEDRA(TString filename){
       mass = 0.;
       }
      nbrickhit = FindBrick(emupoint.GetX(), emupoint.GetY(), emupoint.GetZ());
-     if(nbrickhit+1 != nbrick) savehit = false; //saving only one brick at the time
+     if(nbrickhit+1 != brickIDs[nbrick]) savehit = false; //saving only one brick at the time
      nfilmhit = emupoint.GetDetectorID(); //getting number of the film, currently it
      double kinenergy = TMath::Sqrt(pow(mass,2)+pow(momentum,2)) - mass;
      // *************EXCLUDE HITS FROM BEING SAVED*******************
@@ -146,26 +173,33 @@ void fromsndsw2FEDRA(TString filename){
      if (dosmearing){ 
       smearing(tx,ty,angres);
      }
-     // **************SAVING HIT IN FEDRA BASE-TRACKS****************
+     // **************SAVING HIT IN FEDRA BASE-TRACKS****************     
      if (savehit){       
-      ect[nbrickhit][nfilmhit]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
-      ect[nbrickhit][nfilmhit]->eS->SetMC(ievent, trackID); //objects used to store MC true information
-      //ect[nfilmhit-1]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
-      ect[nbrickhit][nfilmhit]->eS->SetP(momentum);
-      ect[nbrickhit][nfilmhit]->eS->SetFlag(pdgcode); //forcing viewID[0] member to store pdgcode information
-      ect[nbrickhit][nfilmhit]->eS->SetW(ngrains); //need a high weight to do tracking
-      ect[nbrickhit][nfilmhit]->Fill();
+      ect[nbrick][nfilmhit]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
+      ect[nbrick][nfilmhit]->eS->SetMC(inECCevent, trackID); //objects used to store MC true information
+      //ect[nbrick][nfilmhit]->eS->SetMC(ievent, trackID); //objects used to store MC true information
+      ect[nbrick][nfilmhit]->eS->SetAid(motherID, iflavour); //forcing areaID member to store mother MC track information
+      ect[nbrick][nfilmhit]->eS->SetP(momentum);
+      ect[nbrick][nfilmhit]->eS->SetFlag(pdgcode); //forcing viewID[0] member to store pdgcode information
+      ect[nbrick][nfilmhit]->eS->SetW(ngrains); //need a high weight to do tracking
+      ect[nbrick][nfilmhit]->Fill();
       ihit++; //hit entry, increasing as the tree is filled        
       }
      }//end of loop on emulsion points
     ievent++;
    } //end of loop on tree
+  eventlistfile.close();
+  } //end loop over flavours
   for (int iplate = 0; iplate < nplates; iplate++){
-   ect[nbrick-1][iplate]->Write();  
-   ect[nbrick-1][iplate]->Close();  
+   //ect[nbrick][iplate]->Write();  
+   ect[nbrick][iplate]->Close();  
   }
  cout<<"end of script, saving rootrc wih used parameters"<<endl;
  cenv.WriteFile("FairShip2Fedra.save.rootrc");
+ //closing temporary fix file
+ TCanvas *c = new TCanvas();
+ hbrickID->Draw();
+
 }
 
 void smearing (Float_t &TX, Float_t &TY, const float angres){
