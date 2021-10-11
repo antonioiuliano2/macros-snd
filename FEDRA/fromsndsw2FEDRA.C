@@ -6,7 +6,7 @@
 #include <TROOT.h>
 #include "TRandom.h"
 
-void fromsndsw2FEDRA(TString filename);
+void fromsndsw2FEDRA(TString filename, int nbrick);
 void smearing (Float_t &TX, Float_t &TY, const float angres);
 bool efficiency(const float emuefficiency);
 bool efficiency(const float tantheta, TH1D * emuefficiency);
@@ -15,8 +15,8 @@ int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ); //returning which brick
 
 //start script
 void fromsndsw2FEDRA(){
- 
- fromsndsw2FEDRA("sndLHC.Genie-TGeant4.root");
+ int nbrick = 9; //from 0 to 19
+ fromsndsw2FEDRA("sndLHC.Genie-TGeant4.root",nbrick);
 }
 
 void set_default(TEnv &cenv){ //setting default parameters, if not presents from file
@@ -38,7 +38,8 @@ using namespace TMath;
 TRandom3 *grandom = new TRandom3(); //creating every time a TRandom3 is a bad idea
 TFile *file = NULL;
 TH1D *heff = NULL ; //efficiency at different angles
-void fromsndsw2FEDRA(TString filename){
+//starting script
+void fromsndsw2FEDRA(TString filename, int nbrick){
  grandom->SetSeed(0);
 
  TEnv cenv("FairShip2Fedra");
@@ -78,7 +79,6 @@ void fromsndsw2FEDRA(TString filename){
 
  TH1I *hbrickID = new TH1I("hbrickID","ID of brick where neutrino interaction happened;brickID",50,0,50);
 
- int nbrick = 11; //from 0 to 19
  cout<<"Now converting brick number "<<brickIDs[nbrick]<<endl;
  for (int i = 1; i <= nplates; i++){
    ect[nbrick][i-1] = new EdbCouplesTree();
@@ -89,6 +89,7 @@ void fromsndsw2FEDRA(TString filename){
  //simulation of SND neutrino data
  const int nflavours = 4; //nue,anue,numu,anumu
  int nuyield[nflavours] = {730,290,235, 120}; //over all RUN3 (2022-2024) data taking, 150 inverse femtobarns
+ float flavour_multiplier = 1e+5;// #0 numu, 100 anumu, 200 nue, 300 anue
  //int nuyield[nflavours] = {0,1020,235,120};
  //float replaceratio = 25./150.; //assuming we replace every 25 inverse femtobarns
  float replaceratio = 1.;
@@ -121,8 +122,8 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
   //reader.Next();
   reader.SetEntry(inECCevent);//reading next event in ECC
   int nbrickvertex = FindBrick(tracks[0].GetStartX(), tracks[0].GetStartY(), tracks[0].GetStartZ());
-  cout<<"TEST "<<inECCevent<<" "<<tracks[0].GetStartX()<<" "<<tracks[1].GetStartY()<<" "<<tracks[2].GetStartZ()<<" "<<nbrickvertex<<endl;
-  hbrickID->Fill(nbrickvertex);
+  //cout<<"TEST "<<inECCevent<<" "<<tracks[0].GetStartX()<<" "<<tracks[1].GetStartY()<<" "<<tracks[2].GetStartZ()<<" "<<nbrickvertex<<endl;
+  hbrickID->Fill(nbrickvertex+1);
 
    for (const EmulsionDetPoint& emupoint:emulsionhits){   
      bool savehit = true; //by default I save all hits
@@ -176,9 +177,8 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
      // **************SAVING HIT IN FEDRA BASE-TRACKS****************     
      if (savehit){       
       ect[nbrick][nfilmhit]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
-      ect[nbrick][nfilmhit]->eS->SetMC(inECCevent, trackID); //objects used to store MC true information
-      //ect[nbrick][nfilmhit]->eS->SetMC(ievent, trackID); //objects used to store MC true information
-      ect[nbrick][nfilmhit]->eS->SetAid(motherID, iflavour); //forcing areaID member to store mother MC track information
+      ect[nbrick][nfilmhit]->eS->SetMC(inECCevent+flavour_multiplier*iflavour, trackID); //objects used to store MC true information
+      ect[nbrick][nfilmhit]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
       ect[nbrick][nfilmhit]->eS->SetP(momentum);
       ect[nbrick][nfilmhit]->eS->SetFlag(pdgcode); //forcing viewID[0] member to store pdgcode information
       ect[nbrick][nfilmhit]->eS->SetW(ngrains); //need a high weight to do tracking
@@ -238,17 +238,18 @@ int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ){
   if (hitY < yborder) ny = 0;
   else ny = 1; 
 
-  float z1 = -16;
-  float z2 = -6;
-  float z3 = 6;
-  float z4 = 16;
+  float z0_start = -25.4750; float z0_end = -17.6850;
+  float z1_start = -15.8750; float z1_end = -8.0850;
+  float z2_start = -6.2750;  float z2_end = 1.5150;
+  float z3_start = 3.3250;   float z3_end = 11.1150;
+  float z4_start = 12.9250;  float z4_end = 20.7150;
 
-  if (hitZ < z1) nz = 0;
-  else if(hitZ < z2) nz = 1;
-  else if(hitZ < z3) nz = 2;
-  else if(hitZ < z4) nz = 3;
-  else nz=4;
-
+  if (hitZ > z0_start && hitZ < z0_end) nz = 0;
+  else if(hitZ > z1_start && hitZ < z1_end) nz = 1;
+  else if(hitZ > z2_start && hitZ < z2_end) nz = 2;
+  else if(hitZ > z3_start && hitZ < z3_end) nz = 3;
+  else if(hitZ > z4_start && hitZ < z4_end) nz=4;
+  else nz = -10; //not in a brick
 
   int nbrick = nx + ny*2 + 10 * nz;
   return nbrick;
