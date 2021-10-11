@@ -9,7 +9,7 @@ def access_track_branches(simtree, prefix="MCTrack.f", entry_start=0, entry_stop
  else:
         lastentry = entry_stop
  #what branches do we want to read
- suffixes = ["PdgCode","StartX","StartY","StartZ","Px","Py","Pz"]
+ suffixes = ["MotherId","PdgCode","StartX","StartY","StartZ","Px","Py","Pz"]
  branchnames = [prefix + suff for suff in suffixes]
  print(branchnames)
  #reading the branches
