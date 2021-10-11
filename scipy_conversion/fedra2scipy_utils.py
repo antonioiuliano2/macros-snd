@@ -11,7 +11,6 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
     newzprojection = list of projection to a new z reference system
  """
  nplate =0
- flavour_multiplier = 1e+5 #0 numu, 100 anumu, 200 nue, 300 anue
  print("Reading ScanSet at path ",path)
 
  #reading scanset
@@ -40,6 +39,7 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
  MCTrackall = np.zeros(0,dtype=int)
  Pall = np.zeros(0,dtype=np.float32)
  Flagall = np.zeros(0,dtype=int)
+ MCMotherIDall = np.zeros(0,dtype=int)
 
  print ("Cut on couples ")
  cut.Print()
@@ -55,9 +55,9 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
 
   ect = r.EdbCouplesTree()
   if (nplate) <10:
-   ect.InitCouplesTree("couples",path+"/b0000"+str(brick)+"/p00{}/{}.{}.{}.{}.cp.root".format(nplate,brick,nplate,major,minor),"READ")
+   ect.InitCouplesTree("couples",path+"/b{:06d}/p00{}/{}.{}.{}.{}.cp.root".format(brick,nplate,brick,nplate,major,minor),"READ")
   else:
-   ect.InitCouplesTree("couples",path+"/b0000"+str(brick)+"/p0{}/{}.{}.{}.{}.cp.root".format(nplate,brick,nplate,major,minor),"READ")
+   ect.InitCouplesTree("couples",path+"/b{:06d}/p0{}/{}.{}.{}.{}.cp.root".format(brick,nplate,brick,nplate,major,minor),"READ")
 
   #addingcut
   ect.eCut = cut 
@@ -79,6 +79,7 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
   MCTrackarray_plate = np.zeros(nsegcut,dtype=int)
   Parray_plate = np.zeros(nsegcut,dtype=np.float32)
   Flagarray_plate = np.zeros(nsegcut,dtype=int)
+  MCMotherIDarray_plate = np.zeros(nsegcut,dtype=int)
 
   print ("loop on {} segments over  {} for plate {}".format(nsegcut, nseg,nplate))
   for ientry in range(nsegcut):
@@ -103,13 +104,14 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
    TXarray_plate[ientry] = seg.TX()
    TYarray_plate[ientry] = seg.TY()
 
-   MCEvtarray_plate[ientry] = seg.MCEvt() + flavour_multiplier * seg.Aid(1)
+   MCEvtarray_plate[ientry] = seg.MCEvt()
    MCTrackarray_plate[ientry] = seg.MCTrack()
    Parray_plate[ientry] = seg.P()     
    if charmsim: #different place where pdgcode is stored
     Flagarray_plate[ientry] = seg.Vid(0)
    else:
-    Flagarray_plate[ientry] = seg.Flag()  
+    Flagarray_plate[ientry] = seg.Flag()
+   MCMotherIDarray_plate[ientry] = seg.Aid(0)  
 
   #end of loop, storing them in global arrays
   IDall = np.concatenate((IDall,IDarray_plate),axis=0)
@@ -124,9 +126,11 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
   MCTrackall = np.concatenate((MCTrackall,MCTrackarray_plate),axis=0)
   Pall = np.concatenate((Pall,Parray_plate),axis=0)
   Flagall = np.concatenate((Flagall,Flagarray_plate),axis=0)
+  MCMotherIDall = np.concatenate((MCMotherIDall,MCMotherIDarray_plate),axis=0)
 
- data = {'ID':IDall,'PID':PIDall,'x':xall,'y':yall,'z':zall,'TX':TXall,'TY':TYall,'MCEvent':MCEvtall,'MCTrack':MCTrackall,'P':Pall,'Flag':Flagall}
- df = pd.DataFrame(data, columns = ['ID','PID','x','y','z','TX','TY','MCEvent','MCTrack','P','Flag'] )
+ data = {'ID':IDall,'PID':PIDall,'x':xall,'y':yall,'z':zall,'TX':TXall,'TY':TYall,
+         'MCEvent':MCEvtall,'MCTrack':MCTrackall,'MCMotherID':MCMotherIDall,'P':Pall,'Flag':Flagall}
+ df = pd.DataFrame(data, columns = ['ID','PID','x','y','z','TX','TY','MCEvent','MCTrack','MCMotherID','P','Flag'] )
 
  return df
 
