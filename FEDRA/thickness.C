@@ -6,9 +6,8 @@ struct HXY{
 
 float xmin=0, ymin=0;
 //int xb=202,yb=182;
-//float xview = 770., yview=565.; //original values in Valeri's code
+float xview = 770., yview=565.; //view step, check gstep x and y
 int xb=300, yb=350; //number of bins around x and y
-float xview = 805., yview = 595.; //size of a view
 HXY hxy={xb,yb,xmin,xmin+xview*xb,ymin,yview+yb*565};
 
 void draw_diff6();
