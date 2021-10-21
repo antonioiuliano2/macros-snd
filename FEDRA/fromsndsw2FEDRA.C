@@ -75,7 +75,7 @@ void fromsndsw2FEDRA(TString filename, int nbrick){
  // ***********************CREATING FEDRA TREES**************************
  gInterpreter->AddIncludePath("/afs/cern.ch/work/a/aiuliano/public/fedra/include");
  EdbCouplesTree *ect[nbricks][nplates]; //2D array->which brick and which plate?
- int brickIDs[20] = {1,2,3,4,11,12,13,14,21,22,23,24,31,32,33,34,41,42,43,44};
+ int brickIDs[20] = {11,12,13,14,21,22,23,24,31,32,33,34,41,42,43,44,51,52,53,54};
 
  TH1I *hbrickID = new TH1I("hbrickID","ID of brick where neutrino interaction happened;brickID",50,0,50);
 
@@ -180,7 +180,7 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
       ect[nbrick][nfilmhit]->eS->SetMC(inECCevent+flavour_multiplier*iflavour, trackID); //objects used to store MC true information
       ect[nbrick][nfilmhit]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
       ect[nbrick][nfilmhit]->eS->SetP(momentum);
-      ect[nbrick][nfilmhit]->eS->SetFlag(pdgcode); //forcing viewID[0] member to store pdgcode information
+      ect[nbrick][nfilmhit]->eS->SetVid(pdgcode,0); //forcing viewID[0] member to store pdgcode information
       ect[nbrick][nfilmhit]->eS->SetW(ngrains); //need a high weight to do tracking
       ect[nbrick][nfilmhit]->Fill();
       ihit++; //hit entry, increasing as the tree is filled        
@@ -233,24 +233,25 @@ int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ){
   float xborder = -27.5; //arbitrary, but accurate enough to separate the bricks
   float yborder = 35.1;
   int nx, ny, nz;
-  if (hitX < xborder) nx = 0;
+  if (hitX > xborder) nx = 0; //left 1, right 0, x positive towards right
   else nx = 1;
-  if (hitY < yborder) ny = 0;
+  if (hitY < yborder) ny = 0; //down 0, up 1, y positive towards up
   else ny = 1; 
 
+  //beam exiting
   float z0_start = -25.4750; float z0_end = -17.6850;
   float z1_start = -15.8750; float z1_end = -8.0850;
   float z2_start = -6.2750;  float z2_end = 1.5150;
   float z3_start = 3.3250;   float z3_end = 11.1150;
   float z4_start = 12.9250;  float z4_end = 20.7150;
 
-  if (hitZ > z0_start && hitZ < z0_end) nz = 0;
-  else if(hitZ > z1_start && hitZ < z1_end) nz = 1;
-  else if(hitZ > z2_start && hitZ < z2_end) nz = 2;
-  else if(hitZ > z3_start && hitZ < z3_end) nz = 3;
-  else if(hitZ > z4_start && hitZ < z4_end) nz=4;
+  if (hitZ > z0_start && hitZ < z0_end) nz = 1;
+  else if(hitZ > z1_start && hitZ < z1_end) nz = 2;
+  else if(hitZ > z2_start && hitZ < z2_end) nz = 3;
+  else if(hitZ > z3_start && hitZ < z3_end) nz = 4;
+  else if(hitZ > z4_start && hitZ < z4_end) nz=5;
   else nz = -10; //not in a brick
 
   int nbrick = nx + ny*2 + 10 * nz;
   return nbrick;
-} //possible numbers: 0, 1, 2, 3, 10,11,12,13, 20,21,22,23, 30,31,32,33, 40,41,42,43
+} //possible numbers: 10, 11, 12, 13, 20,21,22,23, 30,31,32,33, 40,41,42,43, 50,51,52,53,54
