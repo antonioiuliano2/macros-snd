@@ -38,7 +38,7 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
  MCEvtall = np.zeros(0,dtype=int)
  MCTrackall = np.zeros(0,dtype=int)
  Pall = np.zeros(0,dtype=np.float32)
- Flagall = np.zeros(0,dtype=int)
+ PdgCodeall = np.zeros(0,dtype=int)
  MCMotherIDall = np.zeros(0,dtype=int)
 
  print ("Cut on couples ")
@@ -78,7 +78,7 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
   MCEvtarray_plate = np.zeros(nsegcut,dtype=int)
   MCTrackarray_plate = np.zeros(nsegcut,dtype=int)
   Parray_plate = np.zeros(nsegcut,dtype=np.float32)
-  Flagarray_plate = np.zeros(nsegcut,dtype=int)
+  PdgCodearray_plate = np.zeros(nsegcut,dtype=int)
   MCMotherIDarray_plate = np.zeros(nsegcut,dtype=int)
 
   print ("loop on {} segments over  {} for plate {}".format(nsegcut, nseg,nplate))
@@ -107,10 +107,7 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
    MCEvtarray_plate[ientry] = seg.MCEvt()
    MCTrackarray_plate[ientry] = seg.MCTrack()
    Parray_plate[ientry] = seg.P()     
-   if charmsim: #different place where pdgcode is stored
-    Flagarray_plate[ientry] = seg.Vid(0)
-   else:
-    Flagarray_plate[ientry] = seg.Flag()
+   PdgCodearray_plate[ientry] = seg.Vid(0)
    MCMotherIDarray_plate[ientry] = seg.Aid(0)  
 
   #end of loop, storing them in global arrays
@@ -125,12 +122,12 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
   MCEvtall = np.concatenate((MCEvtall,MCEvtarray_plate),axis=0)
   MCTrackall = np.concatenate((MCTrackall,MCTrackarray_plate),axis=0)
   Pall = np.concatenate((Pall,Parray_plate),axis=0)
-  Flagall = np.concatenate((Flagall,Flagarray_plate),axis=0)
+  PdgCodeall = np.concatenate((PdgCodeall,PdgCodearray_plate),axis=0)
   MCMotherIDall = np.concatenate((MCMotherIDall,MCMotherIDarray_plate),axis=0)
 
  data = {'ID':IDall,'PID':PIDall,'x':xall,'y':yall,'z':zall,'TX':TXall,'TY':TYall,
-         'MCEvent':MCEvtall,'MCTrack':MCTrackall,'MCMotherID':MCMotherIDall,'P':Pall,'Flag':Flagall}
- df = pd.DataFrame(data, columns = ['ID','PID','x','y','z','TX','TY','MCEvent','MCTrack','MCMotherID','P','Flag'] )
+         'MCEvent':MCEvtall,'MCTrack':MCTrackall,'MCMotherID':MCMotherIDall,'P':Pall,'PdgCode':PdgCodeall}
+ df = pd.DataFrame(data, columns = ['ID','PID','x','y','z','TX','TY','MCEvent','MCTrack','MCMotherID','P','PdgCode'] )
 
  return df
 
