@@ -2,6 +2,7 @@
 import ROOT as r
 import sys
 
+r.gInterpreter.ProcessLine('typedef double Double32_t') 
 #target borders
 targetxmin = -47.6
 targetxmax = -8.0
@@ -37,6 +38,7 @@ for ievent in range(nevents):
   break
 
 copytree.AutoSave()
+copytree.Write()
 copyfile.Close()
 
 eventlistfile.close()
