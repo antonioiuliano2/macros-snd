@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import root_numpy
 import ROOT as r
 
-inputfile = uproot.open("ship.conical.Genie-TGeant4.root")
+inputfile = uproot.open("inECC_sndLHC.Genie-TGeant4.root")
 inputtree = inputfile["cbmsim"]
 
 #MCTrack branches can be directly extracted

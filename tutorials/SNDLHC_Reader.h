@@ -267,9 +267,9 @@ SNDLHC_Reader::SNDLHC_Reader(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("ship.conical.Genie-TGeant4.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("inECC_sndLHC.Genie-TGeant4.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("ship.conical.Genie-TGeant4.root");
+         f = new TFile("inECC_sndLHC.Genie-TGeant4.root");
       }
       f->GetObject("cbmsim",tree);
 
