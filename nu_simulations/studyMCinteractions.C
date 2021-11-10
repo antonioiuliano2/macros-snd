@@ -33,12 +33,16 @@ TH1D *hp = new TH1D("hp","Particle momentum at primary vertex;P[GeV/c]",100,0,10
 TH1D *hn = new TH1D("hn","Number of primaries at primary vertex;Ntracks",50,0,50);
 //START MAIN PROGRAM
 
-void studyMCinteractions(){
+void MakeTree(){
 
  //reading input file
 
  TChain treechain("cbmsim");
- treechain.Add("sndLHC.Genie-TGeant4.root");
+ int nfirstfile = 1;
+ int nlastfile = 10;
+ for (int ifile = nfirstfile; ifile<=nlastfile;ifile++){
+  treechain.Add(Form("%i/sndLHC.Genie-TGeant4.root",ifile));
+ }
 
 
  //accessing branches
@@ -46,12 +50,21 @@ void studyMCinteractions(){
 
  TTreeReaderArray<ShipMCTrack> tracks(reader,"MCTrack");
 
- TTreeReaderArray<EmulsionDetPoint> emudetpoints(reader,"EmulsionDetPoint");
- TTreeReaderArray<ScifiPoint> scifipoints(reader,"ScifiPoint");
-
  //variables to be used in the main code
+ int ievent; //event number in tree
  double weight; //statistical weight, related to density and length of tranversed material
+ //primary neutrino info
+ int nu_pdg;
  double nu_vx, nu_vy, nu_vz;
+ double nu_px, nu_py, nu_pz; 
+
+ const Int_t NDauMax=100;
+ //daughters info
+ double dau_px[NDauMax], dau_py[NDauMax], dau_pz[NDauMax];
+ double dau_charge[NDauMax];
+ int dau_pdg[NDauMax];
+
+ int ndaughters;
 
  const int nentries = reader.GetEntries(true);
  cout<<"Number of events "<<nentries<<endl;
@@ -62,6 +75,31 @@ void studyMCinteractions(){
  //IDs of tracks of interest (Tracks at neutrino vertex)
  vector<int> primary;
  vector<int> primaryvisible;
+ //outputfile with extracted info
+ TFile *outputfile = new TFile("nutracks_SND.root","RECREATE");
+ TTree *outputtree = new TTree("sndhits","Tracks from neutrino interactions in SND at LHC");
+ //eventID
+ outputtree->Branch("ievent",&ievent,"ievent/I");
+ outputtree->Branch("nu_pdg",&nu_pdg,"nu_pdg/I");
+ //neutrino momenta
+ outputtree->Branch("nu_px",&nu_px, "nu_px/D");
+ outputtree->Branch("nu_py",&nu_py, "nu_py/D");
+ outputtree->Branch("nu_pz",&nu_pz, "nu_pz/D");
+ //neutrino vertex position
+ outputtree->Branch("nu_vx",&nu_vx, "nu_vx/D");
+ outputtree->Branch("nu_vy",&nu_vy, "nu_vy/D");
+ outputtree->Branch("nu_vz",&nu_vz, "nu_vz/D");
+ //info about daughters
+ outputtree->Branch("ndaughters",&ndaughters,"ndaughters/I");
+ outputtree->Branch("dau_px",&dau_px, "dau_px[ndaughters]/D");
+ outputtree->Branch("dau_py",&dau_py, "dau_py[ndaughters]/D");
+ outputtree->Branch("dau_pz",&dau_pz, "dau_pz[ndaughters]/D");
+ outputtree->Branch("dau_pdg",&dau_pdg, "dau_pdg[ndaughters]/I");
+ outputtree->Branch("dau_charge",&dau_charge, "dau_charge[ndaughters]/D");
+ //event weigth
+ outputtree->Branch("weight",&weight,"weight/D");
+
+
 
  //***********************************START OF MAIN LOOP*************************//
 
@@ -70,14 +108,24 @@ void studyMCinteractions(){
    primaryvisible.clear();
    primary.clear();
 
-   if (ientry % 10000== 0) cout<<"arrived at entry "<<ientry<<endl;
+   ndaughters = 0;
+
+   if (ientry % 1000== 0) cout<<"arrived at entry "<<ientry<<endl;
    reader.SetEntry(ientry);
+
+   ievent = ientry;
 
    //FIRST CONDITION: check if neutrino interaction is within SND target
    nu_vx = tracks[0].GetStartX();
    nu_vy = tracks[0].GetStartY();
    nu_vz = tracks[0].GetStartZ();
    TVector3 Vn = TVector3(nu_vx, nu_vy, nu_vz);
+
+   nu_px = tracks[0].GetPx();
+   nu_py = tracks[0].GetPy();
+   nu_pz = tracks[0].GetPz();
+
+   nu_pdg = tracks[0].GetPdgCode();
 
    bool isintarget = CheckNeutrinoVertexPosition(Vn);
 
@@ -87,54 +135,28 @@ void studyMCinteractions(){
    weight = tracks[0].GetWeight();
    totalweight += weight;
 
-   int itrack = 0;
     //*********************************START TRACK LOOP****************************//
      for (const ShipMCTrack& track: tracks){     
          //look for charged particles from primary vertex
-         NeutrinoVertexLocation(itrack, track, primary, primaryvisible);
-         itrack++;
+
+         if (track.GetMotherId()==0){ //daughter of neutrino, increasing counter at the end
+          dau_px[ndaughters] = track.GetPx();
+          dau_py[ndaughters] = track.GetPy();
+          dau_pz[ndaughters] = track.GetPz();
+
+          dau_pdg[ndaughters] = track.GetPdgCode();
+          dau_charge[ndaughters] = GetParticleCharge(dau_pdg[ndaughters], pdg);
+
+          ndaughters++;
+
+         }
+
+
      } //end track loop
-     hn->Fill(primary.size());
- 
-     if (primaryvisible.size()>0) localizedweight += weight;    
+     outputtree->Fill();
  }//end event loop
 
- cout<<"Fraction of visible primary vertices "<<(double) localizedweight/totalweight<<endl;
-
- //drawing histograms
- TCanvas *cp = new TCanvas();
- hp->Draw();
-
- TCanvas *cn = new TCanvas();
- hn->Draw();
-
-}
-
-bool NeutrinoVertexLocation(int trackID, const ShipMCTrack& track, vector<int> &primary, vector<int> &primaryvisible){
-     //********************************SECOND CONDITION: VERTEX LOCATION********/
-    const double maxtantheta = 1.;
-    const double minmomentum = 1.;
-    //getting particle charge and momentum
-    double momentum = track.GetP();
-    double charge = 0.;
-    double pdgcode = track.GetPdgCode();
-
-    double tx = track.GetPx()/track.GetPz();
-    double ty = track.GetPy()/track.GetPz();
-    double tantheta = TMath::Sqrt(tx * tx + ty * ty);
-    if (pdg->GetParticle(pdgcode)) charge = pdg->GetParticle(pdgcode)->Charge(); 
-    //is it from the primary neutrino interaction?
-    if(track.GetMotherId()==0 && TMath::Abs(charge)>0){
-          
-          primary.push_back(trackID);
-          hp->Fill(momentum);
-          //is it visible?      
-          if(tantheta<maxtantheta && momentum > minmomentum){ 
-            primaryvisible.push_back(trackID); //I do not add the tau lepton or charmed hadron since it decays too soon
-            return true;
-            //cout<<ientry<<" "<<pdgcode<<" "<<momentum<<" "<<tantheta<<endl;
-            }
-           else return false;
-         }
-    else return false;
+ outputfile->cd();
+ outputtree->Write();
+ outputfile->Close();
 }
