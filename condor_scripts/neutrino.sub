@@ -5,6 +5,7 @@ error                 = error/neutrino.$(ClusterId).$(ProcId).err
 log                   = log/neutrino.$(ClusterId).log
 getenv = False
 notification = Never
+RequestCpus = 5
 +JobFlavour             ="testmatch"
 queue 10
 
