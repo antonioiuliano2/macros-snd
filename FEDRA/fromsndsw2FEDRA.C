@@ -111,16 +111,13 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
  int nevents = nuyield[iflavour] * replaceratio;
  cout<<"Start processing nevents: "<<nevents<<endl;  
 
- //temporary fix for inECC file misproduction: using list of event numbers
- fstream eventlistfile((inputpaths[iflavour]+"inECCevents.txt").Data(), fstream::in);
  int inECCevent;
 
  // while (reader.Next()){
  for (int i = 0; i < nevents; i++){
   if (i%1000==0) cout<<"processing event "<<i<<" out of "<<nevents<<endl;
-  eventlistfile>>inECCevent;
-  //reader.Next();
-  reader.SetEntry(inECCevent);//reading next event in ECC
+  reader.SetEntry(i);
+  inECCevent = i; //now we read directly inECC file
   int nbrickvertex = FindBrick(tracks[0].GetStartX(), tracks[0].GetStartY(), tracks[0].GetStartZ());
   //cout<<"TEST "<<inECCevent<<" "<<tracks[0].GetStartX()<<" "<<tracks[1].GetStartY()<<" "<<tracks[2].GetStartZ()<<" "<<nbrickvertex<<endl;
   hbrickID->Fill(nbrickvertex+1);
@@ -188,7 +185,6 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
      }//end of loop on emulsion points
     ievent++;
    } //end of loop on tree
-  eventlistfile.close();
   } //end loop over flavours
   for (int iplate = 0; iplate < nplates; iplate++){
    //ect[nbrick][iplate]->Write();  
@@ -254,4 +250,4 @@ int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ){
 
   int nbrick = nx + ny*2 + 10 * nz;
   return nbrick;
-} //possible numbers: 10, 11, 12, 13, 20,21,22,23, 30,31,32,33, 40,41,42,43, 50,51,52,53,54
+} //possible numbers: 10, 11, 12, 13, 20,21,22,23, 30,31,32,33, 40,41,42,43, 50,51,52,53,54//

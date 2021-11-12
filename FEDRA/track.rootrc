@@ -1,5 +1,5 @@
 fedra.readCPcut:                         1
-fedra.track.TrZmap:                      2000 200000 400000   2000 0 200000   30
+fedra.track.TrZmap:                      8000 0 400000   8000 0 400000   30
 fedra.track.npass:                       1
 fedra.track.minPlate:                    -999
 fedra.track.maxPlate:                    999
