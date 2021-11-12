@@ -73,7 +73,7 @@ void fromsndsw2FEDRA(TString filename, int nbrick){
  float tantheta, momentum;
  int trackID = 0, motherID = 0, pdgcode = 0;
  // ***********************CREATING FEDRA TREES**************************
- gInterpreter->AddIncludePath("/afs/cern.ch/work/a/aiuliano/public/fedra/include");
+ gInterpreter->AddIncludePath("/afs/cern.ch/work/a/aiulian/public/fedra/include");
  EdbCouplesTree *ect[nbricks][nplates]; //2D array->which brick and which plate?
  int brickIDs[20] = {11,12,13,14,21,22,23,24,31,32,33,34,41,42,43,44,51,52,53,54};
 
