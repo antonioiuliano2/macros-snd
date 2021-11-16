@@ -45,15 +45,12 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
 
  int nevents = nuyield[iflavour] * replaceratio;  
 
- //temporary fix for inECC file misproduction: using list of event numbers
- fstream eventlistfile((inputpaths[iflavour]+"inECCevents.txt").Data(), fstream::in);
  int inECCevent;
 
  // while (reader.Next()){
  for (int i = 0; i < nevents; i++){  
-  eventlistfile>>inECCevent;
-  //reader.Next();
-  reader.SetEntry(inECCevent);//reading next event in ECC
+  reader.SetEntry(i);//reading next event in ECC
+  inECCevent = i; //now we read directly inECC file
   int nbrickvertex = FindBrick(tracks[0].GetStartX(), tracks[0].GetStartY(), tracks[0].GetStartZ());
   //cout<<"TEST "<<inECCevent<<" "<<tracks[0].GetStartX()<<" "<<tracks[1].GetStartY()<<" "<<tracks[2].GetStartZ()<<" "<<nbrickvertex<<endl;
   hbrickID->Fill(nbrickvertex+1);
