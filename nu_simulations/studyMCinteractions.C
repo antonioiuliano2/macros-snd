@@ -35,14 +35,15 @@ TH1D *hn = new TH1D("hn","Number of primaries at primary vertex;Ntracks",50,0,50
 
 void MakeTree(){
 
- //reading input file
+ //reading input file or files
 
  TChain treechain("cbmsim");
- int nfirstfile = 1;
+ /*int nfirstfile = 1;
  int nlastfile = 10;
  for (int ifile = nfirstfile; ifile<=nlastfile;ifile++){
   treechain.Add(Form("%i/sndLHC.Genie-TGeant4.root",ifile));
- }
+ }*/
+ treechain.Add("inECC_sndLHC.Genie-TGeant4.root");
 
 
  //accessing branches

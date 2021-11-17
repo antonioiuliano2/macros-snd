@@ -1,13 +1,7 @@
 //----------------------------------------------------------------------------
 //
-//  Usage: $ root -l 
-//         root[1] .L check_vertex.C
-//         root[2] trseg(16)  // process the event 16 (simulation of cause!)
-//
-//  Usage: $ root -l 
-//         root[1] .L check_vertex.C
-//         root[2] trvol()  // do all vertex reconstruction starting from the linked_tracks.root
-// linked charm vertexing macros to the git repository
+// Usage: root -l vertexing.C\(nbrick\)
+// with nbrick number of the brick which we are analyzing (11,12,13,14,21,22...51,52,53,54)
 //----------------------------------------------------------------------------
 
 EdbDataProc  *dproc=0;
@@ -15,6 +9,7 @@ EdbPVRec     *gAli=0;
 EdbVertexRec *gEVR=0;
 EdbDisplay   *ds=0;
 
+int BRICKID = 0;
 TH1D *hip = new TH1D("hip","Impact parameters",500,0,5000);
 
 void trvol( const char *def, const char *rcut = "nseg>1" );
@@ -24,6 +19,7 @@ void do_propagation();
 void do_vertex();
 void td();
 void sd();
+void checkpatterns();
 void vd( int trmin, float amin);
 
 #include <vector>
@@ -38,10 +34,12 @@ namespace VERTEX_PAR
 }
 
 //---------------------------------------------------------------------
-void vertexing(char *dset=0)
+void vertexing(int brID = 0, char* dset = 0)
 {
+
   //trvol(dset);
   //trvol(dset,"nseg>1 && TMath::Abs(s.eY-50000)<5000 && TMath::Abs(s.eX-50000)<5000");   
+   BRICKID = brID;
 // SELECTION WHICH TRACKS TO USE FOR VERTEXING
    trvol(dset,"nseg>1");
  // trvol(dset,"nseg>1 && s.eX > 62500 && s.eY > 50000"); //fourth quarter
@@ -70,6 +68,7 @@ void init( const char *def, int iopt,  const char *rcut)
 
   dproc->InitVolume(iopt, rcut);  
   gAli = dproc->PVR();
+  if (BRICKID > 0) checkpatterns();
   set_segments_dz(300.);
 }
 
@@ -82,6 +81,26 @@ void set_segments_dz(float dz)
     int ns = p->N();
     for(int j=0; j<ns; j++) p->GetSegment(j)->SetDZ(dz);
   }
+}
+
+void checkpatterns(){
+    //check for patterns, if there is one missing add it
+    int np = gAli->Npatterns();
+    
+    TFile *setfile = TFile::Open(Form("b%06d.0.0.0.set.root",BRICKID));
+    EdbScanSet *set = (EdbScanSet*) setfile->Get("set");
+    
+    for(int i=0; i<np; i++) {
+        EdbPattern *p = gAli->GetPattern(i);
+        if(!p) {
+            cout<<"missing pattern "<<i<<" now adding it "<<endl;
+            float zmissingPID = set->eB.GetPlate(i)->Z(); //note, set->eB->GetPlate(i) uses the PID, set->GetPlate(i) uses the number of plate, be careful!
+            EdbPattern *pat = new EdbPattern( 0., 0.,zmissingPID);
+            pat->SetID(i);
+            pat->SetScanID(0);
+            gAli->AddPatternAt(pat,i);
+        }//end if
+    } //end for loop
 }
 
 //---------------------------------------------------------------------

@@ -93,7 +93,7 @@ void fromsndsw2FEDRA(TString filename, int nbrick){
  //int nuyield[nflavours] = {0,1020,235,120};
  //float replaceratio = 25./150.; //assuming we replace every 25 inverse femtobarns
  float replaceratio = 1.;
- TString inputpaths[nflavours] = {"/eos/user/a/aiulian/sim_snd/numu_sim_activeemu_7_September_2021/","/eos/user/a/aiulian/sim_snd/anumu_sim_activeemu_8_September_2021/", "/eos/user/a/aiulian/sim_snd/nue_sim_activeemu_10_September_2021/1/", "/eos/user/a/aiulian/sim_snd/anue_sim_activeemu_13_September_2021/1/"};
+ TString inputpaths[nflavours] = {"/eos/user/a/aiulian/sim_snd/numu_sim_activeemu_10_November_2021/","/eos/user/a/aiulian/sim_snd/anumu_sim_activeemu_15_November_2021/", "/eos/user/a/aiulian/sim_snd/nue_sim_activeemu_12_November_2021/", "/eos/user/a/aiulian/sim_snd/anue_sim_activeemu_15_November_2021/"};
 
  // ************************STARTING LOOP ON SIMULATION******************  
 for (int iflavour = 0; iflavour < nflavours; iflavour++){
