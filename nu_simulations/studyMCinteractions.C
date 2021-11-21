@@ -31,6 +31,8 @@ bool NeutrinoVertexLocation(int trackID, const ShipMCTrack& track, vector<int> &
 TDatabasePDG *pdg = TDatabasePDG::Instance();
 TH1D *hp = new TH1D("hp","Particle momentum at primary vertex;P[GeV/c]",100,0,1000);
 TH1D *hn = new TH1D("hn","Number of primaries at primary vertex;Ntracks",50,0,50);
+
+int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ); //returning which brick the hit belongs to;
 //START MAIN PROGRAM
 
 void MakeTree(){
@@ -50,14 +52,20 @@ void MakeTree(){
  TTreeReader reader(&treechain);
 
  TTreeReaderArray<ShipMCTrack> tracks(reader,"MCTrack");
+ TTreeReaderArray<EmulsionDetPoint> emudetpoints(reader,"EmulsionDetPoint");
 
  //variables to be used in the main code
  int ievent; //event number in tree
  double weight; //statistical weight, related to density and length of tranversed material
  //primary neutrino info
  int nu_pdg;
+ int nu_brickID, nu_filmID;
  double nu_vx, nu_vy, nu_vz;
  double nu_px, nu_py, nu_pz; 
+
+ const double minmom = 0.1;
+ const int nemulsionfilms = 60; //nummber of emulsion films in a brick
+ int nemupoints[nemulsionfilms];
 
  const Int_t NDauMax=100;
  //daughters info
@@ -82,6 +90,7 @@ void MakeTree(){
  //eventID
  outputtree->Branch("ievent",&ievent,"ievent/I");
  outputtree->Branch("nu_pdg",&nu_pdg,"nu_pdg/I");
+ outputtree->Branch("nu_filmID",&nu_filmID,"nu_filmID/I");
  //neutrino momenta
  outputtree->Branch("nu_px",&nu_px, "nu_px/D");
  outputtree->Branch("nu_py",&nu_py, "nu_py/D");
@@ -99,6 +108,8 @@ void MakeTree(){
  outputtree->Branch("dau_charge",&dau_charge, "dau_charge[ndaughters]/D");
  //event weigth
  outputtree->Branch("weight",&weight,"weight/D");
+ //emulsion hits number
+ outputtree->Branch("nemupoints",&nemupoints, "nemupoints[60]/I");
 
 
 
@@ -132,6 +143,8 @@ void MakeTree(){
 
    if (!isintarget) continue; //only process events within nu target
 
+   nu_brickID = FindBrick(nu_vx, nu_vy, nu_vz);
+   nu_filmID = -1; //number of film after brick ID
       
    weight = tracks[0].GetWeight();
    totalweight += weight;
@@ -154,6 +167,40 @@ void MakeTree(){
 
 
      } //end track loop
+     for (int ifilm = 0; ifilm < nemulsionfilms; ifilm++){
+      nemupoints[ifilm] = 0;
+     }
+     //start loop over emulsion points
+     for (const EmulsionDetPoint& emudetpoint: emudetpoints){
+       int emu_detID = emudetpoint.GetDetectorID();
+       
+       double emu_x = emudetpoint.GetX();
+       double emu_y = emudetpoint.GetY();
+       double emu_z = emudetpoint.GetZ();
+
+       int emu_brickID = FindBrick(emu_x, emu_y, emu_z);
+
+       double emu_momentum = TMath::Sqrt(pow(emudetpoint.GetPx(),2) + pow(emudetpoint.GetPy(),2)+pow(emudetpoint.GetPz(),2));
+
+       int emu_pdgcode = emudetpoint.PdgCode();
+       double emu_charge = GetParticleCharge(emu_pdgcode,pdg);
+
+       if (ientry == 8 && emu_detID==59) cout<<"DEBUG: "<<emu_momentum<<" "<<emu_brickID<<" "<<nu_brickID<<" "<<emu_charge<<endl;
+
+       if ((emu_z - nu_vz) > 0 && (emu_z - nu_vz < 0.2)) nu_filmID = emu_detID; //we found the film immediately after the interaction
+
+       if (emu_brickID == nu_brickID){//looking only at hits from particles from the same brick
+        if (emu_momentum > minmom && TMath::Abs(emu_charge) > 0.){ // visibility selection
+         nemupoints[emu_detID]++; //both detID and array members start from 0        
+        } //end visibility condition
+      }//end brick ID condition
+
+
+       
+       
+
+     } //end loop over emulsion films
+
      outputtree->Fill();
  }//end event loop
 
@@ -161,3 +208,30 @@ void MakeTree(){
  outputtree->Write();
  outputfile->Close();
 }
+
+int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ){
+  float xborder = -27.5; //arbitrary, but accurate enough to separate the bricks
+  float yborder = 35.1;
+  int nx, ny, nz;
+  if (hitX > xborder) nx = 0; //left 1, right 0, x positive towards right
+  else nx = 1;
+  if (hitY < yborder) ny = 0; //down 0, up 1, y positive towards up
+  else ny = 1; 
+
+  //beam exiting
+  float z0_start = -25.4750; float z0_end = -17.6850;
+  float z1_start = -15.8750; float z1_end = -8.0850;
+  float z2_start = -6.2750;  float z2_end = 1.5150;
+  float z3_start = 3.3250;   float z3_end = 11.1150;
+  float z4_start = 12.9250;  float z4_end = 20.7150;
+
+  if (hitZ > z0_start && hitZ < z0_end) nz = 1;
+  else if(hitZ > z1_start && hitZ < z1_end) nz = 2;
+  else if(hitZ > z2_start && hitZ < z2_end) nz = 3;
+  else if(hitZ > z3_start && hitZ < z3_end) nz = 4;
+  else if(hitZ > z4_start && hitZ < z4_end) nz=5;
+  else nz = -10; //not in a brick
+
+  int nbrick = nx + ny*2 + 10 * nz;
+  return nbrick;
+} //possible numbers: 10, 11, 12, 13, 20,21,22,23, 30,31,32,33, 40,41,42,43, 50,51,52,53,54//
