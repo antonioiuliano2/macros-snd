@@ -183,9 +183,7 @@ void MakeTree(){
        double emu_momentum = TMath::Sqrt(pow(emudetpoint.GetPx(),2) + pow(emudetpoint.GetPy(),2)+pow(emudetpoint.GetPz(),2));
 
        int emu_pdgcode = emudetpoint.PdgCode();
-       double emu_charge = GetParticleCharge(emu_pdgcode,pdg);
-
-       if (ientry == 8 && emu_detID==59) cout<<"DEBUG: "<<emu_momentum<<" "<<emu_brickID<<" "<<nu_brickID<<" "<<emu_charge<<endl;
+       double emu_charge = GetParticleCharge(emu_pdgcode,pdg);       
 
        if ((emu_z - nu_vz) > 0 && (emu_z - nu_vz < 0.2)) nu_filmID = emu_detID; //we found the film immediately after the interaction
 
