@@ -29,24 +29,28 @@ def neutrinodaughters(vtxinfo,df):
     ''' checking if there is at least one neutrino daughter in the vertex'''
     aneutrinodaughter = []
     for (ntracks, incoming, eventID, eventmothers) in zip(vtxinfo["n"],vtxinfo["incoming"],vtxinfo["MCEventID"], vtxinfo["MCMotherID"]):
-        hasnudau = False 
+        hasnudau = 0 
         for itrk in range(ntracks):
             if(incoming[itrk] == 1 and eventmothers[itrk] == 0 and eventID[itrk] in df["Event"].values):
-                hasnudau = True
-        aneutrinodaughter.append(hasnudau)
+                hasnudau = hasnudau + 1
+        aneutrinodaughter.append(hasnudau > 1) #at least two tracks from neutrino
     return aneutrinodaughter
 
 
-def readvertextree():
+def readvertextree(vertexfile,brickeventlist):
  '''main function, reading vertex tree'''
 
 
- df = pd.read_csv("/home/utente/Simulations/sim_snd/nutracks_files/SNDnuyield_17_November_2021/brickeventlist.csv")
+ df = pd.read_csv(brickeventlist)
  df = df.query("NBrick>0")
  #reading reconstructed vertices
- vtxfile = uproot.open("/home/utente/Simulations/sim_snd/nutracks_files/SNDnuyield_17_November_2021/vertextree_allbricks.root")
+ vtxfile = uproot.open(vertexfile)
  vtxtree = vtxfile["vtx"]
  vtxinfo = vtxtree.arrays(["n","MCTrackPdgCode","MCEventID","MCTrackID","MCMotherID","vx","vy","vz","vID","incoming"])
+
+ #adding information about brickID
+ brickinfo = vtxfile["brickinfo"]
+ vtxinfo["brickID"] = brickinfo["brickID"].array()
 
  ndaughters = []
  #checking how many daughters
@@ -68,5 +72,8 @@ def readvertextree():
 
  aneutrinodaughter = neutrinodaughters(vtxinfo,df)
  nuvertices = vtxinfo[aneutrinodaughter]
-
+ hasmuon = []
+ for trackpdgs in nuvertices["MCTrackPdgCode"]:
+     hasmuon.append(np.abs(13) in trackpdgs)
+ nuvertices["hasmuon"] = hasmuon
  return nuvertices
