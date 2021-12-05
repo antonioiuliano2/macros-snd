@@ -9,7 +9,7 @@ import readvertextree
 import pandas as pd
 
 compare_withreco = True
-vertexfile = "/home/utente/Simulations/sim_snd/nutracks_files/numu_sim_activeemu_10_November_2021/vertextree_allbricks.root"
+vertexfile = "/home/utente/Simulations/sim_snd/nutracks_files/numu_sim_activeemu_10_November_2021_withinefficiency/vertextree_allbricks.root"
 brickeventlist = "/home/utente/Simulations/sim_snd/nutracks_files/numu_sim_activeemu_10_November_2021/brickeventlist.csv"
 
 #vertexfile = "/home/utente/Simulations/sim_snd/nutracks_files/SNDnuyield_17_November_2021/vertextree_allbricks.root"
@@ -18,6 +18,10 @@ global df
 global nurecodf
 global nutruedf
 global totaldf
+
+#visibility requirements
+minmom = 0.1
+maxtheta = 1.
 
 if (compare_withreco):
  df = pd.read_csv(brickeventlist)
@@ -48,6 +52,7 @@ hnprimary = r.TH1D("hnprimary","number of tracks at primary vertex from MC simul
 hdaupdg = r.TH1D("hdaupdg","PdgCode of neutrinod aughters",6000,-3000,3000)
 
 hnprimary_reco = r.TH1D("hnprimary_reco","reconstructed tracks at primary vertex;Ntracks",50,0,50)
+hmolt2D = r.TH2D("hmolt2D","reco molt vs true molt",50,0,50,50,0,50)
 
 hdeltanprimary = r.TH1D("hdeltanprimary","Difference between true and reco molteplicity;DeltaNPrimary",50,-25,25)
 
@@ -62,7 +67,9 @@ hlast = r.TH1I("hlast","Number of hits in last emulsion film of brick;Nhits",100
 hfivedown = r.TH1I("hfivedown","Number of hits in five films after vertex;Nhits",100,0,200)
 htendown = r.TH1I("htendown","Number of hits in ten films after vertex;Nhits",100,0,400)
 
-profnemu = r.TProfile("profnemu","Number of hits in different films after vertex;NFilms_aftervertex;Nhits",60,0,60,0,400)
+profnemu = r.TProfile("profnemu","All particles hits;NFilms_aftervertex;Nhits",60,0,60,0,400)
+profnemu_electrons = r.TProfile("profnemu_electrons","Electron hits;NFilms_aftervertex;Nhits",60,0,60,0,400)
+profnemu_others = r.TProfile("profnemu_others","Other particle hits;NFilms_aftervertex;Nhits",60,0,60,0,400)
 # starting main loop
 for event in inputchain:
     iflavour = event.GetTreeNumber()
@@ -74,6 +81,9 @@ for event in inputchain:
     for idau,(dau_px, dau_py, dau_pz, dau_pdg, dau_charge) in enumerate(zip(event.dau_px, event.dau_py, event.dau_pz, event.dau_pdg, event.dau_charge)):
 
       dau_p = r.TMath.Sqrt(dau_px **2 + dau_py **2 + dau_pz**2)
+      dau_tx = dau_px/dau_pz
+      dau_ty = dau_py/dau_pz
+      dau_theta = r.TMath.ATan(r.TMath.Sqrt(dau_tx **2 + dau_ty **2))
       hdau_p.Fill(dau_p)
       if (dau_pdg in ndau_pdg.keys()): #already present, count + 1
         ndau_pdg[dau_pdg] = ndau_pdg[dau_pdg] + 1
@@ -81,7 +91,7 @@ for event in inputchain:
         ndau_pdg[dau_pdg] = 1
       if ((abs(dau_pdg) == 11 or abs(dau_pdg) == 13) and idau == 0):
         hl_p.Fill(dau_p) #only for lepton
-      if (abs(dau_charge) > 0 and dau_p > 0.1):
+      if (abs(dau_charge) > 0 and dau_p > minmom and dau_theta < maxtheta):
           nprimary = nprimary + 1
       hdaupdg.Fill(dau_pdg)
     hnprimary.Fill(nprimary)
@@ -90,6 +100,8 @@ for event in inputchain:
     nu_filmID = event.nu_filmID    
     if (nu_filmID >= 0): #only accepting events in bricks
       nemupoints = event.nemupoints
+      nemupoints_electrons = event.nemupoints_electrons
+      nemupoints_others = event.nemupoints_others
       #filling number of points
       hfirst.Fill(nemupoints[nu_filmID])
       hlast.Fill(nemupoints[59])
@@ -99,6 +111,8 @@ for event in inputchain:
        htendown.Fill(nemupoints[nu_filmID+10])
       for ifilm in range(nu_filmID,60):
        profnemu.Fill(ifilm - nu_filmID, nemupoints[ifilm])
+       profnemu_electrons.Fill(ifilm - nu_filmID, nemupoints_electrons[ifilm])
+       profnemu_others.Fill(ifilm - nu_filmID, nemupoints_others[ifilm])
 
 
 global nuvertices
@@ -121,8 +135,13 @@ if compare_withreco:
  nurecodf_samebrickID = totaldf.query("NBrick==brickIDvertex") 
  #plotting the results
  rootnumpy_myutils.fillhist1D(hnprimary_reco,nurecodf_samebrickID["ndaughters"])
- totaldf["deltandaughters"] = totaldf["ntruedaughters"] - totaldf["ndaughters"]
- rootnumpy_myutils.fillhist1D(hdeltanprimary,totaldf["deltandaughters"])
+
+ totaldfreco = totaldf[totaldf.notna()["ndaughters"]] 
+
+ totaldfreco["deltandaughters"] = totaldfreco["ntruedaughters"] - totaldfreco["ndaughters"]
+
+ rootnumpy_myutils.fillhist2D(hmolt2D,totaldfreco["ntruedaughters"],totaldfreco["ndaughters"])
+ rootnumpy_myutils.fillhist1D(hdeltanprimary,totaldfreco["deltandaughters"])
 
 cp = r.TCanvas()
 cp.Divide(1,2)
@@ -134,6 +153,8 @@ hl_p.SetLineColor(r.kRed)
 hl_p.Draw("SAMES")
 cp.GetPad(2).BuildLegend()
 
+cmolt2D = r.TCanvas()
+hmolt2D.Draw("COLZ TEXT")
 
 cn = r.TCanvas()
 hnprimary.Draw()
@@ -165,3 +186,8 @@ htendown.Draw()
 
 cemuprof = r.TCanvas()
 profnemu.Draw()
+profnemu_electrons.SetLineColor(r.kRed)
+profnemu_electrons.Draw("SAMES")
+profnemu_others.SetLineColor(r.kMagenta)
+profnemu_others.Draw("SAMES")
+cemuprof.BuildLegend()
