@@ -66,6 +66,8 @@ void MakeTree(){
  const double minmom = 0.1;
  const int nemulsionfilms = 60; //nummber of emulsion films in a brick
  int nemupoints[nemulsionfilms];
+ int nemupoints_electrons[nemulsionfilms];
+ int nemupoints_others[nemulsionfilms];
 
  const Int_t NDauMax=100;
  //daughters info
@@ -110,7 +112,8 @@ void MakeTree(){
  outputtree->Branch("weight",&weight,"weight/D");
  //emulsion hits number
  outputtree->Branch("nemupoints",&nemupoints, "nemupoints[60]/I");
-
+ outputtree->Branch("nemupoints_electrons",&nemupoints_electrons, "nemupoints_electrons[60]/I");
+ outputtree->Branch("nemupoints_others",&nemupoints_others, "nemupoints_others[60]/I");
 
 
  //***********************************START OF MAIN LOOP*************************//
@@ -169,6 +172,8 @@ void MakeTree(){
      } //end track loop
      for (int ifilm = 0; ifilm < nemulsionfilms; ifilm++){
       nemupoints[ifilm] = 0;
+      nemupoints_electrons[ifilm] = 0;
+      nemupoints_others[ifilm] = 0;
      }
      //start loop over emulsion points
      for (const EmulsionDetPoint& emudetpoint: emudetpoints){
@@ -190,6 +195,8 @@ void MakeTree(){
        if (emu_brickID == nu_brickID){//looking only at hits from particles from the same brick
         if (emu_momentum > minmom && TMath::Abs(emu_charge) > 0.){ // visibility selection
          nemupoints[emu_detID]++; //both detID and array members start from 0        
+         if (TMath::Abs(emu_pdgcode)==11) nemupoints_electrons[emu_detID]++;
+         else nemupoints_others[emu_detID]++;
         } //end visibility condition
       }//end brick ID condition
 
