@@ -2,7 +2,7 @@
 import ROOT as r
 import sys
 
-r.gInterpreter.ProcessLine('typedef double Double32_t') 
+#r.gInterpreter.ProcessLine('typedef double Double32_t')  #not needed in new simulation, removed line in fairship/sndsw simulations
 #target borders
 targetxmin = -47.6
 targetxmax = -8.0
