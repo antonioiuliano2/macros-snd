@@ -13,7 +13,7 @@ def applyconversion(nbrick):
  return df, dfvertices 
 
 #the two steps can now be done together, without an intermediate file
-nbrick = 21
+nbrick = int(sys.argv[1])
 df,dfvertices = applyconversion(nbrick)
 
 #df = df.drop(columns = ["P","Flag"])

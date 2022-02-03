@@ -12,6 +12,7 @@ bool efficiency(const float emuefficiency);
 bool efficiency(const float tantheta, TH1D * emuefficiency);
 
 int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ); //returning which brick the hit belongs to;
+int FindBrick (Int_t &detID);
 
 //start script
 void fromsndsw2FEDRA(){
@@ -85,7 +86,7 @@ void fromsndsw2FEDRA(TString filename, int nbrick){
    ect[nbrick][i-1]->InitCouplesTree("couples",Form("b0000%02i/p0%02i/%i.%i.0.0.cp.root",brickIDs[nbrick],i,brickIDs[nbrick],i),"RECREATE"); //i learned padding with %0i
  }
  Int_t Flag = 1;
-
+ /*
  //simulation of SND neutrino data
  const int nflavours = 4; //nue,anue,numu,anumu
  int nuyield[nflavours] = {730,290,235, 120}; //over all RUN3 (2022-2024) data taking, 150 inverse femtobarns
@@ -94,7 +95,12 @@ void fromsndsw2FEDRA(TString filename, int nbrick){
  //float replaceratio = 25./150.; //assuming we replace every 25 inverse femtobarns
  float replaceratio = 1.;
  TString inputpaths[nflavours] = {"/eos/user/a/aiulian/sim_snd/numu_sim_activeemu_10_November_2021/","/eos/user/a/aiulian/sim_snd/anumu_sim_activeemu_15_November_2021/", "/eos/user/a/aiulian/sim_snd/nue_sim_activeemu_12_November_2021/", "/eos/user/a/aiulian/sim_snd/anue_sim_activeemu_15_November_2021/"};
+*/
 
+  const int nflavours = 1;
+  const int replaceratio = 1;
+  TString inputpaths[nflavours]= {""};
+  float flavour_multiplier = 1e+5;// #0 numu, 100 anumu, 200 nue, 300 anue
  // ************************STARTING LOOP ON SIMULATION******************  
 for (int iflavour = 0; iflavour < nflavours; iflavour++){
 
@@ -108,8 +114,12 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
  TTreeReaderArray<ShipMCTrack> tracks(reader,"MCTrack");
  TTreeReaderArray<EmulsionDetPoint> emulsionhits(reader,"EmulsionDetPoint");
 
- int nevents = nuyield[iflavour] * replaceratio;
+ //int nuyield[nflavours] = {reader.GetEntries()};
+
+ //int nevents = nuyield[iflavour] * replaceratio;
+ int nevents = reader.GetEntries();
  cout<<"Start processing nevents: "<<nevents<<endl;  
+
 
  int inECCevent;
 
@@ -120,7 +130,7 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
   inECCevent = i; //now we read directly inECC file
   int nbrickvertex = FindBrick(tracks[0].GetStartX(), tracks[0].GetStartY(), tracks[0].GetStartZ());
   //cout<<"TEST "<<inECCevent<<" "<<tracks[0].GetStartX()<<" "<<tracks[1].GetStartY()<<" "<<tracks[2].GetStartZ()<<" "<<nbrickvertex<<endl;
-  hbrickID->Fill(nbrickvertex+1);
+  hbrickID->Fill(nbrickvertex);
 
    for (const EmulsionDetPoint& emupoint:emulsionhits){   
      bool savehit = true; //by default I save all hits
@@ -152,9 +162,10 @@ for (int iflavour = 0; iflavour < nflavours; iflavour++){
       charge = 0.;
       mass = 0.;
       }
-     nbrickhit = FindBrick(emupoint.GetX(), emupoint.GetY(), emupoint.GetZ());
-     if(nbrickhit+1 != brickIDs[nbrick]) savehit = false; //saving only one brick at the time
      nfilmhit = emupoint.GetDetectorID(); //getting number of the film, currently it
+     //nbrickhit = FindBrick(emupoint.GetX(), emupoint.GetY(), emupoint.GetZ());
+     nbrickhit = FindBrick(nfilmhit); 
+     if(nbrickhit != brickIDs[nbrick]) savehit = false; //saving only one brick at the time
      double kinenergy = TMath::Sqrt(pow(mass,2)+pow(momentum,2)) - mass;
      // *************EXCLUDE HITS FROM BEING SAVED*******************
      if (nfilmhit > 1000) savehit = false;
@@ -249,5 +260,14 @@ int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ){
   else nz = -10; //not in a brick
 
   int nbrick = nx + ny*2 + 10 * nz;
+  return nbrick+1;
+} //possible numbers: 11, 12, 13, 14, 21,22,23,24, 31,32,33,34, 41,42,43,44, 50,51,52,53,54//
+
+int FindBrick (Int_t &detID){
+
+  int nbrick = detID/1E3;
+  int NPlate = detID - nbrick*1E3;
+ 
+  detID = NPlate -1 ; //for conversion (from 0 to 59)
   return nbrick;
-} //possible numbers: 10, 11, 12, 13, 20,21,22,23, 30,31,32,33, 40,41,42,43, 50,51,52,53,54//
+ }
