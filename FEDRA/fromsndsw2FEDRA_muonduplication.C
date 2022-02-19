@@ -4,7 +4,7 @@
 #include <TROOT.h>
 #include "TRandom.h"
 
-void fromsndsw2FEDRA_muonduplication()
+void fromsndsw2FEDRA_muonduplication();
 void smearing (Float_t &TX, Float_t &TY, const float angres);
 bool efficiency(const float emuefficiency);
 bool efficiency(const float tantheta, TH1D * emuefficiency);
@@ -125,7 +125,8 @@ void fromsndsw2FEDRA_muonduplication(){
   //number of events in neutrino and background simulations
   //int nevents = nuyield[ifile] * replaceratio;
   int nmuonevents = muonbkgreader.GetEntries();
-  int nnuevents = nusignalreader.GetEntries();
+  int nnuevents = 5;
+  //int nnuevents = nusignalreader.GetEntries();
 
   int nskippednu = 0;
   cout<<"Start processing neutrino events: "<<nnuevents<< " for each, we have muon events: "<<nmuonevents<<endl;  
@@ -138,19 +139,19 @@ void fromsndsw2FEDRA_muonduplication(){
   const Float_t ycenter_muons = 24.75;
   
   //looping over neutrino events
-  for (int i = 0; i < nnuevents; i++){
+  for (int inu = 0; inu < nnuevents; inu++){
     
-    nusignalreader.SetEntry(i);
-    inECCevent = i;
+    nusignalreader.SetEntry(inu);
+    inECCevent = inu;
     
-    int nbrickvertex = FindBrick(tracks[0].GetStartX(), tracks[0].GetStartY(), tracks[0].GetStartZ());
+    int nbrickvertex = FindBrick(nusignaltracks[0].GetStartX(), nusignaltracks[0].GetStartY(), nusignaltracks[0].GetStartZ());
     if(nbrickvertex < 0){
-          cout<<"WARNING: NEUTRINO INTERACTION N."<<i<<"DID NOT HAPPEN IN ANY BRICK! SKIPPED!"<<endl;
+          cout<<"WARNING: NEUTRINO INTERACTION N."<<inu<<"DID NOT HAPPEN IN ANY BRICK! SKIPPED!"<<endl;
           nskippednu++;
           continue;
     }
     int wallnumber_vertex = nbrickvertex/1E1;
-    int transversenumber_vertex = (nbrickvertex - wallnumber_vertex*1E1)/1E0
+    int transversenumber_vertex = (nbrickvertex - wallnumber_vertex*1E1)/1E0;
     
     hbrickID->Fill(nbrickvertex);
 
@@ -158,8 +159,8 @@ void fromsndsw2FEDRA_muonduplication(){
     
     Float_t xoffset_numuons, yoffset_numuons;
     
-    xoffset_numuons = tracks[0].GetStartX() - xcenter_muons;
-    yoffset_numuons = tracks[0].GetStartY() - ycenter_muons;
+    xoffset_numuons = nusignaltracks[0].GetStartX() - xcenter_muons;
+    yoffset_numuons = nusignaltracks[0].GetStartY() - ycenter_muons;
     
     //looping over NEUTRINO SIGNAL hits, we take them as they are, no offset
     for (const EmulsionDetPoint& emupoint:nusignalemulsionhits){   
@@ -169,7 +170,7 @@ void fromsndsw2FEDRA_muonduplication(){
       pdgcode = emupoint.PdgCode();
       trackID = emupoint.GetTrackID();
       bool emubasetrackformat = true;    
-      if (trackID >= 0) motherID = tracks[trackID].GetMotherId();
+      if (trackID >= 0) motherID = nusignaltracks[trackID].GetMotherId();
       else motherID = -2; //hope I do not see them
       
       xem = emupoint.GetX();
@@ -216,7 +217,7 @@ void fromsndsw2FEDRA_muonduplication(){
       if (savehit){       
        int whichbrick = brickindex[nbrickhit]; //finding index of the array for the brick of our hit;
        ect[whichbrick][nfilmhit]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
- 	 ect[whichbrick][nfilmhit]->eS->SetMC(inECCevent+evID_multiplier, trackID); //objects used to store MC true information
+ 	 ect[whichbrick][nfilmhit]->eS->SetMC(inECCevent, trackID); //objects used to store MC true information
 	 ect[whichbrick][nfilmhit]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
 	 ect[whichbrick][nfilmhit]->eS->SetP(momentum);
 	 ect[whichbrick][nfilmhit]->eS->SetVid(pdgcode,0); //forcing viewID[0] member to store pdgcode information
@@ -233,14 +234,14 @@ void fromsndsw2FEDRA_muonduplication(){
           muonbkgreader.SetEntry(imuon);
           //looping over Muon Background hits, we shift them towards the neutrinos
 
-          for (const EmulsionDetPoint& emupoint:nusignalemulsionhits){   
+          for (const EmulsionDetPoint& emupoint:muonbkgemulsionhits){   
             bool savehit = true; //by default I save all hits
             //no you don't want to do this//     if (j % 2 == 0) continue;
             momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
             pdgcode = emupoint.PdgCode();
             trackID = emupoint.GetTrackID();
             bool emubasetrackformat = true;    
-            if (trackID >= 0) motherID = tracks[trackID].GetMotherId();
+            if (trackID >= 0) motherID = muonbkgtracks[trackID].GetMotherId();
             else motherID = -2; //hope I do not see them
       
             xem = emupoint.GetX();
@@ -299,7 +300,7 @@ void fromsndsw2FEDRA_muonduplication(){
             if (savehit){       
                   int whichbrick = brickindex[nbrickhit]; //finding index of the array for the brick of our hit;
 	            ect[whichbrick][nfilmhit]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
-	            ect[whichbrick][nfilmhit]->eS->SetMC(inECCevent+evID_multiplier, trackID); //objects used to store MC true information
+	            ect[whichbrick][nfilmhit]->eS->SetMC(inECCevent+imuon*evID_multiplier, trackID); //objects used to store MC true information
 	            ect[whichbrick][nfilmhit]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
 	            ect[whichbrick][nfilmhit]->eS->SetP(momentum);
 	            ect[whichbrick][nfilmhit]->eS->SetVid(pdgcode,0); //forcing viewID[0] member to store pdgcode information
@@ -366,11 +367,11 @@ int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ){
   else ny = 1; 
 
   //beam exiting
-  float z0_start = -25.4750; float z0_end = -17.6850;
-  float z1_start = -15.8750; float z1_end = -8.0850;
-  float z2_start = -6.2750;  float z2_end = 1.5150;
-  float z3_start = 3.3250;   float z3_end = 11.1150;
-  float z4_start = 12.9250;  float z4_end = 20.7150;
+  float z0_start = 290.7368; float z0_end = 298.8862;
+  float z1_start = 303.7358; float z1_end = 311.8852;
+  float z2_start = 316.7348;  float z2_end = 324.8842;
+  float z3_start = 329.7338;   float z3_end = 337.8832;
+  float z4_start = 342.7328;  float z4_end = 350.8822;
 
   if (hitZ > z0_start && hitZ < z0_end) nz = 1;
   else if(hitZ > z1_start && hitZ < z1_end) nz = 2;
