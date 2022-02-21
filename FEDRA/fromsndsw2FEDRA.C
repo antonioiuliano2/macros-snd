@@ -244,21 +244,21 @@ int FindBrick(Float_t hitX, Float_t hitY, Float_t hitZ){
   else nx = 1;
   if (hitY < yborder) ny = 0; //down 0, up 1, y positive towards up
   else ny = 1; 
-
+  
   //beam exiting
-  float z0_start = -25.4750; float z0_end = -17.6850;
-  float z1_start = -15.8750; float z1_end = -8.0850;
-  float z2_start = -6.2750;  float z2_end = 1.5150;
-  float z3_start = 3.3250;   float z3_end = 11.1150;
-  float z4_start = 12.9250;  float z4_end = 20.7150;
-
+  float z0_start = 290.7368; float z0_end = 298.8862;
+  float z1_start = 303.7358; float z1_end = 311.8852;
+  float z2_start = 316.7348;  float z2_end = 324.8842;
+  float z3_start = 329.7338;   float z3_end = 337.8832;
+  float z4_start = 342.7328;  float z4_end = 350.8822;
+  
   if (hitZ > z0_start && hitZ < z0_end) nz = 1;
   else if(hitZ > z1_start && hitZ < z1_end) nz = 2;
   else if(hitZ > z2_start && hitZ < z2_end) nz = 3;
   else if(hitZ > z3_start && hitZ < z3_end) nz = 4;
   else if(hitZ > z4_start && hitZ < z4_end) nz=5;
   else nz = -10; //not in a brick
-
+  
   int nbrick = nx + ny*2 + 10 * nz;
   return nbrick+1;
 } //possible numbers: 11, 12, 13, 14, 21,22,23,24, 31,32,33,34, 41,42,43,44, 50,51,52,53,54//
