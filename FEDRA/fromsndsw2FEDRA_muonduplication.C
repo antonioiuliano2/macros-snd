@@ -106,7 +106,7 @@ void fromsndsw2FEDRA_muonduplication(){
   
   const int nfiles = 2;
   const int replaceratio = 1;
-  TString inputpaths[nfiles]= {"/home/simsndlhc/Simulations_sndlhc/sim_fedra/prova_mergeneutrinos/sndLHC.Ntuple-TGeant4-1E3cm2.root", "/home/simsndlhc/Simulations_sndlhc/sim_fedra/prova_mergeneutrinos/inECC_sndLHC.Genie-TGeant4.root"};
+  TString inputpaths[nfiles]= {"/home/simsndlhc/Simulations_sndlhc/sim_fedra/prova_mergeneutrinos/sndLHC.Ntuple-TGeant4-1E3cm2.root", "/home/simsndlhc/Simulations_sndlhc/sim_fedra/prova_mergeneutrinos/inECC_sndLHC.Genie-TGeant4.root"}; //first file muon background, second file neutrino signal
   float evID_multiplier = 1e+5;
   
   //now input files must be open together (for each neutrino, I read all muons), I need two separate reader classes
@@ -125,7 +125,7 @@ void fromsndsw2FEDRA_muonduplication(){
   //number of events in neutrino and background simulations
   //int nevents = nuyield[ifile] * replaceratio;
   int nmuonevents = muonbkgreader.GetEntries();
-  int nnuevents = 5;
+  int nnuevents = 104;
   //int nnuevents = nusignalreader.GetEntries();
   
   int nskippednu = 0;
@@ -134,7 +134,7 @@ void fromsndsw2FEDRA_muonduplication(){
   
   int inECCevent;
 
-  
+  //coordinates of center of muon background (in sndsw system). Can we get them automatically somehow?
   const Float_t xcenter_muons = -17.9; //cm
   const Float_t ycenter_muons = 24.75;
   
