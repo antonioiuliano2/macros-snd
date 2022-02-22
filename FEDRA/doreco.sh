@@ -7,10 +7,10 @@ for ibrick in $(seq 0 19)
 
   echo "makescanset -set=${brickIDs[ibrick]}.0.0.0 -from_plate=60 -to_plate=1 -dz=-1315 -suff=cp.root" >> scanset.sh
   source scanset.sh
-  cp /afs/cern.ch/work/a/aiulian/public/macros-snd/FEDRA/track.rootrc ./
+  cp /home/simsndlhc/macros-snd/FEDRA/track.rootrc ./
   emtra -set=${brickIDs[ibrick]}.0.0.0 -new -v=2
   ln -s b0000${brickIDs[ibrick]}.0.0.0.trk.root linked_tracks.root
-  cp /afs/cern.ch/work/a/aiulian/public/macros-snd/FEDRA/vertexing.C ./
+  cp /home/simsndlhc/macros-snd/FEDRA/vertexing.C ./
   root -l -q vertexing.C
 
   cd ..

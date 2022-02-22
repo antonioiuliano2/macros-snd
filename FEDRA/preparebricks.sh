@@ -1,6 +1,5 @@
 #!/bin/bash
 
-for ibrick in $(seq 0 19)
- do
-  root -l -q fromsndsw2FEDRA.C\(\"inECC_sndLHC.Genie-TGeant4.root\",$ibrick\)
- done
+ulimit -n 1500
+root -l -q fromsndsw2FEDRA_muonduplication.C
+ 
