@@ -14,8 +14,9 @@ void drawEDAtracks(){
  EdbEDATrackSet *selectedtrackset = gEDA->GetTrackSet("SF");
 
 
- const Int_t minnseg = 2;
- const Int_t whichevent = 758;
+ const Int_t minnseg = 45;
+ const Int_t whichevent = 4;
+ const Int_t whichtrack = 219;
 
  alltrackset->SetNsegCut(minnseg);
  gEDA->Run();
@@ -28,14 +29,14 @@ void drawEDAtracks(){
 
   EdbTrackP *track = alltrackset->GetTrack(itrack);
   //if (track->MCEvt()==whichevent) selectedtrackset->AddTrack(track);
-  if (FindMostCommonEvent(track) == whichevent) selectedtrackset->AddTrack(track);
-
+  //if (FindMostCommonEvent(track) == whichevent) selectedtrackset->AddTrack(track);
+	//if (itrack == whichtrack) selectedtrackset->AddTrack(track);
  }
 
 // color selection
  alltrackset->SetColorMode(kCOLOR_BY_ID);
  selectedtrackset->SetTrackAttribute(-1);
- selectedtrackset->SetColorMode(kCOLOR_BY_ID);
+ selectedtrackset->SetColorMode(kCOLOR_BY_PARTICLE);
  alltrackset->SetDraw(kFALSE);
  selectedtrackset->SetDraw(kTRUE);
  gEDA->Redraw();
