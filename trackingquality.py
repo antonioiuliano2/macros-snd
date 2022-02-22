@@ -268,7 +268,10 @@ ceffnsplit.Draw()
 
 
 # In[ ]:
-
+hsplit_mu = r.TH1D("hsplit_mu","nsplit",8,0,8)
+root_numpy.fill_hist(hsplit_mu,singletrackdf.query("MCTrack==0")["nsplit"])
+cnpslit_mu = r.TCanvas()
+hsplit_mu.Draw()
 
 
 
