@@ -1,0 +1,186 @@
+#include <cstdlib>
+#include <iostream>
+#include <iomanip>
+#include <map>
+#include <string>
+#include <utility>
+#include <string>
+#include "TH1.h"
+#include "TCanvas.h"
+#include "TVector.h"
+#include "TVector3.h"
+#include "TLegend.h"
+#include "TFile.h"
+#include "TString.h"
+#include "TObjString.h"
+#include "TSystem.h"
+#include "TROOT.h"
+#include "/home/simsndlhc/macros-snd/FEDRA/trackutils.h"
+namespace VERTEX_PAR
+{
+  float DZmax = 3000.;
+  //float ProbMinV   = 0.0001;  // minimum acceptable probability for chi2-distance between tracks
+  float ProbMinV   = 0.01;
+  float ImpMax     = 15.;    // maximal acceptable impact parameter [microns] (for preliminary check)
+  bool  UseMom     = false;  // use or not track momentum for vertex calculations
+  bool  UseSegPar  = true;  // use only the nearest measured segments for vertex fit (as Neuchatel)
+  int   QualityMode= 0;      // vertex quality estimation method (0:=Prob/(sigVX^2+sigVY^2); 1:= inverse average track-vertex distance)
+}
+
+void vtx_analysis(TString brickID){
+	
+    TString inputfile_vtxname = "vertextree.root";
+  	using namespace VERTEX_PAR;   
+    TFile *inputfile_vtx = TFile::Open(inputfile_vtxname,"READ");
+    if (inputfile_vtx == NULL) cout<<"ERROR: inputfile_vtx not found"<<endl;
+	TTree *vtxtree = (TTree*) inputfile_vtx->Get("vtx");
+ 	EdbVertexRec *vertexrec;
+ 	EdbDataProc *dproc = new EdbDataProc();
+	EdbPVRec *ali = new EdbPVRec();
+ 	EdbScanCond *scancond = new EdbScanCond();
+	ali->SetScanCond(scancond);
+	
+	int ntracks_event[13000] = {0};
+    int mostfrequentevent[13000] = {0};
+	
+	TH1I *h_ntrks = new TH1I("h_ntrks","ntrks; ntrks; events",19,1.5,20.5);
+	TH1F *h_maxaperture = new TH1F("h_maxaperture","max aperture; maperture; events",30,0,.3);
+	TH1F *h_frac = new TH1F("h_frac","frac; frac; events",10,0.15,1.15);
+	TH1F *h_frac2 = new TH1F("h_frac2","frac (2nd version); frac; events",10,0.15,1.15);
+	TH1F *h_quality = new TH1F("h_quality","Quality; eQuality; events",100,0,0.1);
+	
+	TH1F *h_IP_dau = new TH1F("h_IP_dau","Impact Parameter Dau; Impact Parameter; tracks",150/5,0,150);
+	
+	const int nvertices = vtxtree->GetEntries();
+	cout<<"Reading number of vertices: "<<nvertices<<endl;
+   	for (int i = 0; i < nvertices; i++){
+   		int vID = i;
+   		
+   		map<int,int> frequencyEvent;
+        map<int,int>::iterator it;
+        ntracks_event[vID] = 0;
+        mostfrequentevent[vID] = -1;
+        
+   		EdbVertex *vertex = 0;
+   		vertexrec = new EdbVertexRec();
+ 		vertexrec->SetPVRec(ali);
+ 		vertexrec->eDZmax=DZmax;
+ 		vertexrec->eProbMin=ProbMinV;
+ 		vertexrec->eImpMax=ImpMax;
+ 		vertexrec->eUseMom=UseMom;
+ 		vertexrec->eUseSegPar=UseSegPar;
+ 		vertexrec->eQualityMode=QualityMode;
+   		vertex = dproc->GetVertexFromTree(*vertexrec,inputfile_vtxname,vID);
+   		
+   		h_ntrks->Fill(vertex->N());
+   		
+   		h_maxaperture->Fill(vertex->MaxAperture());
+   		
+   		h_quality->Fill(vertex->Quality());
+   		
+   		for (int itrk = 0; itrk < vertex->N(); itrk++){
+                EdbTrackP *track = vertex->GetTrack(itrk);
+                int eventtrack=-99;
+                if(vertex->GetVTa(itrk)->Zpos()==1){ // track-start attached to vertex (1st seg)
+                    eventtrack = track->GetSegmentFirst()->MCEvt();
+                }
+                else eventtrack = track->GetSegmentLast()->MCEvt(); //track-end attached to vertex (last seg)
+                frequencyEvent[eventtrack]++;
+		}
+        for (it = frequencyEvent.begin(); it!=frequencyEvent.end();it++){
+			//cout << "\t\t" << it->first << "\t" << it->second << endl;
+            if(it->second > ntracks_event[vID]){
+            	ntracks_event[vID] = it->second;
+                mostfrequentevent[vID] = it->first;
+            }
+		}
+        float frac = (float)ntracks_event[vID]/(float)vertex->N();
+		h_frac->Fill(frac);
+		// or as alternative, no matter what Zpos, taking as MCEvt the most frequent one occurring in a track (to be checked if valid)
+		ntracks_event[vID] = 0;
+        mostfrequentevent[vID] = -1;
+		for (int itrk = 0; itrk < vertex->N(); itrk++){
+                EdbTrackP *track = vertex->GetTrack(itrk);
+                int eventtrack=-99;
+                eventtrack = FindMostCommonEvent(track);
+                frequencyEvent[eventtrack]++;
+		}
+        for (it = frequencyEvent.begin(); it!=frequencyEvent.end();it++){
+            if(it->second > ntracks_event[vID]){
+            	ntracks_event[vID] = it->second;
+                mostfrequentevent[vID] = it->first;
+            }
+		}
+        float frac2 = (float)ntracks_event[vID]/(float)vertex->N();
+		h_frac2->Fill(frac2);
+		
+		
+		for (int itrk = 0; itrk < vertex->N(); itrk++){
+			if(vertex->GetVTa(itrk)->Zpos()==0) continue; // taking into account dau tracks only
+			h_IP_dau->Fill(vertex->GetVTa(itrk)->Imp());
+		}
+        
+	}	 
+			
+
+	// Draw Section
+	TCanvas *c_htrk = new TCanvas("c_htrk", "c_htrk", 600,500);
+	c_htrk->SetGrid();
+	h_ntrks->SetLineWidth(2);
+	h_ntrks->SetLineColor(kRed);
+	h_ntrks->SetFillStyle(3005);
+	h_ntrks->SetFillColor(kRed);
+	h_ntrks->Draw();
+	
+	TCanvas *c_hmaperture = new TCanvas("c_hmaperture", "c_hmaperture", 600,500);
+	c_hmaperture->SetGrid();
+	h_maxaperture->SetLineWidth(2);
+	h_maxaperture->SetLineColor(kRed);
+	h_maxaperture->SetFillStyle(3005);
+	h_maxaperture->SetFillColor(kRed);
+	h_maxaperture->Draw();
+	
+	TCanvas *c_hfrac = new TCanvas("c_hfrac", "c_hfrac", 600,500);
+	c_hfrac->SetGrid();
+	h_frac->SetLineWidth(2);
+	h_frac->SetLineColor(kRed);
+	h_frac->SetFillStyle(3005);
+	h_frac->SetFillColor(kRed);
+	h_frac->Draw();
+	
+	TCanvas *c_hfrac2 = new TCanvas("c_hfrac2", "c_hfrac2", 600,500);
+	c_hfrac2->SetGrid();
+	h_frac2->SetLineWidth(2);
+	h_frac2->SetLineColor(kRed);
+	h_frac2->SetFillStyle(3005);
+	h_frac2->SetFillColor(kRed);
+	h_frac2->Draw();
+	
+	TCanvas *c_hIPdau = new TCanvas("c_hIPdau", "c_hIPdau", 600,500);
+	c_hIPdau->SetGrid();
+	h_IP_dau->SetLineWidth(2);
+	h_IP_dau->SetLineColor(kRed);
+	h_IP_dau->SetFillStyle(3005);
+	h_IP_dau->SetFillColor(kRed);
+	h_IP_dau->Draw();
+	
+	TCanvas *c_hquality = new TCanvas("c_hquality", "c_hquality", 600,500);
+	c_hquality->SetGrid();
+	h_quality->SetLineWidth(2);
+	h_quality->SetLineColor(kRed);
+	h_quality->SetFillStyle(3005);
+	h_quality->SetFillColor(kRed);
+	h_quality->Draw();
+	
+	TFile *outFile = new TFile("hvtx."+brickID+".root", "RECREATE");
+	h_ntrks->Write();
+	h_maxaperture->Write();
+	h_frac->Write();
+	h_frac2->Write();
+	h_IP_dau->Write();
+	
+	
+	
+	
+
+}
