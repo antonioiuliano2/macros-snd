@@ -1,5 +1,6 @@
 EdbDataProc  *dproc=0;
 EdbPVRec     *gAli=0;
+#include <stdlib.h>
 
 
 void set_segments_dz(float dz)
@@ -160,6 +161,7 @@ void track_analysis(TString simFile)
 	cout << "-----Sample purity: " << sample_purity << "-----" << endl;
 	float MCmismatch = (float)diffMC/(float)ntracks;
 	cout << "-----MCEvt mismatch %: " << MCmismatch << "-----" << endl;
+	 
 	
 	
 	TCanvas *c1 = new TCanvas();
@@ -182,7 +184,11 @@ void track_analysis(TString simFile)
 	_simFile->Close();
 	_simFile = NULL;
 	
-	TH1D *hmu_tracks = new TH1D("hmu_tracks", "N. of mu tracks per simulated muon", 11, -0.5, 10.5);
+	float RecoMuons = ((float) hnpl->GetEntries()-(float) MCEvts)/MCEvts;
+	cout << "-----Reco Muons %: +" << RecoMuons << "-----" << endl;
+	
+	
+	//TH1D *hmu_tracks = new TH1D("hmu_tracks", "N. of mu tracks per simulated muon", 11, -0.5, 10.5);
 	/*for(int iMC = 0; iMC < MCEvts; iMC++){
 	    if(iMC%1000==0) cout<<"Arrivato all'evento "<<iMC<<endl;
 		int mu_track = 0;
@@ -197,8 +203,8 @@ void track_analysis(TString simFile)
 	//TCanvas *c2 = new TCanvas();
 	//hmu_tracks->Draw();*/
 	
-	
 
+int status = system("python -i ~/macros-snd/trackingquality.py ../");
 }// end track_analysis
 
 

@@ -12,9 +12,11 @@ namespace VERTEX_PAR
 
 void drawEDAvertex(bool newversion = true, TString vertexfilename= "vertextree.root"){
  using namespace VERTEX_PAR;
- const int nvertices = 5;
- int vertexlist[nvertices] = {583,428,556,507,366};
- int vertexcolors[nvertices] = {kRed,kRed,kRed,kRed,kRed};
+ const int nvertices = 1;
+ //int vertexlist[nvertices] = {583,428,556,507,366};
+ //int vertexcolors[nvertices] = {kRed,kRed,kRed,kRed,kRed};
+ int vertexlist[nvertices] = {116};
+ int vertexcolors[nvertices] = {kRed};
  EdbDataProc *dproc = new EdbDataProc();
 
  TFile * inputfile = TFile::Open(vertexfilename.Data());
@@ -72,7 +74,7 @@ void drawEDAvertex(bool newversion = true, TString vertexfilename= "vertextree.r
  eda->Run();
 }
 
-void drawEDAvertices(bool newversion = true, TString vertexfilename= "vertextree_firstquarter_noendend.root"){
+void drawEDAvertices(bool newversion = true, TString vertexfilename= "vertextree.root", bool applycut = false){
  using namespace VERTEX_PAR;
  TFile * inputfile = TFile::Open(vertexfilename.Data());
  TTree *vtxtree = (TTree*) inputfile->Get("vtx");
@@ -88,8 +90,17 @@ void drawEDAvertices(bool newversion = true, TString vertexfilename= "vertextree
  EdbPVRec *ali = new EdbPVRec();
  EdbScanCond *scancond = new EdbScanCond();
  ali->SetScanCond(scancond);
+ 
+ vertexrec = new EdbVertexRec();
+ vertexrec->SetPVRec(ali);
+ vertexrec->eDZmax=DZmax;
+ vertexrec->eProbMin=ProbMinV;
+ vertexrec->eImpMax=ImpMax;
+ vertexrec->eUseMom=UseMom;
+ vertexrec->eUseSegPar=UseSegPar;
+ vertexrec->eQualityMode=QualityMode;
 
- const int nvertices = 10000;
+ const int nvertices = vtxtree->GetEntries();
  cout<<"Reading number of vertices: "<<nvertices<<endl;
  for (int i = 0; i < nvertices; i++){ //range for loop, C++11
   int vID = i;
@@ -97,27 +108,27 @@ void drawEDAvertices(bool newversion = true, TString vertexfilename= "vertextree
   EdbVertex *vertex = 0;
 
   if (newversion){
-    vertexrec = new EdbVertexRec();
-    vertexrec->SetPVRec(ali);
-    vertexrec->eDZmax=DZmax;
-    vertexrec->eProbMin=ProbMinV;
-    vertexrec->eImpMax=ImpMax;
-    vertexrec->eUseMom=UseMom;
-    vertexrec->eUseSegPar=UseSegPar;
-    vertexrec->eQualityMode=QualityMode;
     vertex = dproc->GetVertexFromTree(*vertexrec,vertexfilename,vID);
   } 
   else{ 
     vertexrec = (EdbVertexRec*) inputfile->Get("EdbVertexRec");
     vertex = (EdbVertex*) vertexrec->eVTX->At(vID);
   }
-  if (vertex->N()< 4) continue;
-  drawnvertices->Add(vertex); // assuming the array is filled with EdbVertex.
-  for (int itrk = 0; itrk < vertex->N(); itrk++){
+  if(applycut){
+  	if (vertex->N() > 10) drawnvertices->Add(vertex);
+  	for (int itrk = 0; itrk < vertex->N(); itrk++){
      EdbTrackP* track =  vertex->GetTrack(itrk);          
- //    for (int iseg = 0; iseg < track->N(); iseg++) track->GetSegment(iseg)->SetFlag(vertexcolors[i]); // to color them differently
-     drawntracks->Add(track);
-//     specialtrack = track;
+     if (vertex->N() > 10) drawntracks->Add(track);
+  	}
+  }
+  else{
+  	drawnvertices->Add(vertex); // assuming the array is filled with EdbVertex.
+  	for (int itrk = 0; itrk < vertex->N(); itrk++){
+    	EdbTrackP* track =  vertex->GetTrack(itrk);          
+ //    	for (int iseg = 0; iseg < track->N(); iseg++) track->GetSegment(iseg)->SetFlag(vertexcolors[i]); // to color them differently
+     	drawntracks->Add(track);
+//     	specialtrack = track;
+  	}
   }
  }
 
