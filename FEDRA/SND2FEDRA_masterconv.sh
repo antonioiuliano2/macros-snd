@@ -52,5 +52,5 @@ echo "++ Done ++"
 echo "++ Now adding vertex informations ++"
 source addvertexinfo.sh
 echo "++ Merging all vertextree files ++"
-hadd vertextree_allbricks.root b0000*/vertextrree.root"
+hadd vertextree_allbricks.root b0000*/vertextree.root
 echo "++ SND2FEDRA conversion successfully ended ++"
