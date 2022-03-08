@@ -2,7 +2,12 @@
 cp /home/simsndlhc/macros-snd/FEDRA/track.rootrc ./
 cat track.rootrc
 echo "track.rootrc has been copied from home/simsndlhc/macros-snd/FEDRA/"
-read -r -s -p $"If it's ok for you press enter to continue, otherwise edit it before proceeding"
+read -n1 -r -s -p $"If it's ok for you press enter to continue, otherwise edit it before proceeding (press q to abort)" key
+if [[ "$key" == "q" ]] 
+   then 
+   		echo ""
+   		return
+fi
 brickIDs=(11 12 13 14 21 22 23 24 31 32 33 34 41 42 43 44 51 52 53 54) #ehi, I have written an array in BASH!
 for ibrick in $(seq 0 19)
  do
@@ -13,7 +18,7 @@ for ibrick in $(seq 0 19)
   cp ../track.rootrc ./
   ncouples=$(root -l -q ../GetEntries.C\(${brickIDs[ibrick]}\))
   if [[ "${ncouples: -1}" == "0" ]]; then
-  	echo "No hits found in brick ${brickIDs[ibrick]}, skipping"
+  	echo "${RED}No hits found in brick ${brickIDs[ibrick]}, skipping${NC}"
   	cd ..
   	continue
   fi
