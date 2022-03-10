@@ -6,6 +6,7 @@ import progressbar #for bars in loops
 r.gStyle.SetOptFit(111)
 
 tracksfile = r.TFile.Open("b000001.0.0.0_last10plates.trk.root")
+#tracksfile = r.TFile.Open("b000011.0.0.0.trk.root")
 trackstree = tracksfile.Get("tracks")
 #defining graphs
 gzx = r.TGraph()
@@ -15,10 +16,10 @@ fzx = r.TF1("fzx","pol1")
 fzy = r.TF1("fzy","pol1")
 
 #defining resolution histograms
-hrestx = r.TH1D("hrestx","Angular resolution;TX",40,-0.1,0.1)
-hresty = r.TH1D("hresty","Angular resolution;TY",40,-0.1,0.1)
-hresx = r.TH1D("hresx","Position resolution;X[#mum]",40,-100,100)
-hresy = r.TH1D("hresy","Position resolution;Y[#mum]",40,-100,100)
+hrestx = r.TH1D("hrestx","Angular resolution;TX",60,-0.06,0.06)
+hresty = r.TH1D("hresty","Angular resolution;TY",60,-0.06,0.06)
+hresx = r.TH1D("hresx","Position resolution;X[#mum]",60,-60,60)
+hresy = r.TH1D("hresy","Position resolution;Y[#mum]",60,-60,60)
 
 minnseg = 7
 czx = r.TCanvas()
@@ -40,6 +41,7 @@ for itrack in range(ntracks):
  fzy.Clear()
  #condition over track length
  if (trackstree.nseg < minnseg):
+  bar.update(itrack+1)
   continue
  segments = trackstree.s
  #looping over track segments
