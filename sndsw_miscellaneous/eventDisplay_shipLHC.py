@@ -152,7 +152,7 @@ class DrawTracks(ROOT.FairTask):
     if evVx : zEx = -10*u.m
     lam = (zEx+fPos.Z())/fMom.Z()
     DTrack.SetNextPoint(fPos.X()+lam*fMom.X(),fPos.Y()+lam*fMom.Y(),zEx+fPos.Z())
-  c = ROOT.kYellow
+  c = ROOT.kBlack
   DTrack.SetMainColor(c)
   DTrack.SetLineWidth(3)
   self.comp.AddElement(DTrack)
@@ -236,7 +236,7 @@ class DrawTracks(ROOT.FairTask):
     if p : pName = p.GetName()
     else:  pName =  str(fT.GetPdgCode())
     DTrack.SetName('MCTrack_'+str(n)+'_'+pName)
-    c = ROOT.kYellow
+    c = ROOT.kBlack
     if abs(fT.GetPdgCode()) == options.HiddenParticleID:c = ROOT.kMagenta
     DTrack.SetMainColor(c)
     DTrack.SetLineWidth(3)
@@ -899,10 +899,10 @@ else:
   ShipGeo = upkl.load('ShipGeo')
 
 mcHits = {}
-mcHits['vetoPoints']  = ROOT.FairMCPointDraw("vetoPoint", ROOT.kYellow, ROOT.kFullCircle)
-mcHits['EmulsionDetPoints']  = ROOT.FairMCPointDraw("EmulsionDetPoint", ROOT.kGreen, ROOT.kFullSquare)
-mcHits['ScifiPoints']  = ROOT.FairMCPointDraw("ScifiPoint", ROOT.kBlue, ROOT.kFullSquare)
-mcHits['MuFilterPoints']  = ROOT.FairMCPointDraw("MuFilterPoint", ROOT.kRed, ROOT.kFullSquare)
+mcHits['vetoPoints']  = ROOT.FairMCPointDraw("vetoPoint", ROOT.kBlack, ROOT.kFullCircle)
+mcHits['EmulsionDetPoints']  = ROOT.FairMCPointDraw("EmulsionDetPoint", ROOT.kBlack, ROOT.kFullSquare)
+mcHits['ScifiPoints']  = ROOT.FairMCPointDraw("ScifiPoint", ROOT.kBlack, ROOT.kFullSquare)
+mcHits['MuFilterPoints']  = ROOT.FairMCPointDraw("MuFilterPoint", ROOT.kBlack, ROOT.kFullSquare)
 
 for x in mcHits: fMan.AddTask(mcHits[x])
 
@@ -918,6 +918,9 @@ sTree = fRman.GetInChain()
 lsOfGlobals = ROOT.gROOT.GetListOfGlobals()
 lsOfGlobals.Add(sTree) 
 sGeo  = ROOT.gGeoManager 
+vols = sGeo.GetListOfVolumes()
+for vol in vols:
+ vol.SetLineColor(ROOT.kGray+1) #all is gray!
 top   = sGeo.GetTopVolume()
 # manipulate colors and transparency before scene created
 speedUp()
