@@ -168,7 +168,7 @@ void store_nhits(){
  
  Int_t itrack;
  Double_t l_px, l_py, l_pz;
- Int_t prim_leptonid;
+ Int_t prim_leptonid, prim_leptonpdgcode;
  if (writescifihistograms){
   histofile = new TFile((filepath+TString("scifihistos_100events_3moliere.root")).Data(),"RECREATE");
  }
@@ -190,6 +190,7 @@ void store_nhits(){
   outputtree->Branch("l_py",&l_py, "l_py/D");
   outputtree->Branch("l_pz",&l_pz, "l_pz/D");
   outputtree->Branch("l_ID",&prim_leptonid, "l_ID/I");
+  outputtree->Branch("l_pdgcode",&prim_leptonpdgcode, "l_pdgcode/I");
   //event weigth
   outputtree->Branch("weight",&weight,"weight/D");
  
@@ -206,6 +207,7 @@ void store_nhits(){
    nscifihits = 0;
    nmufilterhits = 0;
    prim_leptonid = -1;
+   prim_leptonpdgcode = -1;
    itrack = 0;
 
    //clearing scifi histograms per event
@@ -253,6 +255,7 @@ void store_nhits(){
       l_px = track.GetPx();
       l_py = track.GetPy();
       l_pz = track.GetPz();
+      prim_leptonpdgcode = pdgcode;
     }
     itrack++;  
    } //**************************++*****END OF TRACKS LOOP**************************//
@@ -396,3 +399,56 @@ void store_nhits(){
  cnbins->cd(2);
  hnyscifich[0]->Draw("histo");
 } //end of main program
+
+
+void plotdistributions(){
+ TFile * inputfile = TFile::Open("nuhits_SND.root");
+ TTree * inputtree = (TTree*) inputfile->Get("sndhits");
+ 
+ TDatabasePDG *pdg = TDatabasePDG::Instance();
+
+ TH1D * hEnu = new TH1D("  hEnu","Neutrino energy;E[GeV]",500,0,5000);
+ TH1D * hEhad = new TH1D(" hEhad","Hadron system energy;E[GeV]",500,0,5000);
+
+ //variables to be filled with tree branches
+ Double_t nu_px, nu_py, nu_pz;
+ Double_t l_px, l_py, l_pz;
+ Int_t l_pdgcode;
+ //setting addresses 
+ inputtree->SetBranchAddress("nu_px",&nu_px);
+ inputtree->SetBranchAddress("nu_py",&nu_py);
+ inputtree->SetBranchAddress("nu_pz",&nu_pz);
+
+ inputtree->SetBranchAddress("l_pdgcode",&l_pdgcode);
+ inputtree->SetBranchAddress("l_px",&l_px);
+ inputtree->SetBranchAddress("l_py",&l_py);
+ inputtree->SetBranchAddress("l_pz",&l_pz);
+ 
+ const Int_t nevents = inputtree->GetEntries();
+
+ //starting loop
+ for (int ievent = 0; ievent < nevents; ievent++){
+  inputtree->GetEntry(ievent);
+  Double_t nuE = TMath::Sqrt(nu_px * nu_px + nu_py * nu_py + nu_pz * nu_pz);
+  if (l_pdgcode > 0){ //we have the primary lepton
+   //getting total energy of lepton
+   Double_t lP = TMath::Sqrt(l_px * l_px + l_py * l_py + l_pz * l_pz);
+   Double_t lmass = pdg->GetParticle(l_pdgcode)->Mass();
+   Double_t lE = TMath::Sqrt(lP * lP + lmass * lmass);
+
+   //Etot - El = Ehad
+   Double_t Ehad = nuE - lE;
+
+   hEnu->Fill(nuE);
+   hEhad->Fill(Ehad);
+   
+
+  } //end of pdgcode condition
+ } //end of loop
+ //drawing canvas
+ TCanvas *cE = new TCanvas();
+ hEhad->Draw();
+ //hEnu->Draw("SAMES");
+ //cE->BuildLegend();
+}
+
