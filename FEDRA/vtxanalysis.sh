@@ -18,14 +18,21 @@ for ibrick in $(seq 0 19)
 		if [[ "$neutrinofile" == "1" ]]
 			then
 		    	echo "+++ Analysing neutrino file in $(pwd) +++"
-		    	root -l -q /home/simsndlhc/macros-snd/FEDRA/vtx_analysis.C\(\"b0000${brickIDs[ibrick]}\",1\)
+		    	root -l -q /home/simsndlhc/macros-snd/FEDRA/vtx_analysis.C\(${brickIDs[ibrick]},1,0\)
 		    	cd ..
 		    else
 		    	echo "+++ Analysing bkg file in $(pwd) +++"
-		    	root -l -q /home/simsndlhc/macros-snd/FEDRA/vtx_analysis.C\(\"b0000${brickIDs[ibrick]}\",0\)
+		    	root -l -q /home/simsndlhc/macros-snd/FEDRA/vtx_analysis.C\(${brickIDs[ibrick]},0,0\)
 		    	cd ..
 		fi
 done
-echo "++Now merging all histos..++"
+echo "++ Now merging all histos.. ++"
 hadd -f hvtx.allbricks.root b0000*/hvtx*
 root -l -q ~/macros-snd/FEDRA/doNormHistos.C
+echo "++ Now merging TMVA input variables ++"
+if [[ "$neutrinofile" == "1" ]]
+	then
+		hadd -f OUTvar_sig.root b0000*/b0000*.OUTvar_sig.root
+	else
+		hadd -f OUTvar_bkg.root b0000*/b0000*.OUTvar_bkg.root
+fi
