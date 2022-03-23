@@ -4,7 +4,7 @@
    makefile()
    while it is still running, ON ANOTHER TERMINAL, launch
    python -i filltree_waiting.py
-   demonstrator
+   demonstrator()
 '''
 import ROOT as r
 import time
