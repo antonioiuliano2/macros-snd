@@ -18,7 +18,7 @@ global inputfile
 
 def makefile():
  #creating TFile and TTree
- inputfile = r.TFile.Open(filepath,"RECREATE")
+ inputfile = r.TFile.Open("/eos/experiment/sndlhc/emulsionData/testxrootdaccess/testfile.root" ,"RECREATE")
  inputtree = r.TNtuple("testtree","a test tree","x:y:z")
 
  nevents = 1000
