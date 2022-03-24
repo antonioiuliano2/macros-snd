@@ -28,6 +28,7 @@ def makefile():
     if (ievent % savinginterval == 0):
         print(" autosaving up to entry ",ievent)
         inputtree.AutoSave()
+        r.gDirectory.SaveSelf()# to avoid opening file continuously
  inputtree.Write()
  print("All entries done, closing file")
  inputfile.Close()
@@ -36,7 +37,8 @@ c1 = r.TCanvas()
 def demonstrator():
  '''checking the file'''
  inputfile = r.TFile.Open("testfile.root","READ")
- inputtree = inputfile.Get("testtree")
+ inputtree = r.gDirectory.Get("testtree")
+ #inputtree = r.gDirectory.Get("testtree") #note: we do not use inputfile.Get() since the file is still open!
  #how many entries do we have?
  print("Currently having {} entries".format(inputtree.GetEntries()))
  #making an histogram from some of our variables
