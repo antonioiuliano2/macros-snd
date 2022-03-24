@@ -8,10 +8,17 @@
 '''
 import ROOT as r
 import time
+import sys
+
+docreate = int(sys.argv[1])
+#filepath accessed via xROOTD, for now in lxplus
+filepath = "root:://eospublic.cern.ch//eos/experiment/sndlhc/emulsionData/testxrootdaccess/testfile.root" 
+
+global inputfile
 
 def makefile():
  #creating TFile and TTree
- inputfile = r.TFile.Open("testfile.root","RECREATE")
+ inputfile = r.TFile.Open(filepath,"RECREATE")
  inputtree = r.TNtuple("testtree","a test tree","x:y:z")
 
  nevents = 1000
@@ -28,12 +35,11 @@ def makefile():
     if (ievent % savinginterval == 0):
         print(" autosaving up to entry ",ievent)
         inputtree.AutoSave()
-        r.gDirectory.SaveSelf()# to avoid opening file continuously
+        inputfile.SaveSelf()# to avoid opening file continuously
  inputtree.Write()
  print("All entries done, closing file")
  inputfile.Close()
 
-inputfile = r.TFile.Open("testfile.root","READ")
 def demonstrator():
  '''checking the file'''
  inputfile.ReadKeys() #reading the keys
@@ -46,3 +52,9 @@ def demonstrator():
  #checkfile = input("file opened, 0 to exit, another button to check it")
  inputtree.Delete() #need to delete the object, otherwise it will not be updated for the new readout
  return canvas
+
+if (docreate):
+   makefile()
+
+else:
+   inputfile = r.TFile.Open(filepath,"READ")
