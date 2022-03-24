@@ -33,14 +33,16 @@ def makefile():
  print("All entries done, closing file")
  inputfile.Close()
 
-c1 = r.TCanvas()
+inputfile = r.TFile.Open("testfile.root","READ")
 def demonstrator():
  '''checking the file'''
- inputfile = r.TFile.Open("testfile.root","READ")
- inputtree = r.gDirectory.Get("testtree")
- #inputtree = r.gDirectory.Get("testtree") #note: we do not use inputfile.Get() since the file is still open!
+ inputfile.ReadKeys() #reading the keys
+ inputtree = inputfile.Get("testtree")
  #how many entries do we have?
  print("Currently having {} entries".format(inputtree.GetEntries()))
  #making an histogram from some of our variables
+ canvas = r.TCanvas()
  inputtree.Draw("y:x","","*")
-
+ #checkfile = input("file opened, 0 to exit, another button to check it")
+ inputtree.Delete() #need to delete the object, otherwise it will not be updated for the new readout
+ return canvas
