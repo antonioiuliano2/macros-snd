@@ -132,25 +132,32 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
  return df
 
 
-def addtrueMCinfo(df,simfile, ship_charm):
- '''getting additional true MC info from source file, If ship_charm is true, TM is taken into account to spread XY position'''
+def addtrueMCinfo(df,simfile, simfilebkg = 0):
+ '''getting additional true MC info from source file, If simfilebkg is not 0, signal/bkg merge is taken into account to assign event numbers
+ 
+ '''
  import pandas as pd
  import numpy as np
  import ROOT as r
  
  simtree = simfile.Get("cbmsim")
+ simtreebkg = r.TTree()
+ if (simfilebkg):
+  simtreebkg = simfilebkg.Get("cbmsim") #adding merged background
 
  #position differences from FairShip2Fedra: initialized to 0
  xoffset = 0.
  yoffset = 0.
  zoffset = 0.
+
+ evID_multiplier = 1e+5
  #computing zoffset: in our couples, most downstream plate has always z=0
  simtree.GetEntry(0)
- emulsionhits = simtree.BoxPoint
+ emulsionhits = simtree.EmulsionDetPoint
  ihit = 0
  while (zoffset >= 0.):
   hit = emulsionhits[ihit]  
-  if (hit.GetDetectorID()==29):
+  if (int(str(hit.GetDetectorID())[-2:])==60): #last two digits equal to 60
    zoffset = 0. - hit.GetZ()
   ihit = ihit + 1
 
@@ -171,6 +178,7 @@ def addtrueMCinfo(df,simfile, ship_charm):
 
  #preparing arrays with new columns
  arr_MotherID = np.zeros(nsegments, dtype=int)
+ arr_MotherPDG = np.zeros(nsegments, dtype=int)
  arr_ProcID = np.zeros(nsegments, dtype=int)
 
  arr_startX = np.zeros(nsegments,dtype=np.float32)
@@ -186,40 +194,57 @@ def addtrueMCinfo(df,simfile, ship_charm):
 
   if (MCEvent != currentevent):
    currentevent = MCEvent
-   simtree.GetEntry(currentevent)
-   eventtracks = simtree.MCTrack
-   if(currentevent%10000 == 0):
-    print("Arrived at event ",currentevent)
-   #getting virtual timestamp and replicating Target Mover
-   if (ship_charm):
-    eventheader = simtree.ShipEventHeader
-    virtualtimestamp = eventheader.GetEventTime()
-    nspill = int(virtualtimestamp/100)
-    pottime = virtualtimestamp - nspill * 100
-    #computing xy offset for this event
-    xoffset = -12.5/2. + pottime * targetmoverspeed
-    yoffset = - 9.9/2. + 0.5 + nspill * spilldy 
-    #print(virtualtimestamp, pottime, nspill, xoffset, yoffset)
+   eventtracks = r.TClonesArray() #first initialization to empty, after filled
    
+   if (simfilebkg and MCEvent > evID_multiplier): #need to use bkg tree
+    simtreebkg.GetEntry(int(currentevent / evID_multiplier - 1)) #conversion formula was (imuon +1) *evID_multiplier
+    eventtracks = simtreebkg.MCTrack
+   else: #using signal tree
+    simtree.GetEntry(currentevent)
+    eventtracks = simtree.MCTrack
+   
+   if(currentevent%10000 == 0):
+    print("Arrived at event ",currentevent)     
 
-  #adding values
-  mytrack = eventtracks[MCTrack]
-  arr_MotherID[isegment] = mytrack.GetMotherId()
-  arr_ProcID[isegment] = mytrack.GetProcID()
+  if(MCTrack >= 0 ):
+   #adding values
+   mytrack = eventtracks[MCTrack]
+   arr_MotherID[isegment] = mytrack.GetMotherId()
+   arr_ProcID[isegment] = mytrack.GetProcID()
 
-  arr_startX[isegment] = (mytrack.GetStartX() + xoffset) * 1e+4 + 62500 #we need also to convert cm to micron
-  arr_startY[isegment] = (mytrack.GetStartY() + yoffset) * 1e+4 + 49500
-  arr_startZ[isegment] = (mytrack.GetStartZ() + zoffset) * 1e+4
-  arr_startT[isegment] = mytrack.GetStartT()
+   arr_startX[isegment] = (mytrack.GetStartX() + xoffset) * 1e+4 + 62500 #we need also to convert cm to micron
+   arr_startY[isegment] = (mytrack.GetStartY() + yoffset) * 1e+4 + 49500
+   arr_startZ[isegment] = (mytrack.GetStartZ() + zoffset) * 1e+4
+   arr_startT[isegment] = mytrack.GetStartT()
   
-  arr_startPx[isegment] = mytrack.GetPx()
-  arr_startPy[isegment] = mytrack.GetPy()
-  arr_startPz[isegment] = mytrack.GetPz()
+   arr_startPx[isegment] = mytrack.GetPx()
+   arr_startPy[isegment] = mytrack.GetPy()
+   arr_startPz[isegment] = mytrack.GetPz()
+   #getting mother track info
+   if (arr_MotherID[isegment] >= 0):
+    mothertrack = eventtracks[int(arr_MotherID[isegment])]
+    arr_MotherPDG[isegment] = mothertrack.GetPdgCode()
+  if(MCTrack < 0 ):
+   #missing values, putting defaults
+   arr_MotherID[isegment] = -2
+   arr_ProcID[isegment] = -2
+
+   arr_startX[isegment] = -1.1
+   arr_startY[isegment] = -1.1
+   arr_startZ[isegment] = -1.1
+   arr_startT[isegment] = -1.1
+
+   arr_startPx[isegment] = -1.1
+   arr_startPy[isegment] = -1.1
+   arr_startPz[isegment] = -1.1
+  
+   arr_MotherPDG[isegment] = -2
   
   isegment = isegment + 1
  
  #adding the new columns to the dataframe
  df["MotherID"] = arr_MotherID 
+ df["MotherPDG"] = arr_MotherPDG 
  df["ProcID"] = arr_ProcID
 
  df["StartX"] = arr_startX
