@@ -5,8 +5,9 @@ import progressbar #for bars in loops
 
 r.gStyle.SetOptFit(111)
 
-tracksfile = r.TFile.Open("b000001.0.0.0_last10plates.trk.root")
-#tracksfile = r.TFile.Open("b000011.0.0.0.trk.root")
+#tracksfile = r.TFile.Open("b000001.0.0.0_first5plates.trk.root") #first 5 plates of W1 B1
+tracksfile = r.TFile.Open("b000001.0.0.0_last10plates.trk.root") # last 10 plates of W1 B1
+#tracksfile = r.TFile.Open("b000011.0.0.0.trk.root") #last 10 plates of W1 B1 (1 cm2)
 trackstree = tracksfile.Get("tracks")
 #defining graphs
 gzx = r.TGraph()
@@ -21,7 +22,8 @@ hresty = r.TH1D("hresty","Angular resolution;TY",60,-0.06,0.06)
 hresx = r.TH1D("hresx","Position resolution;X[#mum]",60,-60,60)
 hresy = r.TH1D("hresy","Position resolution;Y[#mum]",60,-60,60)
 
-minnseg = 7
+minnseg = 4 #if 5 plates
+#minnseg = 7 # if 10 plates
 czx = r.TCanvas()
 czy = r.TCanvas()
 #starting loop over tracks
@@ -32,6 +34,7 @@ bar = progressbar.ProgressBar(maxval=ntracks, \
 bar.start()
 
 outputfile = r.TFile("checktrackslinearfits.root","RECREATE")
+restree = r.TNtuple("restree","Tree of residuals","dx:dy:dtx:dty")
 for itrack in range(ntracks):
  trackstree.GetEntry(itrack)
  #clearing graphs and functions
@@ -77,14 +80,22 @@ for itrack in range(ntracks):
  ty_fitted = fzy.GetParameter(1)
  for seg in segments:
   #comparing angles
-  hrestx.Fill(tx_fitted - seg.TX())
-  hresty.Fill(ty_fitted - seg.TY())
+  restx = tx_fitted - seg.TX()
+  resty = ty_fitted - seg.TY()
+
+  hrestx.Fill(restx)
+  hresty.Fill(resty)
 
   #find y value for given z, then comparing positions
   x_fitted = fzx.Eval(seg.Z())
   y_fitted = fzy.Eval(seg.Z())
-  hresx.Fill(x_fitted - seg.X())
-  hresy.Fill(y_fitted - seg.Y())
+
+  resx = x_fitted - seg.X()
+  resy = y_fitted - seg.Y()
+  hresx.Fill(resx)
+  hresy.Fill(resy)
+  #filling entries for later analysis
+  restree.Fill(resx,resy,restx,resty)
  #end of track, updating progress bar and moving to next
  bar.update(itrack+1)
 #end of track loop, draw resolution histograms and gaussian fits
@@ -107,4 +118,6 @@ crespos.cd(2)
 hresy.Draw()
 hresy.Fit("gaus","","",-40,40)
 
+outputfile.cd()
+restree.Write()
 outputfile.Close()
