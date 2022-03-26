@@ -103,18 +103,16 @@ void residualfit_resolution()
 
   c_y.SaveAs("polfit_y.root");
 }
-/*
+
 void anglefit(){
   
   gROOT->SetStyle("Plain");
   //define variables and importing data
-  TFile *inputfile = TFile::Open("CH1R6_allspills.root");
-  TTree *inputtree= (TTree*) inputfile->Get("matched_trks");
+  TFile *inputfile = TFile::Open("checktrackslinearfits.root"); ///home/scanner/sndlhc/SNDCosmics/checktrackslinearfits.root
+  TTree *inputtree = (TTree*) inputfile->Get("restree");
 
-  TTree *goodtree_x = inputtree->CopyTree("TMath::Abs(match_dtyr)<0.004");
-
-  RooRealVar dtxr("match_dtxr", "match_dtxr", -0.015, 0.015);
-  RooDataSet matcheddata_x("matcheddata_x","dataset with match_dtxr",goodtree_x,dtxr) ;
+  RooRealVar dtxr("dtx", "dtx", -0.06, 0.06);
+  RooDataSet data_x("matcheddata_x","dataset with match_dtxr",inputtree,dtxr) ;
 
   //adding binning, try binned
   //dtxr.setBins(30);
@@ -123,18 +121,19 @@ void anglefit(){
 
   //define parameters and PDFs 
   RooRealVar mu_x("mu_x", "average", 0, -1, 1);
-  RooRealVar sigma_x("sigma_x", "sigma", 0.0004, 0, 1);
+  RooRealVar sigma_x("sigma_x", "sigma", 0.007, 0, 1);
   RooGaussian gauss_x("gauss_x","gaussian PDF", dtxr, mu_x, sigma_x);
 
-  //polynomial, max 1 degree
-  RooRealVar slope_x("slope_x", "slope",20,-10,10);
-  RooPolynomial polynom_x("polynom_x","Pol1",dtxr,RooArgList(slope_x));
+  //second gaussian
+  RooRealVar mu2_x("mu2_x", "average of second gaussian", 0, -1, 1);
+  RooRealVar sigma2_x("sigma2_x", "sigma of second gaussian", 0.009, 0, 1);
+  RooGaussian gauss2_x("gauss2_x","Second gaussian PDF", dtxr, mu2_x, sigma2_x);
 
-  RooRealVar yield_signal_x("yield_signal_x", "signal yield", 1000, 0, 1000);
-  RooRealVar yield_background_x("yield_background_x", "background yield", 100, 50, 200);
-  RooAddPdf sum_x("sum_x","Total distribution",RooArgList(gauss_x,polynom_x),RooArgList(yield_signal_x,yield_background_x));
+  RooRealVar yield_signal_x("yield_signal_x", "signal yield", 1000, 0, 100000);
+  RooRealVar yield_background_x("yield_background_x", "background yield", 1000, 0, 100000);
+  RooAddPdf sum_x("sum_x","Total distribution",RooArgList(gauss_x,gauss2_x),RooArgList(yield_signal_x,yield_background_x));
 
-  RooFitResult *r_x = sum_x.fitTo(matcheddata_x, RooFit::Save());
+  RooFitResult *r_x = sum_x.fitTo(data_x, RooFit::Save());
   //RooFitResult *r = sum.fitTo(binnedData, RooFit::Save());
   //summary printing
   r_x->Print();
@@ -142,47 +141,46 @@ void anglefit(){
   //plot the result
   RooPlot * xFrame = dtxr.frame() ;
   //binnedData.plotOn(xFrame) ;
-  matcheddata_x.plotOn(xFrame,RooFit::Name("data_x"));
+  data_x.plotOn(xFrame,RooFit::Name("data_x"));
   sum_x.plotOn(xFrame,RooFit::Name("total_x")) ;
   sum_x.plotOn(xFrame, RooFit::Components(gauss_x), RooFit::LineStyle(kDashed),RooFit::Name("gaussx")) ;
-  sum_x.plotOn(xFrame, RooFit::Components(polynom_x), RooFit::LineStyle(kDotted),RooFit::Name("polx")) ;
+  sum_x.plotOn(xFrame, RooFit::Components(gauss2_x), RooFit::LineStyle(kDotted),RooFit::Name("gauss2x")) ;
   sum_x.paramOn(xFrame,RooFit::Layout(0.55)) ;
   TCanvas c_x;
   xFrame->Draw();
-  auto reducedchi2_x = xFrame->chiSquare("total_x","data_x",5);
+  auto reducedchi2_x = xFrame->chiSquare("total_x","data_x",6);
   //c.SaveAs("polfit.pdf");
   //adding legend
   TLegend *leg_x = new TLegend(0.4,0.6,0.89,0.89);
   leg_x->AddEntry("total_x",Form("Total distribution with chi2/ndf = %f",reducedchi2_x));
-  leg_x->AddEntry("gaussx","Gaussian");
-  leg_x->AddEntry("polx","Polynomial");
+  leg_x->AddEntry("gaussx","First Gaussian");
+  leg_x->AddEntry("gauss2x","Second Gaussian");
   leg_x->Draw();
 
-  c_x.SaveAs("polfit_angx.root");
+  c_x.SaveAs("gausfit_angx.root");
   //TCanvas cfitresults;
   //hcorr->Draw("colz");
 
-  //***STARTING SECTION OF ANGLE Y********+
+  //***STARTING SECTION OF ANGLE Y********
 
-  TTree *goodtree_y = inputtree->CopyTree("TMath::Abs(match_dtxr)<0.004");
-
-  RooRealVar dtyr("match_dtyr", "match_dtyr", -0.015, 0.015);
-  RooDataSet matcheddata_y("matcheddata_y","dataset with match_dtyr",goodtree_y,dtyr) ;
+  RooRealVar dtyr("dty", "dty", -0.06, 0.06);
+  RooDataSet data_y("matcheddata_y","dataset with match_dtyr",inputtree,dtyr) ;
 
   //define parameters and PDFs 
   RooRealVar mu_y("mu_y", "average", 0, -1, 1);
-  RooRealVar sigma_y("sigma_y", "sigma", 0.0004, 0, 1);
+  RooRealVar sigma_y("sigma_y", "sigma", 0.007, 0, 1);
   RooGaussian gauss_y("gauss_y","gaussian PDF", dtyr, mu_y, sigma_y);
 
-  //polynomial, max 1 degree
-  RooRealVar slope_y("slope_y", "slope",20,-10,10);
-  RooPolynomial polynom_y("polynom_y","Pol1",dtyr,RooArgList(slope_y));
+   //second gaussian
+  RooRealVar mu2_y("mu2_y", "average of second gaussian", 0, -1, 1);
+  RooRealVar sigma2_y("sigma2_y", "sigma of second gaussian", 0.009, 0, 1);
+  RooGaussian gauss2_y("gauss2_y","Second gaussian PDF", dtyr, mu2_y, sigma2_y);
 
   RooRealVar yield_signal_y("yield_signal_y", "signal yield", 1000, 0, 100000);
-  RooRealVar yield_background_y("yield_background_y", "background yield", 100, 50, 200);
-  RooAddPdf sum_y("sum_y","Total distribution",RooArgList(gauss_y,polynom_y),RooArgList(yield_signal_y,yield_background_y));
+  RooRealVar yield_background_y("yield_background_y", "background yield", 1000, 0, 100000);
+  RooAddPdf sum_y("sum_y","Total distribution",RooArgList(gauss_y,gauss2_y),RooArgList(yield_signal_y,yield_background_y));
 
-  RooFitResult *r_y = sum_y.fitTo(matcheddata_y, RooFit::Save());
+  RooFitResult *r_y = sum_y.fitTo(data_y, RooFit::Save());
   //RooFitResult *r = sum.fitTo(binnedData, RooFit::Save());
   //summary printing
   r_y->Print();
@@ -190,22 +188,22 @@ void anglefit(){
   //plot the result
   RooPlot * yFrame = dtyr.frame() ;
   //binnedData.plotOn(xFrame) ;
-  matcheddata_y.plotOn(yFrame,RooFit::Name("data_y"));
+  data_y.plotOn(yFrame,RooFit::Name("data_y"));
   sum_y.plotOn(yFrame,RooFit::Name("total_y")) ;
   sum_y.plotOn(yFrame, RooFit::Components(gauss_y), RooFit::LineStyle(kDashed),RooFit::Name("gaussy")) ;
-  sum_y.plotOn(yFrame, RooFit::Components(polynom_y), RooFit::LineStyle(kDotted),RooFit::Name("poly")) ;
+  sum_y.plotOn(yFrame, RooFit::Components(gauss2_y), RooFit::LineStyle(kDotted),RooFit::Name("gauss2y")) ;
   sum_y.paramOn(yFrame,RooFit::Layout(0.55)) ;
   TCanvas c_y;
   yFrame->Draw();
-  auto reducedchi2_y = yFrame->chiSquare("total_y","data_y",5);
+  auto reducedchi2_y = yFrame->chiSquare("total_y","data_y",6);
   //c.SaveAs("polfit.pdf");
   //adding legend
   TLegend *leg_y = new TLegend(0.4,0.6,0.89,0.89);
   leg_y->AddEntry("total_y",Form("Total distribution with chi2/ndf = %f",reducedchi2_y));
-  leg_y->AddEntry("gaussy","Gaussian");
-  leg_y->AddEntry("poly","Polynomial");
+  leg_y->AddEntry("gaussy","First Gaussian");
+  leg_y->AddEntry("gauss2y","Second Gaussian");
   leg_y->Draw();
 
-  c_y.SaveAs("polfit_angy.root");
+  c_y.SaveAs("gausfit_angy.root");
 }
-*/
+
