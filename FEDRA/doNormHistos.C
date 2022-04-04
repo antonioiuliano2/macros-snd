@@ -54,7 +54,7 @@ void doNormHistos(){
 	inFile->Close();	
 }
 
-void NormalizeAt(Int_t nfb = 150, Bool_t neutrino){
+void NormalizeAt(Int_t nfb = 150, Bool_t neutrino = false){
 
 	TFile *inFile = TFile::Open("hvtx.allbricks.root", "READ");
 	TString fbs;
@@ -95,8 +95,9 @@ void NormalizeAt(Int_t nfb = 150, Bool_t neutrino){
 	h_fillfact_n->Scale(factor/hfillfact->GetEntries());
 	h_meanfillfact_n->Scale(factor/hmeanfillfact->GetEntries());
 	
-	if ( neutrino == true ) TFile *outFile = new TFile("hvtx.allbricks_"+fbs+"fb.root", "RECREATE");
-	else TFile *outFile = new TFile("hvtx.allbricks_full.root", "RECREATE");
+	TFile *outFile = NULL;
+	if ( neutrino == true ) outFile = new TFile("hvtx.allbricks_"+fbs+"fb.root", "RECREATE");
+	else outFile = new TFile("hvtx.allbricks_full.root", "RECREATE");
 	h_ntrks_n->Write();
 	h_maxaperture_n->Write();
 	h_prob_n->Write();
