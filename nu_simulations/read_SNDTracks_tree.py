@@ -37,9 +37,9 @@ inputchain = r.TChain("sndhits")
 #inputchain.Add("/home/utente/Simulations/sim_snd/backup_sim_neutrino_3_November/10/nutracks_SND.root")
 
 
-inputchain.Add("/home/utente/Simulations/sim_snd/nutracks_files/numu_sim_activeemu_10_November_2021/nutracks_SND.root")
+#inputchain.Add("/home/utente/Simulations/sim_snd/nutracks_files/numu_sim_activeemu_10_November_2021/nutracks_SND.root")
 #inputchain.Add("/home/utente/Simulations/sim_snd/nutracks_files/anumu_sim_activeemu_15_November_2021/nutracks_SND.root")
-#inputchain.Add("/home/utente/Simulations/sim_snd/nutracks_files/nue_sim_activeemu_12_November_2021/nutracks_SND.root")
+inputchain.Add("/home/utente/Simulations/sim_snd/nutracks_files/nue_sim_activeemu_12_November_2021/nutracks_SND.root")
 #inputchain.Add("/home/utente/Simulations/sim_snd/nutracks_files/anue_sim_activeemu_15_November_2021/nutracks_SND.root")
 
 #inputchain.Add("/home/utente/Simulations/sim_snd/nutracks_files/nue_sim_activeemu_10_September_2021/nutracks_SND.root")
@@ -107,9 +107,9 @@ hlast = r.TH1I("hlast","Number of hits in last emulsion film of brick;Nhits",100
 hfivedown = r.TH1I("hfivedown","Number of hits in five films after vertex;Nhits",100,0,200)
 htendown = r.TH1I("htendown","Number of hits in ten films after vertex;Nhits",100,0,400)
 
-profnemu = r.TProfile("profnemu","All particles hits;NFilms_aftervertex;Nhits",60,0,60,0,400)
-profnemu_electrons = r.TProfile("profnemu_electrons","Electron hits;NFilms_aftervertex;Nhits",60,0,60,0,400)
-profnemu_others = r.TProfile("profnemu_others","Other particle hits;NFilms_aftervertex;Nhits",60,0,60,0,400)
+profnemu = r.TProfile("profnemu","All particles hits;NFilms_aftervertex;Nhits",30,0,60,0,400)
+profnemu_electrons = r.TProfile("profnemu_electrons","Electron hits;NFilms_aftervertex;Nhits",30,0,60,0,400)
+profnemu_others = r.TProfile("profnemu_others","Other particle hits;NFilms_aftervertex;Nhits",30,0,60,0,400)
 # starting main loop
 for event in inputchain:
     iflavour = event.GetTreeNumber()
