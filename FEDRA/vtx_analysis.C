@@ -45,9 +45,6 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
 	TString brID;
 	brID.Form("%d", bID);
 	TString brickID = "b0000"+brID;
-	
-	int ntracks_event[13000] = {0};
-    int mostfrequentevent[13000] = {0};
     const int maxtracks = 100;
     
     Int_t MCMotherID[maxtracks]={-99};
@@ -82,6 +79,10 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
 	
 	const int nvertices = vtxtree->GetEntries();
 	cout<<"Reading number of vertices: "<<nvertices<<endl;
+	
+	const int maxvID = 100000;
+	int ntracks_event[maxvID] = {0}; //arrays to be filled with vID
+    int mostfrequentevent[maxvID] = {0};
 	// SET OUTTREE VARIABLES
 	TFile *treeFile = NULL;
 	Int_t signal;
@@ -93,6 +94,7 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
 	Float_t maxIP;
 	Float_t fillfact;
 	Float_t meanfillfact;
+	Int_t 	flag;
 	
 	// SET OUTPUT FILE/TREE
 	if (nu == true) treeFile = new TFile(brickID+".OUTvar_sig.root","RECREATE");
@@ -108,26 +110,31 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
 	tree->Branch("maxIP", &maxIP, "maxIP/F");
 	tree->Branch("fillfact", &fillfact, "fillfact/F");
 	tree->Branch("meanfillfact", &meanfillfact, "meanfillfact/F");
+	tree->Branch("flag", &flag, "flag/I");
 	
+	
+	vertexrec = new EdbVertexRec();
+    vertexrec->SetPVRec(ali);
+ 	vertexrec->eDZmax=DZmax;
+ 	vertexrec->eProbMin=ProbMinV;
+ 	vertexrec->eImpMax=ImpMax;
+ 	vertexrec->eUseMom=UseMom;
+ 	vertexrec->eUseSegPar=UseSegPar;
+ 	vertexrec->eQualityMode=QualityMode;
+	
+	map<int,int> frequencyEvent;
+    map<int,int>::iterator it;  
 	
    	for (int i = 0; i < nvertices; i++){
-   		vID = i;
-
-   		map<int,int> frequencyEvent;
-        map<int,int>::iterator it;
+     	frequencyEvent.clear();
+   	
+   		vID = i;		
         ntracks_event[vID] = 0;
         mostfrequentevent[vID] = -1;
         
    		EdbVertex *vertex = 0;
-   		vertexrec = new EdbVertexRec();
- 		vertexrec->SetPVRec(ali);
- 		vertexrec->eDZmax=DZmax;
- 		vertexrec->eProbMin=ProbMinV;
- 		vertexrec->eImpMax=ImpMax;
- 		vertexrec->eUseMom=UseMom;
- 		vertexrec->eUseSegPar=UseSegPar;
- 		vertexrec->eQualityMode=QualityMode;
-   		vertex = dproc->GetVertexFromTree(*vertexrec,inputfile_vtxname,vID);
+   		cout << "Reading vtx no. " << vID << endl;
+   		vertex = dproc->GetVertexFromTree(*vertexrec,inputfile_vtxname,vID);   		
    		
    		vtxtree->GetEntry(vID);
    		if(vertex->Flag() == 2 || vertex->Flag() == 5) continue; // excluding impossible vertex topologies (back neutral)
@@ -259,6 +266,7 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
    			maxaperture = vertex->MaxAperture();
    			fillfact = (float)totsegs / (float)totremplates;
    			meanfillfact = sumfillfact/ntracks;
+   			flag = vertex->Flag();
    			signal = 1;
    			tree->Fill();
     	}   
@@ -279,6 +287,7 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
    						prob = vertex->V()->prob();
    						maxaperture = vertex->MaxAperture();
    						ntrks = vertex->N();
+   						flag = vertex->Flag();
    						signal = 0;
    						tree->Fill();
    	} // closes if on nu == false
@@ -456,7 +465,7 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
 	
 	
 	//Saving
-	TFile *outFile = new TFile("hvtx."+brickID+"_cut.root", "RECREATE");
+	TFile *outFile = new TFile("hvtx."+brickID+".root", "RECREATE");
 	h_ntrks->Write();
 	h_maxaperture->Write();
 	h_frac->Write();
@@ -473,6 +482,7 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
 	if(nu == true) {h_nonprimary->Write(); hmcevtID->Write();}
 	outFile->Close();
 	
-	//inputfile_vtx->Close();
+	inputfile_vtx->cd();
+	inputfile_vtx->Close();
 	
 }
