@@ -113,6 +113,7 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
 	tree->Branch("flag", &flag, "flag/I");
 	
 	
+	map<int,EdbTrackP*>trackIDmap; //to associate tracks to vertices, needs to be studied further
 	vertexrec = new EdbVertexRec();
     vertexrec->SetPVRec(ali);
  	vertexrec->eDZmax=DZmax;
@@ -125,6 +126,11 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
 	map<int,int> frequencyEvent;
     map<int,int>::iterator it;  
 	
+	EdbVertex *vertex = 0;
+	//first loop, filling the array
+	dproc->ReadVertexTree(*vertexrec, "vertextree.root", "1",trackIDmap);
+	TObjArray *vtxarr = (TObjArray*) ali->eVTX;
+	//second loop, actually using the vertices
    	for (int i = 0; i < nvertices; i++){
      	frequencyEvent.clear();
    	
@@ -132,9 +138,10 @@ void vtx_analysis(int bID, bool nu = false, bool drawopt = false){
         ntracks_event[vID] = 0;
         mostfrequentevent[vID] = -1;
         
-   		EdbVertex *vertex = 0;
-   		cout << "Reading vtx no. " << vID << endl;
-   		vertex = dproc->GetVertexFromTree(*vertexrec,inputfile_vtxname,vID);   		
+        if (i% 1000 == 0) cout << "Reading vtx no. " << vID << endl;
+   		vertex = (EdbVertex*) vtxarr->At(vID);
+   		//cout << "Reading vtx no. " << vID << endl;
+   		//vertex = dproc->GetVertexFromTree(*vertexrec,inputfile_vtxname,vID);   		
    		
    		vtxtree->GetEntry(vID);
    		if(vertex->Flag() == 2 || vertex->Flag() == 5) continue; // excluding impossible vertex topologies (back neutral)
