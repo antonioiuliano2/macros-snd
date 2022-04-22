@@ -1,6 +1,6 @@
-void drawmonitorgraphs(){
-    //accessing dcs monitoring file
-    TFile *smsfile = TFile::Open("dcs_output_20220421.root");
+void drawmonitorgraphs(const char* inputfilename){
+    //accessing dcs monitoring file (example file name: dcs_output_20220421.root)
+    TFile *smsfile = TFile::Open(inputfilename);
     TTree *smstree = (TTree*) smsfile->Get("smstree");
     //setting variables and branches
     TDatime *monitortime;
@@ -17,6 +17,14 @@ void drawmonitorgraphs(){
     smstree->SetBranchAddress("coolingon",&coolingon);
 
     const int nentries = smstree->GetEntries();
+
+    //creating memfile, starting server
+
+    TFile *hfile = new TMemFile("job1.root","RECREATE","ROOT memfile as in httpserver tutorial with graphs");
+    THttpServer* serv = new THttpServer("http:8080?top=job1");
+    gBenchmark->Start("job1");
+
+
     //preparing graphs
     TGraph *tempgraphs[ntrhsensors];
     TGraph *humiditygraphs[ntrhsensors];
@@ -45,18 +53,18 @@ void drawmonitorgraphs(){
     for (int isensor = 0; isensor < ntrhsensors;isensor++){
        ctrh->cd(1);
        tempgraphs[isensor]->GetXaxis()->SetTimeDisplay(1);
-       tempgraphs[isensor]->GetXaxis()->SetTimeFormat("%H:%M");
-       tempgraphs[isensor]->SetLineColor(colors[isensor]);
+       tempgraphs[isensor]->GetXaxis()->SetTimeFormat("%d/%m-%H:%M");
        if (isensor > 0) tempgraphs[isensor]->Draw("SAME");
        else tempgraphs[isensor]->Draw();
+       tempgraphs[isensor]->SetLineColor(colors[isensor]);
        tempgraphs[isensor]->GetYaxis()->SetRangeUser(10,20);
 
        ctrh->cd(2);
        humiditygraphs[isensor]->GetXaxis()->SetTimeDisplay(1);
-       humiditygraphs[isensor]->GetXaxis()->SetTimeFormat("%H:%M");
-       humiditygraphs[isensor]->SetLineColor(colors[isensor]);
+       humiditygraphs[isensor]->GetXaxis()->SetTimeFormat("%d/%m-%H:%M");
        if (isensor > 0) humiditygraphs[isensor]->Draw("SAME");
        else humiditygraphs[isensor]->Draw();
+       humiditygraphs[isensor]->SetLineColor(colors[isensor]);
        humiditygraphs[isensor]->GetYaxis()->SetRangeUser(30,60);
     }
     ctrh->GetPad(1)->BuildLegend();
@@ -64,4 +72,13 @@ void drawmonitorgraphs(){
     //updating title, just for all plots
     tempgraphs[0]->SetTitle("Temperature;Time[H:M];temp[C]");
     humiditygraphs[0]->SetTitle("Relative Humidity;Time[H:M];rh");
+
+    cout<<"Total number of points"<<endl;
+    cout<<smstree->GetEntries()<<endl;
+    cout<<"Number of points without cooling "<<endl;
+    cout<<smstree->GetEntries("!coolingon")<<endl;
+    cout<<"Number of point with at least one smoking triggered "<<endl;
+    cout<<smstree->GetEntries("smk[0]||smk[1]||smk[2]")<<endl;
+
+    gBenchmark->Show("job1");
 }
