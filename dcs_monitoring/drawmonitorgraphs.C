@@ -1,6 +1,7 @@
-void drawmonitorgraphs(const char* inputfilename){
+void updatemonitorgraphs(const char* inputfilename, TFile *graphfile){
     //accessing dcs monitoring file (example file name: dcs_output_20220421.root)
-    TFile *smsfile = TFile::Open(inputfilename);
+    TString treefilename = TString("/eos/experiment/sndlhc/emulsionData/dcs_monitoring/"+TString(inputfilename));
+    TFile *smsfile = TFile::Open(treefilename);
     TTree *smstree = (TTree*) smsfile->Get("smstree");
     //setting variables and branches
     TDatime *monitortime;
@@ -17,13 +18,6 @@ void drawmonitorgraphs(const char* inputfilename){
     smstree->SetBranchAddress("coolingon",&coolingon);
 
     const int nentries = smstree->GetEntries();
-
-    //creating memfile, starting server
-
-    TFile *hfile = new TMemFile("job1.root","RECREATE","ROOT memfile as in httpserver tutorial with graphs");
-    THttpServer* serv = new THttpServer("http:8080?top=job1");
-    gBenchmark->Start("job1");
-
 
     //preparing graphs
     TGraph *tempgraphs[ntrhsensors];
@@ -80,5 +74,21 @@ void drawmonitorgraphs(const char* inputfilename){
     cout<<"Number of point with at least one smoking triggered "<<endl;
     cout<<smstree->GetEntries("smk[0]||smk[1]||smk[2]")<<endl;
 
-    gBenchmark->Show("job1");
+    graphfile->cd();
+    ctrh->SetName("ctrh");
+    ctrh->Write("ctrh",TObject::kOverwrite);
+
+}
+
+void drawmonitorgraphs(const char *inputfilename){
+    TString graphfilename = TString("/eos/experiment/sndlhc/www/online/graphs_"+TString(inputfilename));
+
+    TFile *graphfile = new TFile(graphfilename.Data(),"UPDATE"); //does not delete existing data
+    TUnixSystem *mysystem = new TUnixSystem();
+    while(1){
+         //cout<<"Updated graphs"<<endl;
+         updatemonitorgraphs(inputfilename,graphfile); //does not stop on its own, only when killed
+         graphfile->SaveSelf();
+         mysystem->Sleep(1800*1000.);
+        }
 }
