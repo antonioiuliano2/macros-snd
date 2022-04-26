@@ -93,7 +93,7 @@ void fromsndsw2FEDRA_muonduplication(){
   brickindex[53] = 18;
   brickindex[54] = 19;
   //builtmap
-  TH1I *hbrickID = new TH1I("hbrickID","ID of brick where neutrino interaction happened;brickID",50,0,50);
+  TH1I *hbrickID = new TH1I("hbrickID","ID of brick where neutrino interaction happened;brickID",60,0,60);
   
   //60 plates x 20 bricks -> 1200 files! Max number opened files is 1024 by default, need to set ulimit -n 1500 before launching this macro!
   for (int ibrick = 0; ibrick < nbricks; ibrick++){
@@ -106,8 +106,8 @@ void fromsndsw2FEDRA_muonduplication(){
   
   const int nfiles = 2;
   const int replaceratio = 1;
-  TString inputpaths[nfiles]= {"/home/simsndlhc/Simulations_sndlhc/sim_fedra/prova_mergeneutrinos/sndLHC.Ntuple-TGeant4-1E3cm2.root", "/home/simsndlhc/Simulations_sndlhc/sim_fedra/prova_mergeneutrinos/inECC_sndLHC.Genie-TGeant4.root"}; //first file muon background, second file neutrino signal
-  float evID_multiplier = 1e+5;
+  TString inputpaths[nfiles]= {"sndLHC.Ntuple-TGeant4-1E4cm2.root", "inECC_sndLHC.Genie-TGeant4.root"}; //first file muon background, second file neutrino signal
+  float evID_multiplier = 1e+3;
   
   //now input files must be open together (for each neutrino, I read all muons), I need two separate reader classes
   //input file: muon background
@@ -125,7 +125,8 @@ void fromsndsw2FEDRA_muonduplication(){
   //number of events in neutrino and background simulations
   //int nevents = nuyield[ifile] * replaceratio;
   int nmuonevents = muonbkgreader.GetEntries();
-  int nnuevents = 104;
+  int nnuevents = 100;
+  const int nmuonsxnu = 100;
   //int nnuevents = nusignalreader.GetEntries();
   
   int nskippednu = 0;
@@ -135,9 +136,18 @@ void fromsndsw2FEDRA_muonduplication(){
   int inECCevent;
 
   //coordinates of center of muon background (in sndsw system). Can we get them automatically somehow?
-  const Float_t xcenter_muons = -17.9; //cm
-  const Float_t ycenter_muons = 24.75;
-  
+  auto  muons2d = TH2F("muons2", "BKG muons starting positions", 40, -18.36, -17.44, 40, 24.20, 25.30); // this doesn't solve the problem
+  for (int imu = 0; imu < nmuonevents; imu++){
+    muonbkgreader.SetEntry(imu);
+    muons2d.Fill(muonbkgtracks[0].GetStartX(), muonbkgtracks[0].GetStartY());
+  }
+  //const Float_t xcenter_muons = -17.9; //cm
+  //const Float_t ycenter_muons = 24.75;
+  const Float_t xcenter_muons = muons2d.GetMean(1); //cm
+  const Float_t ycenter_muons = muons2d.GetMean(2);
+
+  bool maxreached = false;
+
   //looping over neutrino events
   for (int inu = 0; inu < nnuevents; inu++){
     
@@ -230,8 +240,10 @@ void fromsndsw2FEDRA_muonduplication(){
     
     //accessing muon background events (we are still in the neutrino loop, so we have 1000 muon events for every neutrino)
     
-    for (int imuon = 0; imuon < nmuonevents; imuon++){
-      muonbkgreader.SetEntry(imuon);
+    for (int imuon = 0; imuon < nmuonsxnu; imuon++){
+     int muonbkgevent = imuon+inu*nmuonsxnu;
+      if(muonbkgevent  >= nmuonevents) {cout << "Number of available bkg muons reached, aborting" << endl; maxreached = true; break;}
+      muonbkgreader.SetEntry(muonbkgevent);
       //looping over Muon Background hits, we shift them towards the neutrinos
       
       for (const EmulsionDetPoint& emupoint:muonbkgemulsionhits){   
@@ -300,7 +312,7 @@ void fromsndsw2FEDRA_muonduplication(){
 	if (savehit){       
 	  int whichbrick = brickindex[nbrickhit]; //finding index of the array for the brick of our hit;
 	  ect[whichbrick][nfilmhit]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
-	  ect[whichbrick][nfilmhit]->eS->SetMC(inECCevent+imuon*evID_multiplier, trackID); //objects used to store MC true information
+	  ect[whichbrick][nfilmhit]->eS->SetMC(inECCevent+muonbkgevent*evID_multiplier, trackID); //objects used to store MC true information
 	  ect[whichbrick][nfilmhit]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
 	  ect[whichbrick][nfilmhit]->eS->SetP(momentum);
 	  ect[whichbrick][nfilmhit]->eS->SetVid(pdgcode,0); //forcing viewID[0] member to store pdgcode information
@@ -312,7 +324,7 @@ void fromsndsw2FEDRA_muonduplication(){
       
 
     }//end of loop on muon background events
-    
+  if(maxreached == true) break;
   } //end of loop on neutrino signal events
   //CLOSING FILES
   for (int ibrick = 0; ibrick < nbricks; ibrick++){

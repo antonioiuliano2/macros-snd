@@ -150,7 +150,7 @@ def addtrueMCinfo(df,simfile, simfilebkg = 0):
  yoffset = 0.
  zoffset = 0.
 
- evID_multiplier = 1e+5
+ evID_multiplier = 1e+3
  #computing zoffset: in our couples, most downstream plate has always z=0
  simtree.GetEntry(0)
  emulsionhits = simtree.EmulsionDetPoint
@@ -196,8 +196,10 @@ def addtrueMCinfo(df,simfile, simfilebkg = 0):
    currentevent = MCEvent
    eventtracks = r.TClonesArray() #first initialization to empty, after filled
    
-   if (simfilebkg and MCEvent > evID_multiplier): #need to use bkg tree
-    simtreebkg.GetEntry(int(currentevent / evID_multiplier - 1)) #conversion formula was (imuon +1) *evID_multiplier
+   if (simfilebkg and MCEvent >= evID_multiplier): #need to use bkg tree
+    #decoding event number
+    inmuonpart = int(currentevent / evID_multiplier) - 1
+    simtreebkg.GetEntry(inmuonpart) #conversion formula was (imuon +1) *evID_multiplier
     eventtracks = simtreebkg.MCTrack
    else: #using signal tree
     simtree.GetEntry(currentevent)
@@ -212,8 +214,8 @@ def addtrueMCinfo(df,simfile, simfilebkg = 0):
    arr_MotherID[isegment] = mytrack.GetMotherId()
    arr_ProcID[isegment] = mytrack.GetProcID()
 
-   arr_startX[isegment] = (mytrack.GetStartX() + xoffset) * 1e+4 + 62500 #we need also to convert cm to micron
-   arr_startY[isegment] = (mytrack.GetStartY() + yoffset) * 1e+4 + 49500
+   arr_startX[isegment] = (mytrack.GetStartX() + xoffset) * 1e+4 + 473000 #we need also to convert cm to micron
+   arr_startY[isegment] = (mytrack.GetStartY() + yoffset) * 1e+4 - 158000
    arr_startZ[isegment] = (mytrack.GetStartZ() + zoffset) * 1e+4
    arr_startT[isegment] = mytrack.GetStartT()
   
