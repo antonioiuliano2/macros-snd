@@ -312,7 +312,7 @@ void fromsndsw2FEDRA_muonduplication(){
 	if (savehit){       
 	  int whichbrick = brickindex[nbrickhit]; //finding index of the array for the brick of our hit;
 	  ect[whichbrick][nfilmhit]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
-	  ect[whichbrick][nfilmhit]->eS->SetMC(inECCevent+muonbkgevent*evID_multiplier, trackID); //objects used to store MC true information
+	  ect[whichbrick][nfilmhit]->eS->SetMC(inECCevent+(muonbkgevent+1)*evID_multiplier, trackID); //objects used to store MC true information
 	  ect[whichbrick][nfilmhit]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
 	  ect[whichbrick][nfilmhit]->eS->SetP(momentum);
 	  ect[whichbrick][nfilmhit]->eS->SetVid(pdgcode,0); //forcing viewID[0] member to store pdgcode information
