@@ -1,5 +1,7 @@
-void updatemonitorgraphs(const char* inputfilename, TFile *graphfile){
+void drawmonitorgraphs(const char* inputfilename){
     //accessing dcs monitoring file (example file name: dcs_output_20220421.root)
+    TString graphfilename = TString("/eos/experiment/sndlhc/www/online/graphs_"+TString(inputfilename));
+    TFile *graphfile = new TFile(graphfilename.Data(),"RECREATE");
     TString treefilename = TString("/eos/experiment/sndlhc/emulsionData/dcs_monitoring/"+TString(inputfilename));
     TFile *smsfile = TFile::Open(treefilename);
     TTree *smstree = (TTree*) smsfile->Get("smstree");
@@ -62,7 +64,7 @@ void updatemonitorgraphs(const char* inputfilename, TFile *graphfile){
        humiditygraphs[isensor]->GetXaxis()->SetTimeFormat("%d/%m-%H:%M");
        humiditygraphs[isensor]->SetLineColor(colors[isensor]);
        humiditygraphs[isensor]->SetMinimum(30);
-       humiditygraphs[isensor]->SetMaximum(60);
+       humiditygraphs[isensor]->SetMaximum(80);
        if (isensor > 0) humiditygraphs[isensor]->Draw("SAME");
        else humiditygraphs[isensor]->Draw();
     }
@@ -81,18 +83,8 @@ void updatemonitorgraphs(const char* inputfilename, TFile *graphfile){
 
     graphfile->cd();
     ctrh->SetName("ctrh");
-    ctrh->Write("ctrh",TObject::kOverwrite);
-    graphfile->SaveSelf();
+    ctrh->Write("ctrh");
 
-}
+    graphfile->Close();
 
-void drawmonitorgraphs(const char *inputfilename){
-    TString graphfilename = TString("/eos/experiment/sndlhc/www/online/graphs_"+TString(inputfilename));
-
-    TFile *graphfile = new TFile(graphfilename.Data(),"RECREATE");
-    while(1){        
-         updatemonitorgraphs(inputfilename,graphfile); //does not stop on its own, only when killed
-         cout<<"Updated graphs"<<endl;
-         gSystem->Sleep(1800*1000.); //every 30 minutes
-        }
 }
