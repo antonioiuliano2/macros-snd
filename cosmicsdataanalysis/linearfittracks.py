@@ -22,8 +22,8 @@ hresty = r.TH1D("hresty","Angular resolution;TY",60,-0.06,0.06)
 hresx = r.TH1D("hresx","Position resolution;X[#mum]",60,-60,60)
 hresy = r.TH1D("hresy","Position resolution;Y[#mum]",60,-60,60)
 
-minnseg = 4 #if 5 plates
-#minnseg = 7 # if 10 plates
+#minnseg = 4 #if 5 plates
+minnseg = 7 # if 10 plates
 czx = r.TCanvas()
 czy = r.TCanvas()
 #starting loop over tracks
@@ -104,19 +104,19 @@ cresang = r.TCanvas()
 cresang.Divide(2,1)
 cresang.cd(1)
 hrestx.Draw()
-hrestx.Fit("gaus","","",-0.1,0.1)
+hrestx.Fit("gaus","","",-0.015,0.015)
 cresang.cd(2)
 hresty.Draw()
-hresty.Fit("gaus","","",-0.1,0.1)
+hresty.Fit("gaus","","",-0.015,0.015)
 
 crespos = r.TCanvas()
 crespos.Divide(2,1)
 crespos.cd(1)
 hresx.Draw()
-hresx.Fit("gaus","","",-40,40)
+hresx.Fit("gaus","","",-15,15)
 crespos.cd(2)
 hresy.Draw()
-hresy.Fit("gaus","","",-40,40)
+hresy.Fit("gaus","","",-15,15)
 
 outputfile.cd()
 restree.Write()
