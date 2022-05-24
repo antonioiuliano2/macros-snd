@@ -2,11 +2,11 @@
 //in the b000001 folder, there should be already a folder called 
 //plots with subfolders: thicknesses, link_reports, al_reports
 //TString: class which allows path concatenation. Access the char* object with Data()
-const int brick = 1;
+const int brick = 3;
 const int firstplate = 1;
-const int lastplate = 1;
+const int lastplate = 4;
 
-TString path = TString("/home/scanner/sndlhc/TESTTUNGSTENO2021");
+TString path = TString("/home/scanner/sndlhc/TEST_POSA");
 
 
 //TString run = "GSI5";
@@ -47,7 +47,7 @@ void couplesecography(){
                 
                 TCanvas *c = new TCanvas();
                 couples->Draw("s.eY:s.eX","eCHI2P<2.0&&s.eW>10&&eN1==1&&eN2==1");
-                c->Print(Form((path+"/b%06i/plots/goodcouples/goodcp_p%i.png").Data(),iplate),"png");
+                c->Print(Form((path+"/b%06i/plots/goodcouples/goodcp_p%i.png").Data(),brick,iplate),"png");
 
             }
         }
