@@ -64,7 +64,7 @@ void drawmonitorgraphs(const char* inputfilename){
        humiditygraphs[isensor]->GetXaxis()->SetTimeFormat("%d/%m-%H:%M");
        humiditygraphs[isensor]->SetLineColor(colors[isensor]);
        humiditygraphs[isensor]->SetMinimum(30);
-       humiditygraphs[isensor]->SetMaximum(80);
+       humiditygraphs[isensor]->SetMaximum(90);
        if (isensor > 0) humiditygraphs[isensor]->Draw("SAME");
        else humiditygraphs[isensor]->Draw();
     }
