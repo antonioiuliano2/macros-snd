@@ -1,11 +1,19 @@
 //track density, at least 4 segments. For muon cosmic study
 void track_density(){
- const TCut trcut("nseg>3");
+  //const TCut trcut("nseg>3"); //SNDCosmics
  //const TCut trcut("nseg>6");
 
  //TFile *trackfile = TFile::Open("b000001.0.0.0_last10plates.trk.root");
- TFile *trackfile = TFile::Open("b000004.0.0.0_firstfiveplates.trk.root");
+ //TFile *trackfile = TFile::Open("b000001.0.0.0_first5plates.trk.root");
+
+ //Data of Packages
+ const TCut trcut("nseg>2");
+
+ TFile *trackfile = TFile::Open("/home/scanner/sndlhc/TEST_POSA/b000003/b000003.0.0.0.trk.root");
+
  TTree *tracks = (TTree*) trackfile->Get("tracks");
+
+ 
 
  TCanvas *c = new TCanvas("cxy","XY Canvas distribution",800,800);
 
