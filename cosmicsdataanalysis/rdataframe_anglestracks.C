@@ -81,7 +81,7 @@ void rdataframe_anglestracks(){
   //selecting good tracks (aka long, in this case
   auto dfgoodtr = dftr2.Filter("nseg>2");
 
-  auto hxy = dfgoodtr.Histo2D({"hxy","xy map;x[cm];y[cm];TX",nbinsx,xmin,xmax,nbinsy,ymin,ymax},"Xcm","Ycm");
+  auto hxy = dfgoodtr.Histo2D({"hxy","xy map;x[cm];y[cm]",nbinsx,xmin,xmax,nbinsy,ymin,ymax},"Xcm","Ycm");
 
   auto htx = dfgoodtr.Histo1D({"htx","TX of tracks;TX", nbinstx,txmin,txmax},"TX");
   auto htxmap = dfgoodtr.Profile2D({"htxmap","TX of tracks in xy map;x[cm];y[cm];TX",nbinsx,xmin,xmax,nbinsy,ymin,ymax, txmin,txmax},"Xcm","Ycm","TX");
@@ -90,6 +90,9 @@ void rdataframe_anglestracks(){
   auto htymap = dfgoodtr.Profile2D({"htymap","TY of tracks in xy map;x[cm];y[cm];TY",nbinsx,xmin,xmax,nbinsy,ymin,ymax, tymin,tymax},"Xcm","Ycm","TY");
 
   auto htxty = dfgoodtr.Histo2D({"htxty","TY and TX of tracks;TX;TY",nbinstx,txmin,txmax, nbinsty,tymin,tymax},"TX","TY");
+
+  //Theta angle
+  auto htheta = dfgoodtr.Histo1D({"htheta","Theta angle distribution;#theta",150,0,1.5},"theta");
 
   auto hsintheta = dfgoodtr.Define("sintheta","TMath::Sin(theta)")
                            .Histo1D({"hsintheta","SinTheta distribution;sin#theta",110,0,1.1},"sintheta");
@@ -100,6 +103,8 @@ void rdataframe_anglestracks(){
   //just for testing COV
   auto hvarx = dfgoodtr.Histo1D("varx");
 
+  TFile *canvasfile = new TFile("plots/plots_POSA_3_4plates.root","RECREATE");
+  canvasfile->cd();
   //Drawing plots
   TCanvas *ctx = new TCanvas("ctx","TX Canvas",1600,800);
   ctx->Divide(2,1);
@@ -107,6 +112,8 @@ void rdataframe_anglestracks(){
   htx->DrawClone();
   ctx->cd(2);
   htxmap->DrawClone("COLZ");
+
+  ctx->Write();
 
   //Drawing plots
   TCanvas *cty = new TCanvas("cty","TY Canvas",1600,800);
@@ -116,11 +123,58 @@ void rdataframe_anglestracks(){
   cty->cd(2);
   htymap->DrawClone("COLZ");
 
-  TCanvas *ctxty = new TCanvas("ctxty","TXTY Canvas",800,800);
+  cty->Write();
+
+  TCanvas *cangle = new TCanvas("cangle","Angular distributions",1600,800);
+  cangle->Divide(2,1);
+  cangle->cd(1);
+  htheta->DrawClone();
+  cangle->cd(2);
   htxty->DrawClone("COLZ");
+
+  cangle->Write();
+
+  //averagine of histogram
+  const int minbin = 3;
+  const int maxbin = 6;
+  ROOT::RVec<int> nmuons_array;
+
+  for (int ibinx = minbin+1; ibinx <=maxbin; ibinx++){ //bin 0 is actually underflow!
+   for (int ibiny = minbin+1; ibiny <=maxbin; ibiny++){
+   int nmuons = hxy->GetBinContent(ibinx,ibiny);
+    nmuons_array.push_back(nmuons);
+   }
+  }
+
+  cout<<"N values "<<nmuons_array.size()<<endl;
+  cout<<"Valor Medio: "<<ROOT::VecOps::Mean(nmuons_array)<<" con errore "<<ROOT::VecOps::StdDev(nmuons_array)/TMath::Sqrt(nmuons_array.size())<<endl;
 
   TCanvas *cxy = new TCanvas("cxy","XY Canvas",800,800);
   hxy->DrawClone("COLZ && TEXT");
+
+  TLine *lx0 = new TLine(minbin,minbin,minbin,maxbin);
+  lx0->SetLineColor(kRed);
+  lx0->SetLineWidth(3);
+
+  TLine *lx1 = new TLine(maxbin,minbin,maxbin,maxbin);
+  lx1->SetLineColor(kRed);
+  lx1->SetLineWidth(3);
+ 
+  TLine *ly0 = new TLine(minbin,minbin,maxbin,minbin);
+  ly0->SetLineColor(kRed);
+  ly0->SetLineWidth(3);
+
+  TLine *ly1 = new TLine(minbin,maxbin,maxbin,maxbin);
+  ly1->SetLineColor(kRed);
+  ly1->SetLineWidth(3);
+
+  lx0->Draw("SAME");
+  lx1->Draw("SAME");
+  ly0->Draw("SAME");
+  ly1->Draw("SAME");
+
+
+  cxy->Write();
 
   TCanvas *csincostheta = new TCanvas("csincostheta","Sin and Cos Theta");
   csincostheta->Divide(2,1);
@@ -129,7 +183,11 @@ void rdataframe_anglestracks(){
   csincostheta->cd(2);
   hcostheta->DrawClone();
 
-  TCanvas *cnseg = new TCanvas();
+  csincostheta->Write();
+
+  TCanvas *cnseg = new TCanvas("cnseg","Number of segments per track");
   hnseg->DrawClone();
+
+  cnseg->Write();
 
 }

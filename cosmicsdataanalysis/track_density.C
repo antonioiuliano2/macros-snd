@@ -1,15 +1,15 @@
 //track density, at least 4 segments. For muon cosmic study
 void track_density(){
-  //const TCut trcut("nseg>3"); //SNDCosmics
+ const TCut trcut("nseg>3"); //SNDCosmics
  //const TCut trcut("nseg>6");
 
  //TFile *trackfile = TFile::Open("b000001.0.0.0_last10plates.trk.root");
- //TFile *trackfile = TFile::Open("b000001.0.0.0_first5plates.trk.root");
+ TFile *trackfile = TFile::Open("b000001.0.0.0_first5plates.trk.root");
 
- //Data of Packages
- const TCut trcut("nseg>2");
+ //Data of Packages (remember to replace theta with Pi()/2 - theta at the end!!!)
+ //const TCut trcut("nseg>2");
 
- TFile *trackfile = TFile::Open("/home/scanner/sndlhc/TEST_POSA/b000003/b000003.0.0.0.trk.root");
+ //TFile *trackfile = TFile::Open("/home/scanner/sndlhc/TEST_POSA/b000003/b000003.0.0.0.trk.root");
 
  TTree *tracks = (TTree*) trackfile->Get("tracks");
 
@@ -72,7 +72,7 @@ void track_density(){
  TCanvas *c_costheta = new TCanvas();
  tracks->Draw("TMath::Cos(TMath::ATan(t.Theta()))>>hcostheta(10,0.5,1.)",trcut,"E");
 
- TH2D *hcostheta = (TH2D*) gDirectory->FindObject("hcostheta");
+ TH1D *hcostheta = (TH1D*) gDirectory->FindObject("hcostheta");
  hcostheta->SetTitle("Angular distribution; cos#theta");
 
  TF1 *fang_simple = new TF1("fang_simple","pol2");
@@ -82,6 +82,16 @@ void track_density(){
  TF1 *fang = new TF1("fang","pol2 * 1/TMath::Sqrt(1-x*x)");
  fang->SetParameters(100000,0,100000);
  //hcostheta->Fit(fang,"R+");
+
+ TCanvas *c_theta = new TCanvas();
+ //tracks->Draw("TMath::Abs(TMath::Pi()/2. - TMath::ATan(t.Theta()))>>htheta(16,0.,1.6)",trcut,"E"); //90° - theta (for package)
+ tracks->Draw("TMath::ATan(t.Theta())>>htheta(16,0.,1.6)",trcut,"E"); //sintheta (for package)
+ TH1D *htheta = (TH1D*) gDirectory->FindObject("htheta");
+ htheta->SetTitle("Angular distribution; #theta");
+
+ //tracks->Draw("TMath::Cos(TMath::ATan(t.Theta()))>>hcosthetabis(10,0.,1.0)",trcut,"E"); //costheta (for SND Commissioning)
+ //TH1D *hcosthetabis = (TH1D*) gDirectory->FindObject("hcosthetabis");
+ //hcosthetabis->SetTitle("Angular distribution; cos#theta");
 
  //c_costheta->BuildLegend();
  
