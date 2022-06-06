@@ -56,6 +56,7 @@ void drawmonitorgraphs(const char* inputfilename){
        tempgraphs[isensor]->SetLineColor(colors[isensor]);
        tempgraphs[isensor]->SetMinimum(10);
        tempgraphs[isensor]->SetMaximum(30);
+       tempgraphs[isensor]->SetLineWidth(5);
        if (isensor > 0) tempgraphs[isensor]->Draw("SAME");
        else tempgraphs[isensor]->Draw();
 
@@ -65,6 +66,7 @@ void drawmonitorgraphs(const char* inputfilename){
        humiditygraphs[isensor]->SetLineColor(colors[isensor]);
        humiditygraphs[isensor]->SetMinimum(30);
        humiditygraphs[isensor]->SetMaximum(90);
+       humiditygraphs[isensor]->SetLineWidth(5);
        if (isensor > 0) humiditygraphs[isensor]->Draw("SAME");
        else humiditygraphs[isensor]->Draw();
     }
