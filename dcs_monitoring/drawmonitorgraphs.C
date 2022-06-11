@@ -6,7 +6,7 @@ void drawmonitorgraphs(const char* inputfilename){
     TFile *smsfile = TFile::Open(treefilename);
     TTree *smstree = (TTree*) smsfile->Get("smstree");
     //setting variables and branches
-    TDatime *monitortime;
+    ULong64_t monitortime;
     const int ntrhsensors = 5;
     const int nsmksensors = 3;
     EColor colors[ntrhsensors] = {kRed,kOrange,kBlue,kMagenta,kBlack};
@@ -39,11 +39,11 @@ void drawmonitorgraphs(const char* inputfilename){
     UInt_t convertedtime; //from TDatime Convert()
     for (int ientry = 0; ientry < nentries; ientry++){
         smstree->GetEntry(ientry);
-        convertedtime = monitortime->Convert();
+        //convertedtime = monitortime->Convert();
         //loop over sensors
         for (int isensor = 0; isensor < ntrhsensors;isensor++){
-            tempgraphs[isensor]->AddPoint(convertedtime,temp[isensor]);
-            humiditygraphs[isensor]->AddPoint(convertedtime,relhum[isensor]);
+            tempgraphs[isensor]->AddPoint(monitortime,temp[isensor]);
+            humiditygraphs[isensor]->AddPoint(monitortime,relhum[isensor]);
         }
     }
     //end of loop, plotting graphs
