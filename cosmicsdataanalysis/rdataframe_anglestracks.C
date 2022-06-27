@@ -42,16 +42,17 @@ EdbSegP GetFirstSegment(TClonesArray sf){
 
 using namespace ROOT;
 void rdataframe_anglestracks(){
-  TFile *tracksfile = TFile::Open("b000003.0.0.0.trk.root");
+  TFile *tracksfile = TFile::Open("linked_tracks.root");
   TTree *trackstree = (TTree*) tracksfile->Get("tracks");
 
+  const int minnseg = 3;
   //position map binning
-  const int nbinsx = 10;
+  const int nbinsx = 13;
   const float xmin = 0;
-  const float xmax = 10;
-  const int nbinsy = 10;
+  const float xmax = 13;
+  const int nbinsy = 13;
   const float ymin = 0;
-  const float ymax = 10;
+  const float ymax = 13;
 
   //angle bins
   const int nbinstx = 75;
@@ -79,7 +80,7 @@ void rdataframe_anglestracks(){
   auto dftr2 = dftr1.Define("tantheta","tr.Theta()").Define("theta","TMath::ATan(tantheta)");
 
   //selecting good tracks (aka long, in this case
-  auto dfgoodtr = dftr2.Filter("nseg>2");
+  auto dfgoodtr = dftr2.Filter(Form("nseg>=%i",minnseg));
 
   auto hxy = dfgoodtr.Histo2D({"hxy","xy map;x[cm];y[cm]",nbinsx,xmin,xmax,nbinsy,ymin,ymax},"Xcm","Ycm");
 
@@ -103,7 +104,7 @@ void rdataframe_anglestracks(){
   //just for testing COV
   auto hvarx = dfgoodtr.Histo1D("varx");
 
-  TFile *canvasfile = new TFile("plots/plots_POSA_3_4plates.root","RECREATE");
+  TFile *canvasfile = new TFile("plots/plots_cosmics.root","RECREATE");
   canvasfile->cd();
   //Drawing plots
   TCanvas *ctx = new TCanvas("ctx","TX Canvas",1600,800);
@@ -136,7 +137,7 @@ void rdataframe_anglestracks(){
 
   //averagine of histogram
   const int minbin = 3;
-  const int maxbin = 6;
+  const int maxbin = nbinsx - 3;
   ROOT::RVec<int> nmuons_array;
 
   for (int ibinx = minbin+1; ibinx <=maxbin; ibinx++){ //bin 0 is actually underflow!
