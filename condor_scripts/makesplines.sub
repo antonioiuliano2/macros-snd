@@ -1,0 +1,10 @@
+executable            = makesplines.sh
+arguments             = $(ClusterID) $(ProcId) $(material)
+output                = output/makesplines.$(ClusterId).$(ProcId).out
+error                 = error/makesplines.$(ClusterId).$(ProcId).err
+log                   = log/makesplines.$(ClusterId).log
+getenv = False
+notification = Never
++JobFlavour             ="testmatch"
+queue material in H1, B11, C11, C12, N14, O16, F19, Na23, Mg24, Al27, Si28, S32, Ar40, K39, Ca40, Ti48, Fe56, Br80, Sr88, Ag108, I127, Ba137, W184
+
