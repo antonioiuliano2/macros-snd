@@ -40,4 +40,4 @@ eval `alienv load sndsw/latest`
 
 echo "Launching gmkspl for material "$MATERIAL" with code "$PDG
 OUTPUTFOLDER=/afs/cern.ch/work/a/aiulian/public/genie_sims/crisconversion/tunedsplines
-gmkspl -p 12,-12,14,-14,16,-16 -t $PDG -n 100 -e 5000 -o $OUTPUTFOLDER/$MATERIAL"_splines.xml" --tune SNDG18_02a_01_000
+gmkspl -p 12,-12,14,-14,16,-16 -t $PDG -n 100 -e 7000 -o $OUTPUTFOLDER/$MATERIAL"_splines.xml" --tune SNDG18_02a_01_000
