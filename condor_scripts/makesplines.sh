@@ -39,5 +39,5 @@ export ALIBUILD_WORK_DIR=$SNDLHC_mymaster/sw
 eval `alienv load sndsw/latest`
 
 echo "Launching gmkspl for material "$MATERIAL" with code "$PDG
-OUTPUTFOLDER=/afs/cern.ch/work/a/aiulian/public/genie_sims/crisconversion/splines
-gmkspl -p 12,-12,14,-14,16,-16 -t $PDG -n 100 -e 5000 -o $OUTPUTFOLDER/$MATERIAL"_splines.xml"
+OUTPUTFOLDER=/afs/cern.ch/work/a/aiulian/public/genie_sims/crisconversion/tunedsplines
+gmkspl -p 12,-12,14,-14,16,-16 -t $PDG -n 100 -e 5000 -o $OUTPUTFOLDER/$MATERIAL"_splines.xml" --tune SNDG18_02a_01_000
