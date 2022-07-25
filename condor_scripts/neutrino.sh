@@ -12,7 +12,7 @@ SNDLHC_mymaster=/afs/cern.ch/work/a/aiulian/public/SNDLHCBuild
 export ALIBUILD_WORK_DIR=$SNDLHC_mymaster/sw #for alienv
 
 echo "SETUP"
-source /cvmfs/sndlhc.cern.ch/latest/setUp.sh
+source /cvmfs/sndlhc.cern.ch/SNDLHC-2022/June10/setUp.sh
 eval `alienv load sndsw/latest`
 
 echo "Starting script, from neutrino number "
@@ -21,6 +21,6 @@ INPUTFILES=/afs/cern.ch/work/a/aiulian/public/genie_sims
 echo "From file "
 echo $INPUTFILES
 
-OUTPUTDIR=/afs/cern.ch/work/a/aiulian/public/sim_snd/condor_sims/numu_sim_activeemu_10_November_2021
+OUTPUTDIR=/afs/cern.ch/work/a/aiulian/public/sim_snd/condor_sims/numu_sim_25_July_2022
 
-/cvmfs/sndlhc.cern.ch/SNDLHC-2021/June/15/sw/slc7_x86-64/Python/v3.6.8-local1/bin/python3 $SNDLHC_mymaster/sndsw/shipLHC/run_simSND.py --Genie 1 -f /afs/cern.ch/work/a/aiulian/public/genie_sims/GenieEvents_3_06/CCDIS/numu_CCDIS_FairShip_withFLUKA.root -i $STARTEVENT -n $NEVENTS -o $OUTPUTDIR/$LSB_JOBINDEX
+/cvmfs/sndlhc.cern.ch/SNDLHC-2022/June10/sw/slc7_x86-64/Python/v3.6.8-local1/bin/python3 $SNDLHC_mymaster/sndsw/shipLHC/run_simSND.py --Genie 1 -f /afs/cern.ch/work/a/aiulian/public/genie_sims/GenieEvents_3_06/CCDIS/numu_CCDIS_FairShip.root -i $STARTEVENT -n $NEVENTS -o $OUTPUTDIR/$LSB_JOBINDEX

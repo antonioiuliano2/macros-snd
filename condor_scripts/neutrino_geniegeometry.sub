@@ -1,0 +1,11 @@
+executable            = neutrino_geniegeometry.sh
+arguments             = $(ClusterID) $(ProcId)
+output                = output/neutrino_geniegeometry.$(ClusterId).$(ProcId).out
+error                 = error/neutrino_geniegeometry.$(ClusterId).$(ProcId).err
+log                   = log/neutrino_geniegeometry.$(ClusterId).log
+getenv = False
+notification = Never
+RequestCpus = 5
++JobFlavour             ="testmatch"
+queue 10
+
