@@ -2,7 +2,7 @@
 //in the b000001 folder, there should be already a folder called 
 //plots with subfolders: thicknesses, link_reports, al_reports
 //TString: class which allows path concatenation. Access the char* object with Data()
-const int brick = 3;
+const int brick = 2; //3 with large angles
 const int firstplate = 1;
 const int lastplate = 4;
 
@@ -60,19 +60,23 @@ void linkreports(){
     for (int iplate = firstplate; iplate <= lastplate; iplate++){
         //opening the file with the reports
         inputfile = TFile::Open(Form((path+"/b%06i/p%03d/%i.%i.0.0.cp.root").Data(),brick,iplate,brick,iplate));
-        c = (TCanvas*) inputfile->Get("report");
+	if (inputfile){
+ 	 if (inputfile->Get("report")){
+          c = (TCanvas*) inputfile->Get("report");
         
-        /* //saving a full pdf report (very heavy)
-         if (i==firstplate) c->Print((path+"/b%06i/plots/link_reports/linking.pdf(").Data(),"pdf");
-         else if (i==lastplate) c->Print((path+"/b%06i/plots/link_reports/linking.pdf)").Data(),"pdf");
-         else c->Print((path+"/b%06i/plots/link_reports/linking.pdf").Data(),"pdf");*/
+          /* //saving a full pdf report (very heavy)
+          if (i==firstplate) c->Print((path+"/b%06i/plots/link_reports/linking.pdf(").Data(),"pdf");
+          else if (i==lastplate) c->Print((path+"/b%06i/plots/link_reports/linking.pdf)").Data(),"pdf");
+          else c->Print((path+"/b%06i/plots/link_reports/linking.pdf").Data(),"pdf");*/
         
-        //saving many png images for quick view
-        c->Draw();
-        c->Print(Form((path+"/b%06i/plots/link_reports/link_p%i.png").Data(),iplate),"png");
-        
-        //close the file
-        inputfile->Close();
+          //saving many png images for quick view
+          c->Draw();
+          c->Print(Form((path+"/b%06i/plots/link_reports/link_p%i.png").Data(),brick,iplate),"png");
+         }
+         else cout<<"coul not open report for plate "<<iplate<<endl;        
+         //close the file
+         inputfile->Close();
+	}
     }
 }
 

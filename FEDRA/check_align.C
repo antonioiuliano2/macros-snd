@@ -6,7 +6,7 @@ void align_check(int brick, int lastplate=57, int firstplate=1);
 //checks dz between plates after alignment
 void checkdz(int brick, int lastplate=57, int firstplate=1){
  //syntax for brickname is 002, 022, 111
- TString dir = TString("/home/scanner/sndlhc/TESTTUNGSTENO2021");
+ TString dir = TString("/home/scanner/sndlhc/RUN0");
 
  TString setposition = TString(Form("/b%06i/b%06i.0.0.0.set.root",brick,brick)); //example: /b000002/b000002.0.0.0.set.root
 
@@ -45,7 +45,7 @@ void checkdz(int brick, int lastplate=57, int firstplate=1){
 //check alignment plots (currently xy and zphi)
 
 void align_check(int brick,int lastplate, int firstplate){
- TString path = TString("/home/scanner/sndlhc/TESTTUNGSTENO2021");
+ TString path = TString("/home/scanner/sndlhc/RUN0");
  TFile *inputfile;
  //FOOT bricks are made of many plates, needed more than 1 canvas
  const int nplates = lastplate - firstplate;
@@ -79,7 +79,7 @@ void align_check(int brick,int lastplate, int firstplate){
   whichcanvas = iplate/canvasarea;
   c[whichcanvas]->cd(iplate-whichcanvas*canvasarea+1);
   //opening the file with the report
-  inputfile = TFile::Open((path+TString(Form("/b%06i/AFF/b%06i.%i.0.0_b%06i.%i.0.0.al.root",brick,brick,i,brick,i-1))).Data()); //example:AFF/2.10.0.0_2.9.0.0.al.root
+  inputfile = TFile::Open((path+TString(Form("/b%06i/AFF/%i.%i.0.0_%i.%i.0.0.al.root",brick,brick,i,brick,i-1))).Data()); //example:AFF/2.10.0.0_2.9.0.0.al.root
   if (inputfile){ //check if file is present
    if (inputfile->GetListOfKeys()->Contains("zphi_coarse") ){ //check if histogram is present (i.e. alignment was not interrupted leading to a zombie-like file, even if not seen as zombie)
    hzphi[iplate] = (TH2F*)inputfile->Get("zphi_coarse");
