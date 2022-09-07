@@ -2,11 +2,11 @@
 //in the b000001 folder, there should be already a folder called 
 //plots with subfolders: thicknesses, link_reports, al_reports
 //TString: class which allows path concatenation. Access the char* object with Data()
-const int brick = 2; //3 with large angles
+const int brick = 1; //3 with large angles
 const int firstplate = 1;
 const int lastplate = 4;
 
-TString path = TString("/home/scanner/sndlhc/TEST_POSA");
+TString path = TString("/home/scanner/sndlhc/TEST_POSD");
 
 
 //TString run = "GSI5";
@@ -98,6 +98,7 @@ void alreports(){
 
 //draw all thickness
 #include "thickness.C"
+#include "check_raw.C"
 void thickness();
 
 void drawallthicknesses(){
@@ -139,5 +140,31 @@ void drawallthicknesses(){
     cout<<"Average thickness of emulsion: "<<meanthickness_emu<<endl;
     cout<<"Average thickness of plastic base: "<<meanthickness_base<<endl;
     //gROOT->GetSelectedPad()->GetCanvas()->Print((path+"/b%06i/plots/thicknesses/allthicknesses.pdf)").Data(),"pdf");
+}
+
+void drawallraws(){
+  TCanvas *cz = NULL;
+  TCanvas *cview = NULL;
+  TCanvas *csurf = NULL;
+  for (int i = firstplate; i <= lastplate; i++){
+	TFile *f = TFile::Open(Form((path+"/b%06d/p%03d/%i.%i.0.0.raw.root").Data(),brick,i,brick,i));
+        if (!f) continue;
+        if (!f->Get("Views")){ cout<<"Not found tree Views, raw file probably corrupted, skipping"<<endl; continue;}
+	check_raw();
+	//getting canvases; printing them
+        TCanvas *cz = (TCanvas*) gROOT->FindObject("cz");
+	TCanvas *cview = (TCanvas*) gROOT->FindObject("view");
+        TCanvas *csurf = (TCanvas*) gROOT->FindObject("csurf");
+
+        cz->Print(Form((path+"/b%06d/plots/raws/checkz_plate%i.png").Data(),brick,i));
+	cview->Print(Form((path+"/b%06d/plots/raws/checkview_plate%i.png").Data(),brick,i));
+	csurf->Print(Form((path+"/b%06d/plots/raws/checksurf_plate%i.png").Data(),brick,i));
+
+	//closing canvases
+	cz->Close();
+	cview->Close();
+	csurf->Close();
+
+  }
 }
 
