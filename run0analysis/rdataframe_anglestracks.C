@@ -42,10 +42,10 @@ EdbSegP GetFirstSegment(TClonesArray sf){
 
 using namespace ROOT;
 void rdataframe_anglestracks(){
-  TFile *tracksfile = TFile::Open("b000031.0.0.0.trk_downstreamsample_5plates.root");
+  TFile *tracksfile = TFile::Open("tracks_12plates_firstquarter.root");
   TTree *trackstree = (TTree*) tracksfile->Get("tracks");
 
-  const int minnseg = 4;
+  const int minnseg = 6;
   //position map binning
   const int nbinsx = 19;
   const float xmin = 0;
@@ -55,17 +55,17 @@ void rdataframe_anglestracks(){
   const float ymax = 19;
 
   //angle bins
-  const int nbinstx = 50;
-  const float txmin = -0.1;
-  const float txmax = 0.1;
-  const int nbinsty = 50;
-  const float tymin = -0.1;
-  const float tymax  = 0.1; 
+  const int nbinstx = 80;
+  const float txmin = -0.2;
+  const float txmax = 0.2;
+  const int nbinsty = 80;
+  const float tymin = -0.2;
+  const float tymax  = 0.2; 
 
   RDataFrame df(*trackstree);
 
   //nseg before cut, to have all track segments
-  auto hnseg = df.Fill<int>(TH1I("hnseg", "number of segments;nseg", 6, 0, 6), {"nseg"}); //integer filling is more convoluted
+  auto hnseg = df.Fill<int>(TH1I("hnseg", "number of segments;nseg", 13, 0, 13), {"nseg"}); //integer filling is more convoluted
 
   auto dftr0 = df.Define("varx",GetVX,{"sf"}); //cov matrix need to be stored in another branch
 
@@ -104,7 +104,7 @@ void rdataframe_anglestracks(){
   //just for testing COV
   auto hvarx = dfgoodtr.Histo1D("varx");
 
-  TFile *canvasfile = new TFile("plots/plots_RUN0W3B1_downstream.root","RECREATE");
+  TFile *canvasfile = new TFile("plots/plots_1stquarter_12plates.root","RECREATE");
   canvasfile->cd();
   //Drawing plots
   TCanvas *ctx = new TCanvas("ctx","TX Canvas",1600,800);
@@ -137,7 +137,7 @@ void rdataframe_anglestracks(){
 
   //averagine of histogram
   const int minbin = 3;
-  const int maxbin = nbinsx - 3;
+  const int maxbin = nbinsx-3;
   ROOT::RVec<int> nmuons_array;
 
   for (int ibinx = minbin+1; ibinx <=maxbin; ibinx++){ //bin 0 is actually underflow!
