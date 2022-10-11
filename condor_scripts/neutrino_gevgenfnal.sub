@@ -1,0 +1,14 @@
+universe = vanilla
+executable = /afs/cern.ch/work/c/cvilela/private/snd_muon_reco/scripts/lxplus_generate_nu_new.sh
+arguments = /eos/user/a/aiulian/sim_snd/sndlhc_13TeV_down_volMuFilter_20fb-1_SNDG18_02a_01_000/ 0.1562e16 SNDG18_02a_01_000 /eos/user/a/aiulian/sim_snd/Generate_Genieinput/crisconversion/all13TeVKO_gsimple.root +volTarget $(Item)
+log=log/genie_nu_$(Item).log
+output=output/genie_nu_$(Item).out
+error=error/genie_nu_$(Item).err
+should_transfer_files = NO
+request_CPUs = 5
++JobFlavour = "tomorrow"
+notification = Never
+on_exit_remove          = (ExitBySignal == False) && (ExitCode == 0)
+max_retries             = 3
+requirements = Machine =!= LastRemoteHost
+queue Item from iron_jobs
