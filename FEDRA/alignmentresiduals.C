@@ -29,13 +29,31 @@ void alignmentresiduals(){
  hdxy->Draw("COLZ");
 
  TCanvas *cxy1D = new TCanvas("cxy1D","1D distributions");
+
+ TF1 *fdx = new TF1("fdx","pol0(0)+gaus(1)",-30,10);
+ fdx->SetParameter(0,7000);
+ fdx->SetParameter(1,3000);
+ fdx->SetParameter(2,10);
+ fdx->SetParameter(3,20);
+ fdx->SetParNames("p0","N","mean","sigma");
+
  cxy1D->Divide(1,2);
  cxy1D->cd(1);
  TH1D *hdx = hdxy->ProjectionX();
  hdx->Draw();
+ hdx->Fit(fdx);
+
+ TF1 *fdy = new TF1("fdy","pol0(0)+gaus(1)",-20,20);
+ fdy->SetParameter(0,7000);
+ fdy->SetParameter(1,3000);
+ fdy->SetParameter(2,0);
+ fdy->SetParameter(3,20);
+ fdy->SetParNames("p0","N","mean","sigma");
+
  cxy1D->cd(2);
  TH1D *hdy = hdxy->ProjectionY();
  hdy->Draw();
+ hdy->Fit(fdy);
 
  TCanvas *cxy_original = new TCanvas("cxy_original","xy residual",800,800);
  hdxy_original->SetMinimum(10290); //values from the actual plot
