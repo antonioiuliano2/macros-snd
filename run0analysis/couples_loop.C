@@ -1,5 +1,7 @@
 void couples_loop(){
 
+ TTimeStamp *tstamp = new TTimeStamp();
+
  TH2D *htxty = new TH2D("htxty","2D angular distribution;TX;TY",300,-1.5,1.5,300,-0.15,0.15);
  TH1D *htx = new TH1D("htx","1D angular distribution;TX",300,-0.15,0.15);
  TH1D *hty = new TH1D("hty","1D angular distribution;TY",300,-0.15,0.15);
@@ -9,7 +11,8 @@ void couples_loop(){
  TH2D *hxy = new TH2D("hxy","2D position distribution;x[mm];y[mm]",190,0,190,190,0,190);
 
  EdbCouplesTree *mytree = new EdbCouplesTree();
- mytree->InitCouplesTree("couples","/home/scanner/sndlhc/RUN0/b000031/p056/31.56.0.0.cp.root","READ");
+ //mytree->InitCouplesTree("couples","/home/scanner/sndlhc/RUN0/b000031/p056/31.56.0.0.cp.root","READ");
+ mytree->InitCouplesTree("couples","/home/scanner/sndlhc/RUN0/b000031/56_compressedcp.root","READ");
  mytree->eCut = "eCHI2P<2.4&&s.eW>20&&eN1<=1&&eN2<=1&&s1.eFlag>=0&&s2.eFlag>=0"; //couples used in track reconstruction
  //how many entries above the cut?
  TEventList *lst = mytree->InitCutList();
@@ -42,4 +45,8 @@ void couples_loop(){
  htx->Draw();
  c1Dtxty->cd(2);
  hty->Draw();
+
+ cout<<"Start time: "<<tstamp->GetTime()<<endl;
+ tstamp->Set();
+ cout<<"End time: "<<tstamp->GetTime()<<endl;
 }

@@ -7,6 +7,6 @@ couplesfile = r.TFile.Open(run0path+"p019/31.19.0.0.cp.root")
 couples = couplesfile.Get("couples")
 
 for cp in couples:
- seg = cp.s
+    seg = cp.s
 
- print(seg.X(), seg.Y(), seg.TX(), seg.TY())
+    print(seg.X(), seg.Y(), seg.TX(), seg.TY())
