@@ -6,8 +6,8 @@ inputfile = r.TFile.Open("root:://eosuser.cern.ch//eos/user/a/aiulian/sim_snd/nu
 r.gGeoManager.Import("root:://eosuser.cern.ch//eos/user/a/aiulian/sim_snd/numu_sim_activeemu_withcrisfiles_25_July_2022/1/geofile_full.Genie-TGeant4.root")
 
 inputtree = inputfile.Get("cbmsim") 
-hxy = r.TH2D("hxy","XY emulsion film converted;x[mm];y[mm]",190,0,190,190,0,190)
-hzy = r.TH2D("hzy","ZY emulsion film converted;z[mm];y[mm]",100,-1e-3,1e-3,190,0,190)
+hxy = r.TH2D("hxy","XY emulsion film converted;x[mm];y[mm]",195,0,195,195,0,195)
+hzy = r.TH2D("hzy","ZY emulsion film converted;z[mm];y[mm]",100,-1e-3,1e-3,195,0,195)
 
 nentries = inputtree.GetEntries()
 
