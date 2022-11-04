@@ -1,6 +1,5 @@
 //function to be used later
 void smearing (Float_t &TX, Float_t &TY, const float angres);
-EdbSegP* convertmcpoint(EmulsionDetPoint &emupoint, int MCEventID, int EmulsionID, float weight);
 bool efficiency(const float emuefficiency);
 bool efficiency(const float tantheta, TH1D * emuefficiency);
 
@@ -23,7 +22,14 @@ TRandom3 *grandom = new TRandom3(); //creating every time a TRandom3 is a bad id
 TFile *file = NULL;
 TH1D *heff = NULL ; //efficiency at different angles
 
-EmulsionDet emureader();
+EmulsionDet emureader;
+void prepareECCSim(TString simfilename, TString geofilename);
+void prepareECCSim(){
+    prepareECCSim(
+        "root:://eosuser.cern.ch//eos/user/a/aiulian/sim_snd/numu_sim_activeemu_withcrisfiles_25_July_2022/1/sndLHC.Genie-TGeant4.root",
+        "root:://eosuser.cern.ch//eos/user/a/aiulian/sim_snd/numu_sim_activeemu_withcrisfiles_25_July_2022/1/geofile_sndlhc_TI18.root"
+        );
+}
 
 void prepareECCSim(TString simfilename, TString geofilename){
  //now need also geofile for transfomrations
@@ -57,49 +63,87 @@ void prepareECCSim(TString simfilename, TString geofilename){
   heff = (TH1D*) file->Get("heff");
  }
 
+ map <int, int> brickindex;
+ //building map 
+ brickindex[11] = 0;
+ brickindex[12] = 1;
+ brickindex[13] = 2;
+ brickindex[14] = 3;
+ brickindex[21] = 4;
+ brickindex[22] = 5;
+ brickindex[23] = 6;
+ brickindex[24] = 7;
+ brickindex[31] = 8;
+ brickindex[32] = 9;
+ brickindex[33] = 10;
+ brickindex[34] = 11;
+ brickindex[41] = 12;
+ brickindex[42] = 13;
+ brickindex[43] = 14;
+ brickindex[44] = 15;
+ brickindex[51] = 16;
+ brickindex[52] = 17;
+ brickindex[53] = 18;
+ brickindex[54] = 19;
+
  int ihit = 0;
  // ***********************CREATING FEDRA TREES**************************
- gInterpreter->AddIncludePath("/afs/cern.ch/work/a/aiulian/public/fedra/include");
+ //gInterpreter->AddIncludePath("/afs/cern.ch/work/a/aiulian/public/fedra/include");
  EdbCouplesTree *ect[nbricks][nplates]; //2D array->which brick and which plate?
  int brickIDs[20] = {11,12,13,14,21,22,23,24,31,32,33,34,41,42,43,44,51,52,53,54};
 
  TH1I *hbrickID = new TH1I("hbrickID","ID of brick where neutrino interaction happened;brickID",50,0,50);
 
- cout<<"Now converting brick number "<<brickIDs[nbrick]<<endl;
- for (int i = 1; i <= nplates; i++){
-   ect[nbrick][i-1] = new EdbCouplesTree();
-   ect[nbrick][i-1]->InitCouplesTree("couples",Form("b0000%02i/p0%02i/%i.%i.0.0.cp.root",brickIDs[nbrick],i,brickIDs[nbrick],i),"RECREATE"); //i learned padding with %0i
+ for (int ibrick = 0; ibrick < nbricks; ibrick++){
+  for (int i = 1; i <= nplates; i++){
+   ect[ibrick][i-1] = new EdbCouplesTree();
+   ect[ibrick][i-1]->InitCouplesTree("couples",Form("b0000%02i/p0%02i/%i.%i.0.0.cp.root",brickIDs[ibrick],i,brickIDs[ibrick],i),"RECREATE"); //i learned padding with %0i
+  }
  }
 
- TFile * inputfile = TFile::Open(filename.Data());
+ TFile * inputfile = TFile::Open(simfilename.Data());
  if (!inputfile) return;
  
- cout<<"opening file "<<filename.Data()<<endl;
+ cout<<"opening file "<<simfilename.Data()<<endl;
  //getting tree and arrays
  TTreeReader reader("cbmsim",inputfile);
  TTreeReaderArray<ShipMCTrack> tracks(reader,"MCTrack");
  TTreeReaderArray<EmulsionDetPoint> emulsionhits(reader,"EmulsionDetPoint");
 
- int nevents = reader.GetEntries();
+ int nevents = 50;
  cout<<"Start processing nevents: "<<nevents<<endl;  
 
  //empty EdbSegP for micro-tracks;
  EdbSegP *s1 = new EdbSegP();    
  EdbSegP *s2 = new EdbSegP();   
 
+ double charge,mass;
+ Int_t Flag = 1;
  for (int i = 0; i < nevents; i++){
     cout<<"processing event "<<i<<" out of "<<nevents<<endl;
     reader.SetEntry(i);
+    int inECCevent = i;
+    
     //loop into MCPoints
     for (const EmulsionDetPoint& emupoint:emulsionhits){   
         bool savehit = true; //by default I save all hits
+
+        float momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
+
         int detID = emupoint.GetDetectorID();
+        
+        int trackID = emupoint.GetTrackID();
+        int motherID;
+        if (trackID >= 0) motherID = tracks[trackID].GetMotherId();
+        else motherID = -2; //hope I do not see them
      
         int NWall = 0, NRow = 0, NColumn = 0, NPlate = 0;
 
         emureader.DecodeBrickID(detID, NWall, NRow, NColumn, NPlate); //getting info about brick
+        int nbrick = (detID - NPlate)*1e-3;
+        cout<<"TEST "<<detID<<" "<<NPlate<<" "<<nbrick<<endl;
 
-        pdgcode = emupoint.PdgCode();
+        int pdgcode = emupoint.PdgCode();
 
         if ((TDatabasePDG::Instance()->GetParticle(pdgcode))!=NULL){ 
          charge = TDatabasePDG::Instance()->GetParticle(pdgcode)->Charge();
@@ -111,9 +155,25 @@ void prepareECCSim(TString simfilename, TString geofilename){
         }
         float kinenergy = TMath::Sqrt(pow(mass,2)+pow(momentum,2)) - mass;
 
-        EdbSegP *emuseg = convertmcpoint(emupoint, i);
+        //first, convert positions
+        double globalpos[3] = {emupoint.GetX(),emupoint.GetY(),emupoint.GetZ()};
+        double localpos[3] = {0,0,0};
+
+        emureader.GetLocalPosition(detID, globalpos, localpos);
+
+        float xem = localpos[0];
+        float yem = localpos[1];
+
+        //second, convert angles
+        double globalang[3] = {emupoint.GetPx(),emupoint.GetPy(),emupoint.GetPz()};
+        double localang[3] = {0,0,0};
+
+        emureader.GetLocalAngles(detID, globalang, localang);
+        //angles in TX, TY format
+        float tx = globalang[0]/globalang[2];
+        float ty = globalang[1]/globalang[2];
         
-        float tantheta = emuseg.Theta();
+        float tantheta = pow(pow(tx,2) + pow(ty,2),0.5);
 
         // *************EXCLUDE HITS FROM BEING SAVED*******************
         if (tantheta > TMath::Tan(maxtheta)) savehit = false; //we scan from theta 0 to a maximum of 1 rad
@@ -130,65 +190,35 @@ void prepareECCSim(TString simfilename, TString geofilename){
             smearing(tx,ty,angres);
         }
         if (savehit){          
-            ect[nbrick][nfilmhit]->Fill(s1,s2,emuseg);
-            ihit++; //hit entry, increasing as the tree is filled        
+            int whichbrick = brickindex[nbrick]; //finding index of the array for the brick of our hit;
+	        ect[whichbrick][NPlate-1]->eS->Set(ihit,xem,yem,tx,ty,1,Flag);
+	        ect[whichbrick][NPlate-1]->eS->SetMC(inECCevent, trackID); //objects used to store MC true information
+	        ect[whichbrick][NPlate-1]->eS->SetAid(motherID, 0); //forcing areaID member to store mother MC track information
+	        ect[whichbrick][NPlate-1]->eS->SetP(momentum);
+	        ect[whichbrick][NPlate-1]->eS->SetVid(pdgcode,0); //forcing viewID[0] member to store pdgcode information
+	        ect[whichbrick][NPlate-1]->eS->SetW(ngrains); //need a high weight to do tracking
+	        ect[whichbrick][NPlate-1]->Fill();
+	        ihit++; //hit entry, increasing as the tree is filled              
         }
      }//end of loop on emulsion points
-    ievent++;
    } //end of loop on tree
+ for (int ibrick = 0; ibrick < nbricks; ibrick++){
   for (int iplate = 0; iplate < nplates; iplate++){
    //ect[nbrick][iplate]->Write();  
-   ect[nbrick][iplate]->Close();  
+   ect[ibrick][iplate]->Close();  
   }
+ }
  cout<<"end of script, saving rootrc wih used parameters"<<endl;
  cenv.WriteFile("FairShip2Fedra.save.rootrc");
 }
 //Auxiliary functions
 
-EdbSegP* convertmcpoint(EmulsionDetPoint &emupoint, int MCEventID, int EmulsionID = 0, float weight = 70){
-  // Converting EmuPoint from MCEventID into EdbSegP'''
-
-  int detID = emupoint.GetDetectorID();
-  float momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
-  //first, convert positions
-  double globalpos[3] = {emupoint.GetX(),emupoint.GetY(),emupoint.GetZ()};
-  double localpos[3] = {0,0,0};
-
-  emureader.GetLocalPosition(detID, globalpos, localpos);
-
-  float xem = localpos[0];
-  float yem = localpos[1];
-
-  //second, convert angles
-  double globalang[3] = {emupoint.GetPx(),emupoint.GetPy(),emupoint.GetPz()};
-  double localang[3] = {0,0,0};
-
-  emureader.GetLocalAngles(detID, globalang, localang);
-  //angles in TX, TY format
-  float tx = globalang[0]/globalang[2];
-  float ty = globalang[1]/globalang[2];
-  //MCTruth info
-  int pdgcode = emupoint.PdgCode();
-  int trackID = emupoint.GetTrackID();
-
-  //ready to write the segment
-  EdbSegP* emuseg = new EdbSegP();
-  emuseg->Set(EmulsionID, xem, yem, tx, ty, weight, 1);
-  emuseg->SetMC(MCEventID, emupoint.GetTrackID());
-  emuseg->SetP(momentum);
-  emuseg->SetVid(pdgcode,0);
-
-  emuseg->SetZ(localpos[2]);// #0 is the center of the volume (center of plastic base in emulsion film)
-
-  return emuseg;
-}
-
 void smearing (Float_t &TX, Float_t &TY, const float angres){
- float deltaTX = grandom->Gaus(0,angres); //angular resolution, adding a gaussian offset to TX and TY
- float deltaTY = grandom->Gaus(0,angres);
- //cout<<TX<<endl;
- TX = TX + deltaTX;
- TY = TY + deltaTY;
+  float deltaTX = grandom->Gaus(0,angres); //angular resolution, adding a gaussian offset to TX and TY
+  float deltaTY = grandom->Gaus(0,angres);
+  //cout<<TX<<endl;
+  TX = TX + deltaTX;
+  TY = TY + deltaTY;
 }
 
 bool efficiency(const float emuefficiency){ //for now, just a constant, to be replaced with an efficiency map (probably with the angle)
