@@ -42,10 +42,10 @@ EdbSegP GetFirstSegment(TClonesArray sf){
 
 using namespace ROOT;
 void rdataframe_anglestracks(){
-  TFile *tracksfile = TFile::Open("b000002.0.0.0_Tatiana_first5plates.trk.root");
+  TFile *tracksfile = TFile::Open("b000004.0.0.0_firstfiveplates.trk.root");
   TTree *trackstree = (TTree*) tracksfile->Get("tracks");
 
-  const int minnseg = 3;
+  const int minnseg = 4;
   //position map binning
   const int nbinsx = 19;
   const float xmin = 0;
@@ -55,12 +55,12 @@ void rdataframe_anglestracks(){
   const float ymax = 19;
 
   //angle bins
-  const int nbinstx = 120;
-  const float txmin = -6;
-  const float txmax = 6;
+  const int nbinstx = 100;
+  const float txmin = -1;
+  const float txmax = 1;
   const int nbinsty = 120;
-  const float tymin = -6;
-  const float tymax  = 6; 
+  const float tymin = -1;
+  const float tymax  = 1; 
 
   RDataFrame df(*trackstree);
 
@@ -104,7 +104,7 @@ void rdataframe_anglestracks(){
   //just for testing COV
   auto hvarx = dfgoodtr.Histo1D("varx");
 
-  TFile *canvasfile = new TFile("plots/plots_cosmicsb1_Tatiana.root","RECREATE");
+  TFile *canvasfile = new TFile("plots/plots_B4_check.root","RECREATE");
   canvasfile->cd();
   //Drawing plots
   TCanvas *ctx = new TCanvas("ctx","TX Canvas",1600,800);
