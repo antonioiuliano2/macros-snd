@@ -5,8 +5,8 @@ import fedrarootlogon
 
 r.gEDBDEBUGLEVEL = 0 #let us not care about FEDRA messages for now
 
-fileprefix = "root:://eosuser.cern.ch/"
-filepath = "/eos/user/a/aiulian/sim_fedra/numu_sim_activeemu_withcrisfiles_25_July_2022/b000034/"
+fileprefix = ""
+filepath = "/home/scanner/sndlhc/RUN0/b000031/"
 #initialization
 dproc = r.EdbDataProc()
 gAli = dproc.PVR()
