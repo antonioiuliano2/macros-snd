@@ -38,14 +38,25 @@ EdbSegP GetFirstSegment(TClonesArray sf){
   return tr;
 }
 
+EdbSegP GetLastSegment(TClonesArray sf){
+  EdbSegP* lastseg = (EdbSegP*) sf.At(sf.GetEntries()-1);
+  EdbSegP trlast;
+  //EdbSegP tr(*firstseg);
+
+  
+  CopyNoCOV(trlast,lastseg);
+  
+  return trlast;
+}
+
 
 
 using namespace ROOT;
 void rdataframe_anglestracks(){
-  TFile *tracksfile = TFile::Open("tracks_12plates_firstquarter.root");
+  TFile *tracksfile = TFile::Open("/home/scanner/sndlhc/RUN0/b000031/trackfiles/downstream_20plates/fourthquarter_20downstream_trk.root");
   TTree *trackstree = (TTree*) tracksfile->Get("tracks");
 
-  const int minnseg = 6;
+  const int minnseg = 12;
   //position map binning
   const int nbinsx = 19;
   const float xmin = 0;
@@ -65,22 +76,24 @@ void rdataframe_anglestracks(){
   RDataFrame df(*trackstree);
 
   //nseg before cut, to have all track segments
-  auto hnseg = df.Fill<int>(TH1I("hnseg", "number of segments;nseg", 13, 0, 13), {"nseg"}); //integer filling is more convoluted
+  auto hnseg = df.Fill<int>(TH1I("hnseg", "number of segments;nseg", 21, 0, 21), {"nseg"}); //integer filling is more convoluted
 
   auto dftr0 = df.Define("varx",GetVX,{"sf"}); //cov matrix need to be stored in another branch
 
-  auto dftr = dftr0.Define("tr",GetFirstSegment,{"sf"});
+  auto dftr = dftr0.Define("tr",GetFirstSegment,{"sf"}).Define("trlast",GetLastSegment,{"sf"});
   //definition of variables to fill histogram with (only difference, coordinates in cm instead of micron);
   auto dftr1 = dftr.Define("TX","tr.TX()  ")
                    .Define("TY","tr.TY()  ")
                    .Define("Xcm","tr.X()*1e-4  ")
-                   .Define("Ycm","tr.Y()*1e-4  ");
+                   .Define("Ycm","tr.Y()*1e-4  ")
+                   .Define("Xcmlast","trlast.X()*1e-4  ")
+                   .Define("Ycmlast","trlast.Y()*1e-4  ");
 
   //3D angles
   auto dftr2 = dftr1.Define("tantheta","tr.Theta()").Define("theta","TMath::ATan(tantheta)");
 
   //selecting good tracks (aka long, in this case
-  auto dfgoodtr = dftr2.Filter(Form("nseg>=%i",minnseg));
+  auto dfgoodtr = dftr2.Filter(Form("nseg>=%i",minnseg)).Filter("Xcm>9.6&&Ycm>9.6&&Xcmlast>9.6&&Ycmlast>9.6");
 
   auto hxy = dfgoodtr.Histo2D({"hxy","xy map;x[cm];y[cm]",nbinsx,xmin,xmax,nbinsy,ymin,ymax},"Xcm","Ycm");
 
@@ -104,7 +117,7 @@ void rdataframe_anglestracks(){
   //just for testing COV
   auto hvarx = dfgoodtr.Histo1D("varx");
 
-  TFile *canvasfile = new TFile("plots/plots_1stquarter_12plates.root","RECREATE");
+  TFile *canvasfile = new TFile("plots/plots_20plates_fourthquarter.root","RECREATE");
   canvasfile->cd();
   //Drawing plots
   TCanvas *ctx = new TCanvas("ctx","TX Canvas",1600,800);
@@ -114,7 +127,9 @@ void rdataframe_anglestracks(){
   ctx->cd(2);
   htxmap->DrawClone("COLZ");
 
-  ctx->Write();
+  htx->Write();
+  htxmap->Write();
+  //ctx->Write();
 
   //Drawing plots
   TCanvas *cty = new TCanvas("cty","TY Canvas",1600,800);
@@ -124,7 +139,9 @@ void rdataframe_anglestracks(){
   cty->cd(2);
   htymap->DrawClone("COLZ");
 
-  cty->Write();
+  hty->Write();
+  htymap->Write();
+  //cty->Write();
 
   TCanvas *cangle = new TCanvas("cangle","Angular distributions",1600,800);
   cangle->Divide(2,1);
@@ -133,7 +150,9 @@ void rdataframe_anglestracks(){
   cangle->cd(2);
   htxty->DrawClone("COLZ");
 
-  cangle->Write();
+  htheta->Write();
+  htxty->Write();
+  //cangle->Write();
 
   //averagine of histogram
   const int minbin = 3;
@@ -174,8 +193,8 @@ void rdataframe_anglestracks(){
   ly0->Draw("SAME");
   ly1->Draw("SAME");
 
-
-  cxy->Write();
+  hxy->Write();
+  //cxy->Write();
 
   TCanvas *csincostheta = new TCanvas("csincostheta","Sin and Cos Theta");
   csincostheta->Divide(2,1);
@@ -184,11 +203,14 @@ void rdataframe_anglestracks(){
   csincostheta->cd(2);
   hcostheta->DrawClone();
 
-  csincostheta->Write();
+  hsintheta->Write();
+  hcostheta->Write();
+  //csincostheta->Write();
 
   TCanvas *cnseg = new TCanvas("cnseg","Number of segments per track");
   hnseg->DrawClone();
 
-  cnseg->Write();
+  hnseg->Write();
+  //cnseg->Write();
 
 }
