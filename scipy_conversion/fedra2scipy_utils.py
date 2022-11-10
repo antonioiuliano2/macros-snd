@@ -56,8 +56,10 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
   ect = r.EdbCouplesTree()
   if (nplate) <10:
    ect.InitCouplesTree("couples",path+"/b{:06d}/p00{}/{}.{}.{}.{}.cp.root".format(brick,nplate,brick,nplate,major,minor),"READ")
-  else:
+  elif (nplate) < 100:
    ect.InitCouplesTree("couples",path+"/b{:06d}/p0{}/{}.{}.{}.{}.cp.root".format(brick,nplate,brick,nplate,major,minor),"READ")
+  else:
+   ect.InitCouplesTree("couples",path+"/b{:06d}/p{}/{}.{}.{}.{}.cp.root".format(brick,nplate,brick,nplate,major,minor),"READ") 
 
   #addingcut
   ect.eCut = cut 
