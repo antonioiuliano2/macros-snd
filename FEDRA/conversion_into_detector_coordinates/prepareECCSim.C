@@ -170,8 +170,8 @@ void prepareECCSim(TString simfilename, TString geofilename){
 
         emureader.GetLocalAngles(detID, globalang, localang);
         //angles in TX, TY format
-        float tx = globalang[0]/globalang[2];
-        float ty = globalang[1]/globalang[2];
+        float tx = localang[0]/localang[2];
+        float ty = localang[1]/localang[2];
         
         float tantheta = pow(pow(tx,2) + pow(ty,2),0.5);
 
