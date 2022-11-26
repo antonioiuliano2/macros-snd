@@ -1,4 +1,5 @@
 //Drawing tracks simple distribution with RDataFrame (26 May)
+//In case of quarters, remember to change both inputfiles, cut, and outputfile
 
 void CopyNoCOV(EdbSegP&tr, EdbSegP*firstseg){
   //covariance matrix does get problem in destruction, for now we need to exclude it
@@ -53,10 +54,20 @@ EdbSegP GetLastSegment(TClonesArray sf){
 
 using namespace ROOT;
 void rdataframe_anglestracks(){
-  TFile *tracksfile = TFile::Open("/home/scanner/sndlhc/RUN0/b000031/trackfiles/downstream_20plates/fourthquarter_20downstream_trk.root");
+  TFile *tracksfile = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/trackfiles/rootfiles/upstream25_v0_2/fourthquarter_upstream25_trk.root");
   TTree *trackstree = (TTree*) tracksfile->Get("tracks");
+  //FOR MIC2 (use these if last two plates are scanned from mic2)!
+  const double txslant = 0.0125672;
+  const double tyslant = 0.0441632;
 
-  const int minnseg = 12;
+ //basetrack_efficiency
+  const float effbt = 0.896; //should I compute it using this same sample? Is it scientifically more correct than relying on check_tr?
+  const int totnseg = trackstree->GetMaximum("nseg"); //this works only if there is at least one track passing all segments (if not, we have a larger problem than efficiency)
+  const int minnseg = 18;
+  float effvt_binomial = TMath::BinomialI(effbt, totnseg, minnseg); //Parameters: (p,n,k): k successes over n trials, with p probability of single success 
+  float effvt_incompletebeta = TMath::BetaIncomplete(effbt, totnseg, minnseg); //according to TMath ROOT documentation, "much better way" with n > 12
+  cout<<"Minimum number of segments "<<minnseg<<" over a maximum of "<<totnseg<<endl;
+  cout<<"Volume track efficiency with incomplete beta function: "<<effvt_incompletebeta<<" with binomial I "<<effvt_binomial<<endl;
   //position map binning
   const int nbinsx = 19;
   const float xmin = 0;
@@ -66,24 +77,25 @@ void rdataframe_anglestracks(){
   const float ymax = 19;
 
   //angle bins
-  const int nbinstx = 80;
-  const float txmin = -0.2;
-  const float txmax = 0.2;
-  const int nbinsty = 80;
-  const float tymin = -0.2;
-  const float tymax  = 0.2; 
+  const int nbinstx = 2000;
+  const float txmin = -0.1;
+  const float txmax = 0.1;
+  const int nbinsty = 2000;
+  const float tymin = -0.1;
+  const float tymax  = 0.1; 
+
 
   RDataFrame df(*trackstree);
 
   //nseg before cut, to have all track segments
-  auto hnseg = df.Fill<int>(TH1I("hnseg", "number of segments;nseg", 21, 0, 21), {"nseg"}); //integer filling is more convoluted
+  auto hnseg = df.Fill<int>(TH1I("hnseg", "number of segments;nseg", 26, 0, 26), {"nseg"}); //integer filling is more convoluted
 
   auto dftr0 = df.Define("varx",GetVX,{"sf"}); //cov matrix need to be stored in another branch
 
   auto dftr = dftr0.Define("tr",GetFirstSegment,{"sf"}).Define("trlast",GetLastSegment,{"sf"});
   //definition of variables to fill histogram with (only difference, coordinates in cm instead of micron);
-  auto dftr1 = dftr.Define("TX","tr.TX()  ")
-                   .Define("TY","tr.TY()  ")
+  auto dftr1 = dftr.Define("TX",Form("tr.TX() - (%f/2.) ",txslant))
+                   .Define("TY",Form("tr.TY() - (%f/2.) ",tyslant))
                    .Define("Xcm","tr.X()*1e-4  ")
                    .Define("Ycm","tr.Y()*1e-4  ")
                    .Define("Xcmlast","trlast.X()*1e-4  ")
@@ -93,7 +105,8 @@ void rdataframe_anglestracks(){
   auto dftr2 = dftr1.Define("tantheta","tr.Theta()").Define("theta","TMath::ATan(tantheta)");
 
   //selecting good tracks (aka long, in this case
-  auto dfgoodtr = dftr2.Filter(Form("nseg>=%i",minnseg)).Filter("Xcm>9.6&&Ycm>9.6&&Xcmlast>9.6&&Ycmlast>9.6");
+  auto dfgoodtr = dftr2.Filter(Form("nseg>=%i",minnseg)).Filter("Xcm>9.6&&Ycm>9.6&&Xcmlast>9.6&&Ycmlast>9.6"); //cut in position
+  //auto dfgoodtr = dftr2.Filter(Form("nseg>=%i",minnseg)); //not cut in position
 
   auto hxy = dfgoodtr.Histo2D({"hxy","xy map;x[cm];y[cm]",nbinsx,xmin,xmax,nbinsy,ymin,ymax},"Xcm","Ycm");
 
@@ -117,7 +130,7 @@ void rdataframe_anglestracks(){
   //just for testing COV
   auto hvarx = dfgoodtr.Histo1D("varx");
 
-  TFile *canvasfile = new TFile("plots/plots_20plates_fourthquarter.root","RECREATE");
+  TFile *canvasfile = new TFile("plots/plots_25plates_fourthquarter_witheffcorrection.root","RECREATE");
   canvasfile->cd();
   //Drawing plots
   TCanvas *ctx = new TCanvas("ctx","TX Canvas",1600,800);
@@ -194,6 +207,14 @@ void rdataframe_anglestracks(){
   ly1->Draw("SAME");
 
   hxy->Write();
+
+  TH2D *hxy_effcorrected = (TH2D*) hxy->Clone("hxy_effcorrected");
+  hxy_effcorrected->Scale(1./effvt_binomial);
+  hxy_effcorrected->Write();
+
+  TH2D *hxy_effcorrected_incompletebeta = (TH2D*) hxy->Clone("hxy_effcorrected_incompletebeta");
+  hxy_effcorrected_incompletebeta->Scale(1./effvt_incompletebeta);
+  hxy_effcorrected_incompletebeta->Write(); 
   //cxy->Write();
 
   TCanvas *csincostheta = new TCanvas("csincostheta","Sin and Cos Theta");
@@ -213,4 +234,67 @@ void rdataframe_anglestracks(){
   hnseg->Write();
   //cnseg->Write();
 
+}
+
+//merging different quarters together, making plot and mean
+void merge_quarters(){
+ TFile * tracks1 = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/plots/plots_25plates_firstquarter_witheffcorrection.root");
+ TFile * tracks2 = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/plots/plots_25plates_secondquarter_witheffcorrection.root");
+ TFile * tracks3 = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/plots/plots_25plates_thirdquarter_witheffcorrection.root");
+ TFile * tracks4 = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/plots/plots_25plates_fourthquarter_witheffcorrection.root");
+
+ TH2D *hxy_effcorrected_incompletebeta_1 = (TH2D*) tracks1->Get("hxy_effcorrected_incompletebeta");
+ TH2D *hxy_effcorrected_incompletebeta_2 = (TH2D*) tracks2->Get("hxy_effcorrected_incompletebeta");
+ TH2D *hxy_effcorrected_incompletebeta_3 = (TH2D*) tracks3->Get("hxy_effcorrected_incompletebeta");
+ TH2D *hxy_effcorrected_incompletebeta_4 = (TH2D*) tracks4->Get("hxy_effcorrected_incompletebeta");
+ //adding them together
+ hxy_effcorrected_incompletebeta_1->Add(hxy_effcorrected_incompletebeta_2);
+ hxy_effcorrected_incompletebeta_1->Add(hxy_effcorrected_incompletebeta_3);
+ hxy_effcorrected_incompletebeta_1->Add(hxy_effcorrected_incompletebeta_4);
+
+ //making the average value
+ const int nbinsx = 19;
+ const int minbin = 3;
+ const int maxbin = nbinsx-3;
+ ROOT::RVec<int> nmuons_array;
+
+ for (int ibinx = minbin+1; ibinx <=maxbin; ibinx++){ //bin 0 is actually underflow!
+   for (int ibiny = minbin+1; ibiny <=maxbin; ibiny++){
+    int nmuons = hxy_effcorrected_incompletebeta_1->GetBinContent(ibinx,ibiny);
+    nmuons_array.push_back(nmuons);
+    //only for visualization, to closest integer
+    hxy_effcorrected_incompletebeta_1->SetBinContent(ibinx,ibiny,TMath::Nint(nmuons));
+   }
+ }
+ gStyle->SetOptStat("t"); //no stats box
+ //drawing plot and line
+ TCanvas *cxy = new TCanvas("cxy","XY Canvas",800,800);
+
+ hxy_effcorrected_incompletebeta_1->Draw("COLZ && TEXT");
+
+ TLine *lx0 = new TLine(minbin,minbin,minbin,maxbin);
+ lx0->SetLineColor(kRed);
+ lx0->SetLineWidth(3);
+
+ TLine *lx1 = new TLine(maxbin,minbin,maxbin,maxbin);
+ lx1->SetLineColor(kRed);
+ lx1->SetLineWidth(3);
+ 
+ TLine *ly0 = new TLine(minbin,minbin,maxbin,minbin);
+ ly0->SetLineColor(kRed);
+ ly0->SetLineWidth(3);
+
+ TLine *ly1 = new TLine(minbin,maxbin,maxbin,maxbin);
+ ly1->SetLineColor(kRed);
+ ly1->SetLineWidth(3);
+
+ lx0->Draw("SAME");
+ lx1->Draw("SAME");
+ ly0->Draw("SAME");
+ ly1->Draw("SAME");
+
+ cout<<"N values "<<nmuons_array.size()<<endl;
+ cout<<"Valor Medio: "<<ROOT::VecOps::Mean(nmuons_array)<<" con errore "<<ROOT::VecOps::StdDev(nmuons_array)/TMath::Sqrt(nmuons_array.size())<<endl;
+
+ 
 }
