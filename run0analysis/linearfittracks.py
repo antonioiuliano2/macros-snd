@@ -4,11 +4,11 @@ import fedrarootlogon
 import progressbar #for bars in loops
 
 minnseg = 18 # if 10 plates
-
+store_every_ntracks = 1
 r.gStyle.SetOptFit(111)
 
 #tracksfile = r.TFile.Open("b000001.0.0.0_first5plates.trk.root") #first 5 plates of W1 B1
-tracksfile = r.TFile.Open("trackfiles/30_4/b000431.0.0.0.trk.root") # last 10 plates of W1 B1
+tracksfile = r.TFile.Open("b000431.0.0.0.trk.root") # last 10 plates of W1 B1
 #tracksfile = r.TFile.Open("b000011.0.0.0.trk.root") #last 10 plates of W1 B1 (1 cm2)
 trackstree = tracksfile.Get("tracks")
 #defining graphs
@@ -35,12 +35,10 @@ bar = progressbar.ProgressBar(maxval=ntracks, \
 bar.start()
 
 outputfile = r.TFile("checktrackslinearfits.root","RECREATE")
-restree = r.TNtuple("restree","Tree of residuals","dx:dy:dtx:dty")
+restree = r.TNtuple("restree","Tree of residuals","itrack:dx:dy:dtx:dty")
 for itrack in range(ntracks):
  trackstree.GetEntry(itrack)
  #clearing graphs and functions
- gzx.Clear()
- gzy.Clear()
  fzx.Clear()
  fzy.Clear()
  #condition over track length
@@ -72,13 +70,15 @@ for itrack in range(ntracks):
  #gzy.Draw("AP*")
  gzy.Fit(fzy,"Q")
 
- if (itrack%10000 == 0):
+
+ if (itrack%store_every_ntracks == 0):
   gzx.Write("zx_{}".format(itrack))
   gzy.Write("zy_{}".format(itrack))
 
  #comparing fitted and found angles/position
  tx_fitted = fzx.GetParameter(1)
  ty_fitted = fzy.GetParameter(1)
+ ipoint = 0
  for seg in segments:
   #comparing angles
   restx = tx_fitted - seg.TX()
@@ -95,8 +95,14 @@ for itrack in range(ntracks):
   resy = y_fitted - seg.Y()
   hresx.Fill(resx)
   hresy.Fill(resy)
+  
   #filling entries for later analysis
-  restree.Fill(resx,resy,restx,resty)
+  restree.Fill(itrack,resx,resy,restx,resty)
+  #empty graphs
+  gzx.RemovePoint(ipoint)
+  gzy.RemovePoint(ipoint)
+
+  ipoint = ipoint + 1
  #end of track, updating progress bar and moving to next
  bar.update(itrack+1)
 #end of track loop, draw resolution histograms and gaussian fits
