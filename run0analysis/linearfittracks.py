@@ -38,9 +38,6 @@ outputfile = r.TFile("checktrackslinearfits.root","RECREATE")
 restree = r.TNtuple("restree","Tree of residuals","itrack:dx:dy:dtx:dty")
 for itrack in range(ntracks):
  trackstree.GetEntry(itrack)
- #clearing graphs and functions
- fzx.Clear()
- fzy.Clear()
  #condition over track length
  if (trackstree.nseg < minnseg):
   bar.update(itrack+1)
