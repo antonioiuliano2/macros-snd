@@ -1,7 +1,7 @@
 void couples_loop(){
 
- const int brickID = 31;
- const int plateID = 40;
+ const int brickID = 131;
+ const int plateID = 6;
 
  TTimeStamp *tstamp = new TTimeStamp();
 
@@ -23,7 +23,7 @@ void couples_loop(){
  mytree->InitCouplesTree("couples",Form("/home/scanner/sndlhc/RUN0/b%06i/p%03i/%i.%i.0.0.cp.root",brickID,plateID,brickID,plateID),"READ");
  //mytree->InitCouplesTree("couples","/home/scanner/sndlhc/RUN0/b000031/56_compressedcp.root","READ");
  //mytree->eCut = "eCHI2P<2.4&&s.eW>20&&eN1<=1&&eN2<=1&&s1.eFlag>=0&&s2.eFlag>=0"; //couples used in track reconstruction
- mytree->eCut = "eCHI2P<2.0&&eN1<=1&&eN2<=1&&s1.eFlag>=0&&s2.eFlag>=0"; //best rank couples
+ mytree->eCut = "eCHI2P<2.0&&s.eW>10&&eN1<=1&&eN2<=1&&s1.eFlag>=0&&s2.eFlag>=0"; //best rank couples
  TFile *histofile = new TFile(Form("/home/scanner/sndlhc/RUN0/b%06i/plots/goodcoupleshistos_%i.root",brickID,plateID),"RECREATE");
  //how many entries above the cut?
  TEventList *lst = mytree->InitCutList();

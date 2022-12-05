@@ -3,15 +3,15 @@ import ROOT as r
 cpu = r.TFile.Open("/home/scanner/sndlhc/RUN1/b000224/plots/goodcoupleshistos_106.root","read")
 gpulow = r.TFile.Open("/home/scanner/sndlhc/RUN1/b000024/plots/goodcoupleshistos_306.root","read")
 gpuminlen20 = r.TFile.Open("/home/scanner/sndlhc/RUN1/b000124/plots/goodcoupleshistos_6.root","read")
-gpuminlen25 = r.TFile.Open("/home/scanner/sndlhc/RUN1/b000124/plots/goodcoupleshistos_306.root","read")
-gpuminlen30 = r.TFile.Open("/home/scanner/sndlhc/RUN1/b000124/plots/goodcoupleshistos_106.root","read")
+#gpuminlen25 = r.TFile.Open("/home/scanner/sndlhc/RUN1/b000124/plots/goodcoupleshistos_306.root","read")
+#gpuminlen30 = r.TFile.Open("/home/scanner/sndlhc/RUN1/b000124/plots/goodcoupleshistos_106.root","read")
 
 #times in ms
 cputime = 25516701.894
 gpulowtime = 7667334.026
 gpuminlen20time = 3863351.777
-gpuminlen25time = 3361761.550
-gpuminlen30time = 2818286.411
+#gpuminlen25time = 3361761.550
+#gpuminlen30time = 2818286.411
 
 integralangles = []
 graphtime_eff = r.TGraph()
@@ -71,7 +71,7 @@ def plot(histfile, title, color = False):
 
  ctheta_small.cd()
  htheta_small = histfile.Get("htheta_small")
- integralangles.append(htheta.Integral())
+ integralangles.append(htheta_small.Integral())
  htheta_small.SetTitle(title+": {:d} couples".format(int(htheta_small.Integral())))
  if color:
   htheta_small.SetLineColor(color)
@@ -83,8 +83,8 @@ def plot(histfile, title, color = False):
 plot(cpu,"CPU")
 plot(gpulow,"GPU lowthresh",r.kGreen)
 plot(gpuminlen20, "GPU fast0",r.kRed)
-plot(gpuminlen25, "GPU fast1",r.kMagenta)
-plot(gpuminlen30, "GPU fast2",r.kBlack)
+#plot(gpuminlen25, "GPU fast1",r.kMagenta)
+#plot(gpuminlen30, "GPU fast2",r.kBlack)
 
 
 ctxty1D.GetPad(1).BuildLegend()
@@ -102,8 +102,8 @@ ctheta_small.BuildLegend()
 graphtime_eff.AddPoint(cputime, integralangles[0]/integralangles[0])
 graphtime_eff.AddPoint(gpulowtime, integralangles[1]/integralangles[0])
 graphtime_eff.AddPoint(gpuminlen20time, integralangles[2]/integralangles[0])
-graphtime_eff.AddPoint(gpuminlen25time, integralangles[3]/integralangles[0])
-graphtime_eff.AddPoint(gpuminlen30time, integralangles[4]/integralangles[0])
+#graphtime_eff.AddPoint(gpuminlen25time, integralangles[3]/integralangles[0])
+#graphtime_eff.AddPoint(gpuminlen30time, integralangles[4]/integralangles[0])
 
 ccomparison = r.TCanvas()
 graphtime_eff.SetTitle("Processing comparison;Time[ms];IntegralAllAngles")
