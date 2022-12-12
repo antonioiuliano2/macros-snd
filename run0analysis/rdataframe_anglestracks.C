@@ -299,7 +299,7 @@ void merge_quarters(){
  ly1->Draw("SAME");
 
  cout<<"N values "<<nmuons_array.size()<<endl; 
- cout<<"TEST "<<nmuons_array<<endl;
+ //cout<<"List of array value "<<nmuons_array<<endl;
  cout<<"Valor Medio: "<<ROOT::VecOps::Mean(nmuons_array)<<" con errore "<<ROOT::VecOps::StdDev(nmuons_array)/TMath::Sqrt(nmuons_array.size())<<endl;
 
  
