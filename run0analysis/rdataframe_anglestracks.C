@@ -244,52 +244,52 @@ void merge_quarters(){
  TFile * tracks3 = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/plots/plots_25plates_thirdquarter_witheffcorrection_onlystarting.root");
  TFile * tracks4 = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/plots/plots_25plates_fourthquarter_witheffcorrection_onlystarting.root");
 
- TH2D *hxy_effcorrected_incompletebeta_1 = (TH2D*) tracks1->Get("hxy_effcorrected");
- TH2D *hxy_effcorrected_incompletebeta_2 = (TH2D*) tracks2->Get("hxy_effcorrected");
- TH2D *hxy_effcorrected_incompletebeta_3 = (TH2D*) tracks3->Get("hxy_effcorrected");
- TH2D *hxy_effcorrected_incompletebeta_4 = (TH2D*) tracks4->Get("hxy_effcorrected");
+ TH2D *hxy_effcorrected_1 = (TH2D*) tracks1->Get("hxy_effcorrected");
+ TH2D *hxy_effcorrected_2 = (TH2D*) tracks2->Get("hxy_effcorrected");
+ TH2D *hxy_effcorrected_3 = (TH2D*) tracks3->Get("hxy_effcorrected");
+ TH2D *hxy_effcorrected_4 = (TH2D*) tracks4->Get("hxy_effcorrected");
  //adding them together
- hxy_effcorrected_incompletebeta_1->Add(hxy_effcorrected_incompletebeta_2);
- hxy_effcorrected_incompletebeta_1->Add(hxy_effcorrected_incompletebeta_3);
- hxy_effcorrected_incompletebeta_1->Add(hxy_effcorrected_incompletebeta_4);
+ hxy_effcorrected_1->Add(hxy_effcorrected_2);
+ hxy_effcorrected_1->Add(hxy_effcorrected_3);
+ hxy_effcorrected_1->Add(hxy_effcorrected_4);
 
  //making the average value
  const int nbinsx = 19;
  const int nbinsy = 19;
  const int minbinx = 3;
- const int maxbinx = nbinsx-3;
+ const int maxbinx = nbinsx-2;
  const int minbiny = 3;
- const int maxbiny = nbinsy-3;
+ const int maxbiny = nbinsy-2;
  
  ROOT::RVec<double> nmuons_array;
 
  for (int ibinx = 1; ibinx <=nbinsx; ibinx++){ //bin 0 is actually underflow!
    for (int ibiny = 1; ibiny <=nbinsx; ibiny++){
-    double nmuons = hxy_effcorrected_incompletebeta_1->GetBinContent(ibinx,ibiny);
+    double nmuons = hxy_effcorrected_1->GetBinContent(ibinx,ibiny);
     if (ibinx >= minbinx && ibinx <= maxbinx && ibiny >= minbiny && ibiny <= maxbiny) nmuons_array.push_back(nmuons);
     //only for visualization, to closest integer
-    hxy_effcorrected_incompletebeta_1->SetBinContent(ibinx,ibiny,TMath::Nint(nmuons));
+    hxy_effcorrected_1->SetBinContent(ibinx,ibiny,TMath::Nint(nmuons));
    }
  }
  gStyle->SetOptStat("t"); //no stats box
  //drawing plot and line
  TCanvas *cxy = new TCanvas("cxy","XY Canvas",800,800);
 
- hxy_effcorrected_incompletebeta_1->Draw("COLZ && TEXT");
+ hxy_effcorrected_1->Draw("COLZ && TEXT");
 
- TLine *lx0 = new TLine(minbinx-1,minbiny-1,minbinx-1,maxbiny+1);
+ TLine *lx0 = new TLine(minbinx-1,minbiny-1,minbinx-1,maxbiny);
  lx0->SetLineColor(kRed);
  lx0->SetLineWidth(3);
 
- TLine *lx1 = new TLine(maxbinx+1,minbiny-1,maxbinx+1,maxbiny+1);
+ TLine *lx1 = new TLine(maxbinx,minbiny-1,maxbinx,maxbiny);
  lx1->SetLineColor(kRed);
  lx1->SetLineWidth(3);
  
- TLine *ly0 = new TLine(minbinx-1,minbiny-1,maxbinx+1,minbiny-1);
+ TLine *ly0 = new TLine(minbinx-1,minbiny-1,maxbinx,minbiny-1);
  ly0->SetLineColor(kRed);
  ly0->SetLineWidth(3);
 
- TLine *ly1 = new TLine(minbinx-1,maxbiny+1,maxbinx+1,maxbiny+1);
+ TLine *ly1 = new TLine(minbinx-1,maxbiny,maxbinx,maxbiny);
  ly1->SetLineColor(kRed);
  ly1->SetLineWidth(3);
 
@@ -299,6 +299,7 @@ void merge_quarters(){
  ly1->Draw("SAME");
 
  cout<<"N values "<<nmuons_array.size()<<endl; 
+ cout<<"TEST "<<nmuons_array<<endl;
  cout<<"Valor Medio: "<<ROOT::VecOps::Mean(nmuons_array)<<" con errore "<<ROOT::VecOps::StdDev(nmuons_array)/TMath::Sqrt(nmuons_array.size())<<endl;
 
  
