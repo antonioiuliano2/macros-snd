@@ -1,7 +1,7 @@
 
 int FindMostCommonEvent(EdbTrackP *track);
 
-void drawEDAtracks(){
+void drawMCEDAtracks(){
  //which tracks do you want to draw?
  //TCut mycut("t.eMCEvt==48");
 
