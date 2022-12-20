@@ -8,7 +8,7 @@ echo PS convert to PNG, please wait the process
 for INP in *.ps
  do
  newname=`basename $INP .ps`
- if [ ! -f $newname*.png ]; then
+ if [[ ! -f $newname*.png ]]; then
     convert $INP $newname-%02d.png
     echo " convert $INP to $newname-.png completely"
  fi
