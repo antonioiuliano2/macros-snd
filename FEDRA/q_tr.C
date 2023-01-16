@@ -22,7 +22,7 @@ void plot_dxdy()
 
     c->cd(1);
     tracks->SetLineColor(kRed);
-    tracks->Draw("s[0].eScanID.ePlate", cutT ,"");
+    tracks->Draw("s[0].eScanID.ePlate>>hplate(61,0,61)", cutT ,"");
     tracks->SetLineColor(kBlue);
     tracks->Draw("s[nseg-1].eScanID.ePlate", cutT ,"same");
     TPaveText *t1 = new TPaveText(.6,.6,.8,.8,"NBNDC");
@@ -33,7 +33,7 @@ void plot_dxdy()
     
     c->cd(2);
     tracks->SetLineColor(kRed);
-    tracks->Draw("s[0].eScanID.ePlate","", "");
+    tracks->Draw("s[0].eScanID.ePlate>>hplatecut(61,0,61)","", "");
     tracks->SetLineColor(kBlue);
     tracks->Draw("s[nseg-1].eScanID.ePlate","", "same");
     t1->Draw();
@@ -45,8 +45,8 @@ void plot_dxdy()
     tracks->SetLineColor(kGreen);
     tracks->Draw("nseg", cutT ,"same");
     TPaveText *t4 = new TPaveText(.4,.75,.6,.85,"NBNDC");
-    t4->AddText("npl");  ((TText*)t4->GetListOfLines()->Last())->SetTextColor(kGreen);
-    t4->AddText("nseg"); ((TText*)t4->GetListOfLines()->Last())->SetTextColor(kBlack);
+    t4->AddText("npl");  ((TText*)t4->GetListOfLines()->Last())->SetTextColor(kBlack);
+    t4->AddText("nseg"); ((TText*)t4->GetListOfLines()->Last())->SetTextColor(kGreen);
     t4->SetFillColor(kWhite);
     t4->Draw();
     
