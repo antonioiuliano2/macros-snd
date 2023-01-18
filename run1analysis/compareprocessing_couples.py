@@ -14,7 +14,9 @@ gpuminlen20time = 3863351.777
 #gpuminlen30time = 2818286.411
 
 integralangles = []
+integralangles_small = []
 graphtime_eff = r.TGraph()
+graphtime_smalleff = r.TGraph()
 
 ctxty1D = r.TCanvas("ctxty1D","1D histograms of tx and ty")
 ctxty1D.Divide(1,2)
@@ -44,6 +46,7 @@ def plot(histfile, title, color = False):
 
  ctheta.cd()
  htheta = histfile.Get("htheta")
+ integralangles.append(htheta.Integral())
  htheta.GetXaxis().SetRange(1,78);
  htheta.SetTitle(title+": {:d} couples".format(int(htheta.Integral())))
  if color:
@@ -71,7 +74,7 @@ def plot(histfile, title, color = False):
 
  ctheta_small.cd()
  htheta_small = histfile.Get("htheta_small")
- integralangles.append(htheta_small.Integral())
+ integralangles_small.append(htheta_small.Integral())
  htheta_small.SetTitle(title+": {:d} couples".format(int(htheta_small.Integral())))
  if color:
   htheta_small.SetLineColor(color)
@@ -105,6 +108,16 @@ graphtime_eff.AddPoint(gpuminlen20time, integralangles[2]/integralangles[0])
 #graphtime_eff.AddPoint(gpuminlen25time, integralangles[3]/integralangles[0])
 #graphtime_eff.AddPoint(gpuminlen30time, integralangles[4]/integralangles[0])
 
+graphtime_smalleff.AddPoint(cputime, integralangles_small[0]/integralangles_small[0])
+graphtime_smalleff.AddPoint(gpulowtime, integralangles_small[1]/integralangles_small[0])
+graphtime_smalleff.AddPoint(gpuminlen20time, integralangles_small[2]/integralangles_small[0])
+#graphtime_eff.AddPoint(gpuminlen25time, integralangles[3]/integralangles[0])
+#graphtime_eff.AddPoint(gpuminlen30time, integralangles[4]/integralangles[0])
+
 ccomparison = r.TCanvas()
 graphtime_eff.SetTitle("Processing comparison;Time[ms];IntegralAllAngles")
 graphtime_eff.Draw("AP*")
+
+ccomparison_small = r.TCanvas()
+graphtime_smalleff.SetTitle("Processing comparison;Time[ms];IntegralLowAngles")
+graphtime_smalleff.Draw("AP*")
