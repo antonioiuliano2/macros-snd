@@ -244,14 +244,24 @@ void merge_quarters(){
  TFile * tracks3 = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/plots/plots_25plates_thirdquarter_witheffcorrection_onlystarting.root");
  TFile * tracks4 = TFile::Open("/home/scanner/sndlhc/RUN0/b000131/plots/plots_25plates_fourthquarter_witheffcorrection_onlystarting.root");
 
- TH2D *hxy_effcorrected_1 = (TH2D*) tracks1->Get("hxy_effcorrected");
- TH2D *hxy_effcorrected_2 = (TH2D*) tracks2->Get("hxy_effcorrected");
- TH2D *hxy_effcorrected_3 = (TH2D*) tracks3->Get("hxy_effcorrected");
- TH2D *hxy_effcorrected_4 = (TH2D*) tracks4->Get("hxy_effcorrected");
+ //TH2D *hxy_effcorrected_1 = (TH2D*) tracks1->Get("hxy_effcorrected");
+ //TH2D *hxy_effcorrected_2 = (TH2D*) tracks2->Get("hxy_effcorrected");
+ //TH2D *hxy_effcorrected_3 = (TH2D*) tracks3->Get("hxy_effcorrected");
+ //TH2D *hxy_effcorrected_4 = (TH2D*) tracks4->Get("hxy_effcorrected");
+
+ TH2D *hxy_effcorrected_1 = (TH2D*) tracks1->Get("hxy");
+ TH2D *hxy_effcorrected_2 = (TH2D*) tracks2->Get("hxy");
+ TH2D *hxy_effcorrected_3 = (TH2D*) tracks3->Get("hxy");
+ TH2D *hxy_effcorrected_4 = (TH2D*) tracks4->Get("hxy");
+
+ const double volume_track_eff = 0.999841;
+
  //adding them together
  hxy_effcorrected_1->Add(hxy_effcorrected_2);
  hxy_effcorrected_1->Add(hxy_effcorrected_3);
  hxy_effcorrected_1->Add(hxy_effcorrected_4);
+
+ hxy_effcorrected_1->Scale(1./volume_track_eff);
 
  //making the average value
  const int nbinsx = 19;
@@ -299,8 +309,8 @@ void merge_quarters(){
  ly1->Draw("SAME");
 
  cout<<"N values "<<nmuons_array.size()<<endl; 
- //cout<<"List of array value "<<nmuons_array<<endl;
- cout<<"Valor Medio: "<<ROOT::VecOps::Mean(nmuons_array)<<" con errore "<<ROOT::VecOps::StdDev(nmuons_array)/TMath::Sqrt(nmuons_array.size())<<endl;
+ cout<<"List of array value "<<nmuons_array<<endl;
+ cout<<"Valor Medio: "<<ROOT::VecOps::Mean(nmuons_array)<<"dev standard "<< ROOT::VecOps::StdDev(nmuons_array)<<" errore standard "<<ROOT::VecOps::StdDev(nmuons_array)/TMath::Sqrt(nmuons_array.size())<<endl;
 
  
 }
