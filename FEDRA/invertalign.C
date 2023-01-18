@@ -9,7 +9,8 @@ void invertalign(int fromplate, int toplate, int setnumber = 1, int major = 0, i
  //currently available transformation
  int fromid[4] = {setnumber,fromplate,major,minor};
  int toid[4] = {setnumber,toplate,major,minor};   
- EdbAffine2D affine, affineTXTY;
+ EdbAffine2D affine;
+ EdbAffine2D *affineTXTY;
  float dz;
  //reading file with current aff file
  sproc->GetAffZ(affine,dz,fromid,toid);
@@ -21,14 +22,14 @@ void invertalign(int fromplate, int toplate, int setnumber = 1, int major = 0, i
  affine.Print();
  affine.Invert();
  affine.Print();
- affineTXTY.Print();
- affineTXTY.Invert();
- affineTXTY.Print();
+ affineTXTY->Print();
+ affineTXTY->Invert();
+ affineTXTY->Print();
  //building layer with inverted transformation;
  EdbLayer l;
  l.SetZcorr(-1. * dz); //inverting dz
  l.SetAffXY(affine.A11(),affine.A12(),affine.A21(),affine.A22(),affine.B1(),affine.B2());
- l.SetAffTXTY(affineTXTY.A11(),affineTXTY.A12(),affineTXTY.A21(),affineTXTY.A22(),affineTXTY.B1(),affineTXTY.B2()); 
+ l.SetAffTXTY(affineTXTY->A11(),affineTXTY->A12(),affineTXTY->A21(),affineTXTY->A22(),affineTXTY->B1(),affineTXTY->B2()); 
 //saving the output
  TString outputfilename;
  sproc->MakeAffName(outputfilename,toid,fromid,"aff.par");
