@@ -14,7 +14,7 @@ int FindMostCommonEvent(EdbTrackP *track);
 void drawEDAvertex(bool newversion = true, TString vertexfilename= "vertextree.root"){
  using namespace VERTEX_PAR;
  const int nvertices = 1;
- int vertexlist[nvertices] = {467};
+ int vertexlist[nvertices] = {1866};
  //int vertexcolors[nvertices] = {kRed,kRed,kRed,kRed};
  //int vertexlist[nvertices] = {260, 273, 280, 393};
  int vertexcolors[nvertices] = {kRed};

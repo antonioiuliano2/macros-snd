@@ -140,9 +140,9 @@ nbrick = int(sys.argv[1])
 #starting all conversion steps
 df = applyconversion(nbrick)
 
-df['Plate'] = 7 - df['PID']
+df['Plate'] = 60 - df['PID']
 df = df.drop(labels='PID',axis=1)
 
-df.to_csv('brick{}_twoplates.csv'.format(nbrick),index=False)
+df.to_csv('brick{}.csv'.format(nbrick),index=False)
 
 

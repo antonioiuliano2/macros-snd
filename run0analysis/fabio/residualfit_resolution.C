@@ -4,9 +4,17 @@ void residualfit_resolution()
   TFile *inputfile = TFile::Open("checktrackslinearfits.root"); ///home/scanner/sndlhc/SNDCosmics/checktrackslinearfits.root
   TTree *inputtree = (TTree*) inputfile->Get("restree");
 
+  const float dxmin = -60.;
+  const float dxmax = 60.;
+  const float dymin = -60.;
+  const float dymax = 60.;
+  
+  const int nbinsx = 100;
+  const int nbinsy = 100;
+
   cout<<"Number of entries "<<inputtree->GetEntries()<<endl;
 
-  RooRealVar dxr("dx", "dx[#mum]", -60, 60.);
+  RooRealVar dxr("dx", "dx[#mum]", dxmin, dxmax);
   RooDataSet data_x("data_x","dataset with dxr",inputtree,dxr) ;
 
   //adding binning, try binned
@@ -16,11 +24,11 @@ void residualfit_resolution()
 
   //define parameters and PDFs 
   RooRealVar mu_x("mu_x", "average", 0, -1000, 1000);
-  RooRealVar sigma_x("sigma_x", "sigma", 2, 0, 100);
+  RooRealVar sigma_x("sigma_x", "sigma", 2, 1e-6, 100);
   RooGaussian gauss_x("gauss_x","gaussian PDF", dxr, mu_x, sigma_x);
 
   RooRealVar mubg_x("mubg_x", "background average", 0, -1000, 1000);
-  RooRealVar sigmabg_x("sigmabg_x", "background sigma", 20, 0, 100);
+  RooRealVar sigmabg_x("sigmabg_x", "background sigma", 20, 1e-6, 100);
   RooGaussian gaussbg_x("gaussbg_x","background gaussian PDF", dxr, mubg_x, sigmabg_x);
 
   //polynomial, max 1 degree
@@ -40,7 +48,7 @@ void residualfit_resolution()
   //plot the result
   RooPlot * xFrame = dxr.frame() ;
   //binnedData.plotOn(xFrame) ;
-  data_x.plotOn(xFrame,RooFit::Name("matcheddatax"));
+  data_x.plotOn(xFrame,RooFit::Name("matcheddatax"), RooFit::Binning(nbinsx));
   sum_x.plotOn(xFrame,RooFit::Name("totalx")) ;
   sum_x.plotOn(xFrame, RooFit::Components(gauss_x), RooFit::LineStyle(kDotted), RooFit::Name("gausscomponentx")) ;
   sum_x.plotOn(xFrame, RooFit::Components(gaussbg_x), RooFit::LineStyle(kDashed), RooFit::Name("gaussbgcomponentx")) ;
@@ -61,16 +69,16 @@ void residualfit_resolution()
 
   //redoing on y side
 
-  RooRealVar dyr("dy", "dy[#mum]", -60, 60);
+  RooRealVar dyr("dy", "dy[#mum]", dymin, dymax);
   RooDataSet data_y("data_y","dataset with dy",inputtree,dyr) ;
 
   //define parameters and PDFs 
   RooRealVar mu_y("mu_y", "average", 0, -1000, 1000);
-  RooRealVar sigma_y("sigma_y", "sigma",40, 0, 100);
+  RooRealVar sigma_y("sigma_y", "sigma",40, 1e-6, 100);
   RooGaussian gauss_y("gauss_y","gaussian PDF", dyr, mu_y, sigma_y);
 
   RooRealVar mubg_y("mubg_y", "background average", 0, -1000, 1000);
-  RooRealVar sigmabg_y("sigmabg_y", "background sigma", 20, 0, 100);
+  RooRealVar sigmabg_y("sigmabg_y", "background sigma", 20, 1e-6, 100);
   RooGaussian gaussbg_y("gaussbg_y","background gaussian PDF", dyr, mubg_y, sigmabg_y);
 
   RooRealVar yield_y("yield_y", "signal yield", 50000, 0, 500000);
@@ -87,7 +95,7 @@ void residualfit_resolution()
   //plot the result
   RooPlot * yFrame = dyr.frame() ;
   //binnedData.plotOn(xFrame) ;
-  data_y.plotOn(yFrame,RooFit::Name("matcheddatay"));
+  data_y.plotOn(yFrame,RooFit::Name("matcheddatay"), RooFit::Binning(nbinsy));
   sum_y.plotOn(yFrame,RooFit::Name("totaly")) ;
   sum_y.plotOn(yFrame, RooFit::Components(gauss_y), RooFit::LineStyle(kDotted),RooFit::Name("gausscomponenty")) ;
   sum_y.plotOn(yFrame, RooFit::Components(gaussbg_y), RooFit::LineStyle(kDashed),RooFit::Name("gaussbgcomponenty"));
@@ -106,8 +114,7 @@ void residualfit_resolution()
 
   c_y.SaveAs("polfit_y.root");
 }
-
-void anglefit(){
+  void anglefit() {
   
   gROOT->SetStyle("Plain");
   //define variables and importing data

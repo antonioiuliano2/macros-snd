@@ -107,8 +107,8 @@ void residualfit_resolution()
   c_y.SaveAs("polfit_y.root");
 }
 
-void anglefit(){
-  
+void anglefit()
+{
   gROOT->SetStyle("Plain");
   //define variables and importing data
   TFile *inputfile = TFile::Open("checktrackslinearfits.root"); ///home/scanner/sndlhc/SNDCosmics/checktrackslinearfits.root
