@@ -1,6 +1,9 @@
-//Loading tracks with EDA, displaying vertices and preparing analysis
-//To reconstruct other vertices, please use gEDA->GetTrackSet("TS")->SetDraw(kTRUE) before it
-//Tested to launch shower reconstruction also
+//Loading tracks with EDA, displaying vertices and preparing analysis;
+//To reconstruct other vertices, please use gEDA->GetTrackSet("TS")->SetDraw(kTRUE) before it;
+//The other verticves are stored in gEDA->GetVertexSet()->eVerticesPrevious
+//Used also to test shower reconstruction;
+EdbVertexRec * vertexrec;
+EdbEDA *gEDA;
 namespace VERTEX_PAR
 {
   float DZmax = 3000.;
@@ -12,114 +15,84 @@ namespace VERTEX_PAR
   int   QualityMode= 0;      // vertex quality estimation method (0:=Prob/(sigVX^2+sigVY^2); 1:= inverse average track-vertex distance)
 }
 
-int FindMostCommonEvent(EdbTrackP *track);
-void loadEDA_vertextracks(bool newversion = true, TString vertexfilename= "vertextree.root"){
- using namespace VERTEX_PAR;
- const int nvertices = 1;
- int vertexlist[nvertices] = {1914};
- //int vertexcolors[nvertices] = {kRed,kRed,kRed,kRed};
- //int vertexlist[nvertices] = {260, 273, 280, 393};
- int vertexcolors[nvertices] = {kRed};
- EdbDataProc *dproc = new EdbDataProc();
+void DrawLinkedVertices(int vID = -1){
+ //vID == -1 means use selected vertex
+ int nlinked = 0;
+ EdbVertex *vertex; 
+ if (vID >= 0) (EdbVertex*) gEDA->GetVertexSet()->eVerticesPrevious->At(vID); //provided vID, use that to get vertex
+ else vertex = gEDA->GetSelectedVertex(); //look from selected vertex
+ //looping over tracks belonging to vertex
+ for (int itrack = 0; itrack < vertex->N(); itrack++){
+  //vertex track association, then getting track
+  EdbVTA *VTa = vertex->GetVTa(itrack);
+  EdbTrackP *track = VTa->GetTrack();
+  if (VTa->Zpos() == 1){ //track exits from vertex, look if ends in another vertex
+   EdbVertex * endingvtx = track->VertexE();
+   if (endingvtx){
+    gEDA->GetVertexSet()->AddVertex(endingvtx);
+    //adding all tracks from that vertex (same track will not be added twice, check already present in EdbEDATrackSet->AddTrack())
+    for (int jtrack = 0; jtrack < endingvtx->N(); jtrack++){
+     EdbTrackP *newtrack = endingvtx->GetTrack(jtrack);
+     gEDA->GetTrackSet("SB")->AddTrack(newtrack);
+    }//end  of tracks loop
+    //increasing counter
+    nlinked++;
+   } //end if ending vtx
+  }//end if vta
+  if (VTa->Zpos() == 0){  //track ends from vertex, look if starts in another vertex
+   EdbVertex * startingvtx = track->VertexS();
 
- TFile * inputfile = TFile::Open(vertexfilename.Data());
- EdbVertexRec *vertexrec; 
+   if (startingvtx){
+    gEDA->GetVertexSet()->AddVertex(startingvtx);
+    //adding all tracks from that vertex (same track will not be added twice, check already present in EdbEDATrackSet->AddTrack())
+    for (int jtrack = 0; jtrack < startingvtx->N(); jtrack++){
+     EdbTrackP *newtrack = startingvtx->GetTrack(jtrack);
+     gEDA->GetTrackSet("SB")->AddTrack(newtrack);
+    }//end  of tracks loop
+    //increasing counter
+    nlinked++;
+   } 
 
- TObjArray *drawnvertices = new TObjArray(100);
- TObjArray *drawntracks = new TObjArray(100);
+  }//end if vta
+ }//end of loop over tracks
+ gEDA->Redraw();
+ cout<<"Disegnati altri vertici: "<<nlinked<<endl;
+ 
+}
 
-// EdbTrackP *specialtrack = new EdbTrackP();
-
- EdbPVRec *ali = new EdbPVRec();
- EdbScanCond *scancond = new EdbScanCond();
- ali->SetScanCond(scancond);
-
+void DrawVertexList(int nvertices, int* vertexlist){
+ gEDA->GetVertexSet()->StorePrevious();
+ TObjArray *vertices_todraw = new TObjArray();
+ //selecting my vertices to be drawn
  for (int i = 0; i < nvertices; i++){ //range for loop, C++11
   int vID = vertexlist[i];
-  
-  EdbVertex *vertex = 0;
-
-  if (newversion){ 
-    vertexrec = new EdbVertexRec();
-    vertexrec->SetPVRec(ali);
-    vertexrec->eDZmax=DZmax;
-    vertexrec->eProbMin=ProbMinV;
-    vertexrec->eImpMax=ImpMax;
-    vertexrec->eUseMom=UseMom;
-    vertexrec->eUseSegPar=UseSegPar;
-    vertexrec->eQualityMode=QualityMode;
-
-    vertex = dproc->GetVertexFromTree(*vertexrec,vertexfilename,vID);
-  }
-  else{
-    vertexrec = (EdbVertexRec*) inputfile->Get("EdbVertexRec");
-    vertex = (EdbVertex*) vertexrec->eVTX->At(vID);
-  }
-
-  vertex->SetXYZ(vertex->VX(),vertex->VY(),vertex->VZ()); //EDA USES X(), NOT VX(). Here I want the display to match my coordinates
-  drawnvertices->Add(vertex); // assuming the array is filled with EdbVertex.
-  for (int itrk = 0; itrk < vertex->N(); itrk++){
-     EdbTrackP* track =  vertex->GetTrack(itrk);     
-     for (int iseg = 0; iseg < track->N(); iseg++) track->GetSegment(iseg)->SetFlag(vertexcolors[i]); // to color them differently
- //    for (int iseg = 0; iseg < track->N(); iseg++) track->GetSegment(iseg)->SetFlag(vertexcolors[i]); // to color them differently
-     drawntracks->Add(track);
-//     specialtrack = track;
-  }
+  EdbVertex *vtx = gEDA->GetVertexSet()->GetVertex(vID);
+  //eda->GetVertexSet()->DrawSingleVertex(vtx);
+  vertices_todraw->Add(vtx);
  }
+ gEDA->GetVertexSet()->ClearVertices(); //clearing vertices (previous are still recoverable)
+ gEDA->GetVertexSet()->SetVertices(vertices_todraw);
+ gEDA->Redraw();
+}
 
- ali->eTracks = drawntracks;
- ali->eVTX = drawnvertices;
- //EdbEDA * eda = new EdbEDA(ali); // init DataSet but doesn't read linked_track.root
- //eda->GetTrackSet("TS")->SetColorMode(kCOLOR_BY_ID);
- 
- //gEDBDEBUGLEVEL = 3;
- //now, all tracks
- EdbEDA* eda = new EdbEDA("b000431.0.0.0.trk.root",-1,"1",kFALSE);
- eda->GetTrackSet("TS")->SetDraw(kFALSE);
-
- //preparing PIDs
- EdbPVRec * pvrec_linkedtracks = eda->GetTrackSet("TS")->GetPVRec();
+void loadEDA_vertextracks(bool newversion = true, TString vertexfilename= "vertextree.root", bool applycut = false){
+ //selected vertices to be drawn
+ const int nvertices = 1;
+ int vertexlist[nvertices] = {1968}; //1968
+ //EDA tracks loading and initialization
+ gEDA = new EdbEDA("b000431.0.0.0.trk.root",-1,"1",kFALSE);
+ gEDA->GetTrackSet("TS")->SetDraw(kFALSE);
+ //SETTING PIDs
+ EdbPVRec * pvrec_linkedtracks = gEDA->GetTrackSet("TS")->GetPVRec();
  int npatterns = pvrec_linkedtracks->Npatterns();
  for (int ipat = 0; ipat < npatterns; ipat++){
   EdbPattern * pat = pvrec_linkedtracks->GetPattern(ipat);
   pat->SetPID(pat->GetSegment(0)->PID());
  }
- //eda->GetTrackSet("BT")->SetDraw(kFALSE); //used for shower
- /*int ntracks = eda->GetTrackSet("TS")->N();
- //copy into BT for showering
- for (int itrack = 0; itrack < ntracks;itrack++){ 
-  EdbTrackP *track = eda->GetTrackSet("TS")->GetTrack(itrack);
-  eda->GetTrackSet("BT")->AddTrack(track);
- }*/
-
- for (int ivtx = 0; ivtx < ali->eVTX->GetEntries(); ivtx++){
-  EdbVertex* vtx = (EdbVertex*) ali->eVTX->At(ivtx);
-  eda->GetVertexSet()->AddVertex(vtx);
- }
-
-
- for (int itrack = 0; itrack < drawntracks->GetEntries();itrack++){
-  EdbTrackP *track = (EdbTrackP*) drawntracks->At(itrack);
-  eda->GetTrackSet("SB")->AddTrack(track);
-  //eda->GetTrackSet("TS")->RemoveTrack(track); //if we want to remove the track from other dataset
-  
- }
-/* eda->GetTrackSet("TS")->RemoveTrack(specialtrack); //charm colored differently
- eda->GetTrackSet("SB")->SetTrackAttribute(4);
- eda->GetTrackSet("SB")->AddTrack(specialtrack);*/
- eda->Run();
-}
-
-
-void drawEDAvertices(bool newversion = true, TString vertexfilename= "vertextree.root", bool applycut = false){
- //EDA tracks loading and initialization
- EdbEDA* eda = new EdbEDA("b000431.0.0.0.trk.root",-1,"1",kFALSE);
- eda->GetTrackSet("TS")->SetDraw(kFALSE);
  
  using namespace VERTEX_PAR;
  TFile * inputfile = TFile::Open(vertexfilename.Data());
  TTree *vtxtree = (TTree*) inputfile->Get("vtx");
- EdbVertexRec *vertexrec;
  EdbDataProc *dproc = new EdbDataProc();
 
 
@@ -142,59 +115,40 @@ void drawEDAvertices(bool newversion = true, TString vertexfilename= "vertextree
  vertexrec->eQualityMode=QualityMode;
 
  EdbVertex *vertex = 0;
- const int nvertices = vtxtree->GetEntries();
- cout<<"Reading number of vertices: "<<nvertices<<endl;
  map<int,EdbTrackP*>emptymap;
 
- if (newversion){
-  dproc->ReadVertexTree(*vertexrec, "vertextree.root", "1",emptymap);
- }
+ dproc->ReadVertexTree(*vertexrec, "vertextree.root", "1",emptymap);
 
- for (int i = 0; i < nvertices; i++){ //range for loop, C++11
+ vertexrec->eEdbTracks = pvrec_linkedtracks->eTracks; //adding tracks info?
+
+ cout<<"Reading number of vertices: "<<ali->eVTX->GetEntries()<<endl;
+
+ for (int i = 0; i < ali->eVTX->GetEntries(); i++){ //range for loop, C++11
   int vID = i;
+  vertex = (EdbVertex*) ((TObjArray*)(ali->eVTX)) ->At(vID);
+  drawnvertices->Add(vertex); // assuming the array is filled with EdbVertex.
+  
+ }//end loop on vertices
 
-  if (newversion){
-    vertex = (EdbVertex*) ((TObjArray*)(ali->eVTX)) ->At(vID);
-  } 
-  else{ 
-    vertexrec = (EdbVertexRec*) inputfile->Get("EdbVertexRec");
-    vertex = (EdbVertex*) vertexrec->eVTX->At(vID);
-  }
-  if(applycut){
-   if (vertex->N() > 10) drawnvertices->Add(vertex);
-   for (int itrk = 0; itrk < vertex->N(); itrk++){
-     EdbTrackP* track =  vertex->GetTrack(itrk);          
-     if (vertex->N() > 10) drawntracks->Add(track);
-   }
-  }
-  else{
-  	drawnvertices->Add(vertex); // assuming the array is filled with EdbVertex.
-  	for (int itrk = 0; itrk < vertex->N(); itrk++){
-    	EdbTrackP* track =  vertex->GetTrack(itrk);          
- //    	for (int iseg = 0; iseg < track->N(); iseg++) track->GetSegment(iseg)->SetFlag(vertexcolors[i]); // to color them differently
-     	drawntracks->Add(track);
-//     	specialtrack = track;
-  	}
-  }
- }
-
- ali->eTracks = drawntracks;
  ali->eVTX = drawnvertices; 
 
- //adding vertices
+ //adding all vertices to
  for (int ivtx = 0; ivtx < ali->eVTX->GetEntries(); ivtx++){
   EdbVertex* vtx = (EdbVertex*) ali->eVTX->At(ivtx);
-  eda->GetVertexSet()->AddVertex(vtx);
+  gEDA->GetVertexSet()->AddVertex(vtx);
  }
 
- //adding tracks
- for (int itrack = 0; itrack < drawntracks->GetEntries();itrack++){
-  EdbTrackP *track = (EdbTrackP*) drawntracks->At(itrack);
-  eda->GetTrackSet("SB")->AddTrack(track);
+ gEDA->Run();
+ for (int i = 0; i < nvertices; i++){ //range for loop, C++11
+  int vID = vertexlist[i];
+  EdbVertex *vtx = gEDA->GetVertexSet()->GetVertex(vID);
+  //eda->GetVertexSet()->DrawSingleVertex(vtx);
+  //adding tracks
+  for (int itrack = 0; itrack < vtx->N();itrack++){
+   EdbTrackP *track = vtx->GetTrack(itrack);
+   gEDA->GetTrackSet("SB")->AddTrack(track);
   //eda->GetTrackSet("TS")->RemoveTrack(track); //if we want to remove the track from other dataset
-  
- }
-
- //eda->GetTrackSet("TS")->SetColorMode(kBLACKWHITE);
- eda->Run();
-}
+  }//end loop on tracks
+ }//end loop on vertices
+ DrawVertexList(nvertices, vertexlist);
+}//end code
