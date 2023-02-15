@@ -1,9 +1,16 @@
 EdbPVRec     *gAli=0;
+using namespace ROOT;
 void efficiency_study(){ //efficiency estimation, as used in OPERA paper
 
+ const int nsegmin = 12; //18 in RUN0
+ cout<<"requring at least "<<nsegmin<< " segments "<<endl;
  //TCut trcut = "t.eFlag>=0  &&t.eProb>0.01";
- TCut trcut = "t.eFlag>=0 &&t.eProb>0.01&&nseg >= 18";
+ TCut trcut = Form("t.eFlag>=0 &&t.eProb>0.01&&nseg >= %d",nsegmin);
  const int nfilms = 25;
+ const int firstfilm = 15;
+ const int lastfilm = 39; 
+
+ cout<<" over nfilms "<<nfilms<<" from "<<firstfilm<<" to "<<lastfilm<<endl;
 
  TEfficiency* heff = NULL;
 
@@ -31,7 +38,7 @@ void efficiency_study(){ //efficiency estimation, as used in OPERA paper
   //expected to found the track from first to last segment
   firstseg = trk->GetSegmentFirst();
   lastseg = trk->GetSegmentLast();
-  for (int i = 7; i <= 31;i++){
+  for (int i = firstfilm; i <= lastfilm;i++){
   //for (int i = firstseg->Plate(); i <= lastseg->Plate();i++){
    hexpected->Fill(i);
   }
@@ -57,25 +64,21 @@ void efficiency_study(){ //efficiency estimation, as used in OPERA paper
   heff->Draw();
   heff->SetTitle(";Plate;#epsilon");
   //estimating global efficiency and its error
-  double effplate[nfilms]; //efficiency in each plate
+  RVec<double> effplate; //efficiency in each plate
   double mean = 0;
   double sd = 0; //standard deviation
   double sd_mean = 0; //standard deviation of the mean (standard error)
   
-  for (int ibin=0; ibin < nfilms; ibin++){ 
-   effplate[ibin] = heff->GetEfficiency(ibin+8);//counting only plates used, witout first and last   
-   mean+=effplate[ibin];
-   cout<<ibin<<" "<<effplate[ibin]<<endl;
+  for (int ibin=firstfilm; ibin <= lastfilm; ibin++){ 
+   effplate.push_back(heff->GetEfficiency(ibin));//counting only plates used, witout first and last   
+   cout<<ibin<<" "<<heff->GetEfficiency(ibin)<<endl;
   }
-  mean = mean/nfilms;
-  for (int ibin=0; ibin < nfilms; ibin++){
-   sd+=pow((effplate[ibin]-mean),2);
-  }
-  sd=TMath::Sqrt(sd/(nfilms-1));
-  sd_mean = sd/TMath::Sqrt(nfilms);
-  cout<<"Mean efficiency: "<<mean<<"with error: "<<sd_mean<<endl;
+  cout<<"Mean efficiency: "<<ROOT::VecOps::Mean(effplate)<<"with error: "<<ROOT::VecOps::StdDev(effplate)/TMath::Sqrt(nfilms)<<endl;
  }
 
  TCanvas *c2 = new TCanvas();
  hxy->Draw("COLZ");
+ //storing into outputfile
+ TFile *outputfile = new TFile("efficiency_plate.root","RECREATE");
+ heff->Write();
 }

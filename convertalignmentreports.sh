@@ -8,7 +8,7 @@ echo PS convert to PNG, please wait the process
 for INP in *.ps
  do
  newname=`basename $INP .ps`
- if [ ! -f $newname*.png ]; then
+ if [ ! -f $newname-00.png ]; then
   #convert -density 150 -geometry 100% $INP $newname%02d.png
   convert $INP -rotate 90 $newname-%02d.png
   echo ” convert $INP to $newname-.png completely”
