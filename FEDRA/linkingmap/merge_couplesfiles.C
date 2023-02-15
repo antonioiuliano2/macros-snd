@@ -66,15 +66,18 @@ for (int ix = 0; ix < nx; ix++){
   }//end loop y
  }//end loop x
  //drawing plots
+
+ //Drawing histograms, saving them to output file
+ histofile->cd();
+
  TCanvas *cshr = new TCanvas();
  cshr->Divide(1,2);
  cshr->cd(1);
  hshr1->Draw("hist");
+ hshr1->Write();
  cshr->cd(2);
  hshr2->Draw("hist");
-
- //Drawing histograms, saving them to output file
- histofile->cd();
+ hshr2->Write();
 
  TCanvas *ctxty = new TCanvas("ctxty","txty angles of good segments",800,800);
  htxty->Draw("COLZ");
