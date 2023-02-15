@@ -4,7 +4,7 @@ TH2D *htxty, *htxty_small, *hxy;
 TH1D *htx, *hty, *htheta, *htx_small, *hty_small, *htheta_small;
 EdbCell2 * emulsioncell;
 
-void couples_loop(TString cpfilename, int ix, int iy);
+int couples_loop(TString cpfilename, int ix, int iy);
 
 void merge_couplesfiles(){
  //histo file
@@ -62,7 +62,7 @@ for (int ix = 0; ix < nx; ix++){
    }
   //second cp file, looping over couples
   TString secondlinkcpfilename(prepath+TString(Form("%d.%d.cp.root",ix,iy)));
-  couples_loop(secondlinkcpfilename, ix, iy);
+  int loop_return = couples_loop(secondlinkcpfilename, ix, iy);
   }//end loop y
  }//end loop x
  //drawing plots
@@ -119,7 +119,7 @@ for (int ix = 0; ix < nx; ix++){
 
 }
 
-void couples_loop(TString cpfilename, int ix, int iy){
+int couples_loop(TString cpfilename, int ix, int iy){
 
  EdbCouplesTree *mytree = new EdbCouplesTree();
  mytree->InitCouplesTree("couples",cpfilename.Data(),"READ");
@@ -128,6 +128,10 @@ void couples_loop(TString cpfilename, int ix, int iy){
   ,emulsioncell->X(ix),emulsioncell->Xbin()/2.,emulsioncell->Y(iy),emulsioncell->Ybin()/2.); //best rank couples
  //how many entries above the cut?
  TEventList *lst = mytree->InitCutList();
+ if (!lst){ 
+  cout<<"We have no entries, quitting!"<<endl;
+  return -1;}
+
  int nlst =lst->GetN();
  cout<<"We have "<<nlst<<" good couples with selection"<< mytree->eCut<<endl;
 
@@ -153,4 +157,5 @@ void couples_loop(TString cpfilename, int ix, int iy){
  }
 
  mytree->Close();
+ return 0;
 }
