@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-micdf = pd.read_csv("/home/antonio/cernbox/Synched/Archivio_cronologico/Novembre_2022/scanning_table.csv")
+micdf = pd.read_csv("/home/antonio/cernbox/Synched/Archivio_cronologico/Febbraio_2023/scanning_table.csv")
 
 plt.figure()
 
