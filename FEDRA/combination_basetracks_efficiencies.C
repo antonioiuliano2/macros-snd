@@ -10,7 +10,7 @@
 //global variables
 using namespace std;
 
-vector<int> people;
+vector<int> plates;
 vector<int> combination;
 
 int countiterations = 0;
@@ -36,6 +36,8 @@ void SetEfficiencyArray(){
         plateefficiency[ifilm] = heffplates->GetEfficiency(nfilm+1); //first bin is 0
         cout<<"Efficiency for film "<<nfilm<<": "<<plateefficiency[ifilm]<<endl;
     }
+    cout<<"Average efficiency: "<<TMath::Mean(nfilms,plateefficiency)<<"dev st: "<<TMath::StdDev(nfilms,plateefficiency)<<" con errore "<<TMath::StdDev(nfilms,plateefficiency)/TMath::Sqrt(nfilms)<<endl;
+
 }
 
 double pevent(const vector<int>&combination){ 
@@ -73,8 +75,8 @@ void go(int offset, int k) {
     totprob += pevent(combination);
     return;
   }
-  for (int i = offset; i <= people.size() - k; ++i) {
-    combination.push_back(people[i]);
+  for (int i = offset; i <= plates.size() - k; ++i) {
+    combination.push_back(plates[i]);
     go(i+1, k-1);
     combination.pop_back();
   }
