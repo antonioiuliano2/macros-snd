@@ -24,6 +24,10 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
  #preparing patterns
  npl = ss.eIDS.GetEntries()
 
+ #which is first plate and last plate?
+ lastplate = ss.GetID(0).ePlate
+ firstplate = ss.GetID(npl-1).ePlate
+
  cut = r.TCut(cutstring)
 
  #intial empty arrays
@@ -132,6 +136,8 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
  data = {'ID':IDall,'PID':PIDall,'x':xall,'y':yall,'z':zall,'TX':TXall,'TY':TYall, 'Volume':Volumeall, 'W':Weightall, 'CHI2':CHI2all}
  df = pd.DataFrame(data, columns = ['ID','PID','x','y','z','TX','TY','Volume','W','CHI2'])
 
+ df.name = "{:03d}_{:03d}".format(lastplate,firstplate) #example : 060_004
+
  return df
 
 def applyconversion(nbrick):
@@ -147,7 +153,10 @@ nbrick = int(sys.argv[1])
 #starting all conversion steps
 df = applyconversion(nbrick)
 
-df['Plate'] = 60 - df['PID']
+lastplate = int(df.name[0:3])
+firstplate = int(df.name[4:7])
+
+df['Plate'] = lastplate - df['PID']
 
 print ("Dataframe ready, now adding tracks")
 
@@ -156,7 +165,7 @@ import fedra2scipy_utils
 df = fedra2scipy_utils.addtrackindex(df, sys.argv[2])
 df = df.drop(labels='PID',axis=1)
 
-df.to_csv('brick{}_60_4.csv'.format(nbrick),index=False) #should contain from plate to plate info, so we can get PID info
+df.to_csv('brick{}_{}_{}.csv'.format(nbrick,lastplate,firstplate),index=False) #should contain from plate to plate info, so we can get PID info
 
 
 
