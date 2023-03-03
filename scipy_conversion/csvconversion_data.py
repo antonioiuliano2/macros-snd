@@ -91,6 +91,13 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
    seg.SetPID(i)
    seg.Transform(plate.GetAffineXY())
 
+   #transform angles too!
+   afftxty = plate.GetAffineTXTY()
+   tx = afftxty.A11()*seg.TX() + afftxty.A12()*seg.TY() + afftxty.B1()
+   ty = afftxty.A21()*seg.TX() + afftxty.A22()*seg.TY() + afftxty.B2()
+   seg.SetTX(tx)
+   seg.SetTY(ty)
+
    if(newzprojection is not None):
     seg.PropagateTo(newzprojection[i])
 
@@ -141,8 +148,15 @@ nbrick = int(sys.argv[1])
 df = applyconversion(nbrick)
 
 df['Plate'] = 60 - df['PID']
+
+print ("Dataframe ready, now adding tracks")
+
+import fedra2scipy_utils
+
+df = fedra2scipy_utils.addtrackindex(df, sys.argv[2])
 df = df.drop(labels='PID',axis=1)
 
-df.to_csv('brick{}.csv'.format(nbrick),index=False)
+df.to_csv('brick{}_60_4.csv'.format(nbrick),index=False) #should contain from plate to plate info, so we can get PID info
+
 
 
