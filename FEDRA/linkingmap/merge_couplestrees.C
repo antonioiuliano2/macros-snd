@@ -1,17 +1,13 @@
-//merging different cells
-
-TH2D *htxty, *htxty_small, *hxy;
-TH1D *htx, *hty, *htheta, *htx_small, *hty_small, *htheta_small;
+//merging different cell trees
 EdbCell2 * emulsioncell;
-TTree *mergedcouples;
 TList *selectedcoupleslist;
-TFile * histofile;
+TFile * outputfile;
 
 int couples_loop(TString cpfilename, int ix, int iy);
 
-void merge_couplesfiles(){
+void merge_couplestrees(){
  //histo file
- histofile = new TFile("/eos/experiment/sndlhc/users/aiulian/44.2.0.0.cp.root","RECREATE"); 
+ outputfile = new TFile("/home/utente/44.2.0.0.cp.root","RECREATE"); 
  //histograms to be stored
  TTimeStamp *tstamp = new TTimeStamp();
 
@@ -26,9 +22,9 @@ void merge_couplesfiles(){
  const float ymin = 0.;
  const float ymax = 190000.;
  emulsioncell = new EdbCell2();
- emulsioncell->InitCell(19,0,190000,19,0,190000,1);
+ emulsioncell->InitCell(nx,xmin,xmax,ny,ymin,ymax,1);
 
- TString prepath(Form("/eos/experiment/sndlhc/emulsionData/2022/CERN/emu_reco/RUN1/b000044/p00%i/44.%i.",platenumber,platenumber));
+ TString prepath(Form("root:://eospublic.cern.ch//eos/experiment/sndlhc/emulsionData/2022/CERN/emu_reco/RUN1/b000044/p00%i/44.%i.",platenumber,platenumber));
 
 for (int ix = 1; ix < nx; ix++){
  for (int iy = 1; iy < ny; iy++){
@@ -42,7 +38,7 @@ for (int ix = 1; ix < nx; ix++){
 
  TTree *mergedcouples = TTree::MergeTrees(selectedcoupleslist);
  //Drawing histograms, saving them to output file
- histofile->cd();
+ outputfile->cd();
  mergedcouples->Write();
 
  cout<<"Start time: "<<tstamp->GetTime()<<endl;
@@ -57,7 +53,7 @@ int couples_loop(TString cpfilename, int ix, int iy){
  mytree->InitCouplesTree("couples",cpfilename.Data(),"READ");
  cout<<"Selecting cell "<<ix<<iy<<endl;
 
- histofile->cd();
+ outputfile->cd();
  if (mytree->eTree->GetEntries()==0) return -1;
 
  TTree *outputtree = mytree->eTree->CopyTree(Form("TMath::Abs(s.eX-%.0f)<%.0f&&TMath::Abs(s.eY-%.0f)<%.0f"
