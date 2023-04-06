@@ -7,7 +7,7 @@ int couples_loop(TString cpfilename, int ix, int iy);
 
 void merge_couplestrees(){
  //histo file
- outputfile = new TFile("/home/utente/44.2.0.0.cp.root","RECREATE"); 
+ outputfile = new TFile("44.2.0.0.cp.root","RECREATE"); 
  //histograms to be stored
  TTimeStamp *tstamp = new TTimeStamp();
 
