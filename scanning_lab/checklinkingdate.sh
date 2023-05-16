@@ -1,8 +1,8 @@
 #!/bin/bash
 #usage: source checklinkingdate platelast platefirst 
-BRICKID=21
+BRICKID=$1
 # Basic if statement
-for i in $(seq $2 $1)
+for i in $(seq $3 $2)
 
   do
 
