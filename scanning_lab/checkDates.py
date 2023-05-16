@@ -11,8 +11,6 @@ Place yourself in the bricks mother directory (e.g. /home/scanner/sndlhc/RUN1/)
 Example from command line:  python checkDates.py --date 16/05/23 -b 21 22 23 24 --link
 """
 
-basepath = '.'
-
 def computeLinkingDates():
     for brick in options.brickIDs:
         for plate in range(1, 58):
@@ -24,7 +22,7 @@ def computeLinkingDates():
 
 def computeAlignDates():
     for brick in options.brickIDs:
-        for plate in range(1, 58):
+        for plate in range(2, 58):
             align_path = parent_path+'/b'+str(brick).zfill(6)+'/AFF/'+str(brick)+'.'+str(plate)+'.0.0_'+str(brick)+'.'+str(plate-1)+'.0.0.aff.par'
             if not os.path.isfile(align_path): continue
             file_m_time = datetime.fromtimestamp(os.path.getmtime(align_path))
