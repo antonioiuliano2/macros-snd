@@ -16,6 +16,8 @@ yname=$((ybin + 1))
 
 echo "Starting tracking without realign"
 
+makescanset -set=$brickID.0.$xname.$yname -dzbase=195 -from_plate=$1 -to_plate=$2 -v=2
+
 emtra -set=$brickID.0.$xname.$yname -new -v=2 -ix=$xbin -iy=$ybin
 
 mkdir trackfiles/rootfiles/57_1/cell_$xname_$yname
@@ -30,4 +32,4 @@ cd trackfiles/rootfiles/57_1/cell_$name_$yname/
 ln -s b0000$brickID.0.$xname.$yname.trk.root linked_tracks.root
 
 
-root -l -q ~/sndlhc/macros-snd/FEDRA/vertexing.C 
+root -l -q /afs/cern.ch/work/s/snd2cern/public/emu_reco_analysis/vertexing/vertexing.C  
