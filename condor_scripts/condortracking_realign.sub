@@ -6,4 +6,4 @@ log = log/trackingrealign.$(ClusterId).log
 +JobFlavour = "testmatch"
 request_memory = 20GB
 notification = Never
-queue CELL from seq 1 360 |
+queue CELL from seq 0 360 |
