@@ -3,7 +3,7 @@ arguments = $(ClusterID) $(ProcId) $(CELL)
 output = output/trackingvtx.$(ClusterId).$(ProcId).out
 error = error/trackingvtx.$(ClusterId).$(ProcId).err
 log = log/trackingvtx.$(ClusterId).log
-+JobFlavour = "workday"
++JobFlavour = "nextweek"
 request_memory = 20GB
 notification = Never
-queue CELL from seq 1 360 |
+queue CELL from seq 0 360 |
