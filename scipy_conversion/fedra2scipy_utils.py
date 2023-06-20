@@ -94,6 +94,13 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
    seg.SetPID(i)
    seg.Transform(plate.GetAffineXY())
 
+   #transform angles too!
+   afftxty = plate.GetAffineTXTY()
+   tx = afftxty.A11()*seg.TX() + afftxty.A12()*seg.TY() + afftxty.B1()
+   ty = afftxty.A21()*seg.TX() + afftxty.A22()*seg.TY() + afftxty.B2()
+   seg.SetTX(tx)
+   seg.SetTY(ty)
+
    if(newzprojection is not None):
     seg.PropagateTo(newzprojection[i])
 
