@@ -48,9 +48,8 @@ void prepareECCSim(TString simfilename, TString geofilename){
 
  float angres = cenv.GetValue("FairShip2Fedra.angres",0.003); //Used cases: 3, 5milliradians. Constant value overwritten if useresfunction=true
  float minmomentum = cenv.GetValue("FairShip2Fedra.minmomentum",0.1);
- float maxtheta = cenv.GetValue("FairShip2Fedra.maxtheta",1);
-
- const float ngrains = cenv.GetValue("FairShip2Fedra.ngrains",70) ; //the same number for all the couples, so they have the same weigth.
+ float maxtheta = cenv.GetValue("FairShip2Fedra.maxtheta",1.);
+ const float ngrains = cenv.GetValue("FairShip2Fedra.ngrains",70.) ; //the same number for all the couples, so they have the same weigth.
  const float emuefficiency = cenv.GetValue("FairShip2Fedra.emuefficiency",0.85); // flat value
  
  const bool useefficiencymap = cenv.GetValue("FairShip2Fedra.useefficiencymap",0); //use the map instead of the constant value down

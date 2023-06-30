@@ -19,9 +19,9 @@ void set_default(TEnv &cenv){ //setting default parameters, if not presents from
  cenv.SetValue("FairShip2Fedra.useefficiencymap",0);
  cenv.SetValue("FairShip2Fedra.emuefficiency",0.85); //only if useefficiency map is set to false
  cenv.SetValue("FairShip2Fedra.dosmearing",1);
- cenv.SetValue("FairShip2Fedra.maxtheta",1); //angular max of scanning
+ cenv.SetValue("FairShip2Fedra.maxtheta",1.); //angular max of scanning
  cenv.SetValue("FairShip2Fedra.minmomentum",0.1); //do not pass particles beyond this value, track ID would be -2
- cenv.SetValue("FairShip2Fedra.ngrains",70); // to set weight
+ cenv.SetValue("FairShip2Fedra.ngrains",70.); // to set weight
  cenv.SetValue("FairShip2Fedra.angres",0.003);//used for smearing, if dosmearing = true
 
 }
@@ -45,9 +45,9 @@ void fromsndsw2FEDRA_muonduplication(){
   
   float angres = cenv.GetValue("FairShip2Fedra.angres",0.003); //Used cases: 3, 5milliradians. Constant value overwritten if useresfunction=true
   float minmomentum = cenv.GetValue("FairShip2Fedra.minmomentum",0.1);
-  float maxtheta = cenv.GetValue("FairShip2Fedra.maxtheta",1);
+  float maxtheta = cenv.GetValue("FairShip2Fedra.maxtheta",1.);
   
-  const float ngrains = cenv.GetValue("FairShip2Fedra.ngrains",70) ; //the same number for all the couples, so they have the same weigth.
+  const float ngrains = cenv.GetValue("FairShip2Fedra.ngrains",70.) ; //the same number for all the couples, so they have the same weigth.
   const float emuefficiency = cenv.GetValue("FairShip2Fedra.emuefficiency",0.85); // flat value
   
   const bool useefficiencymap = cenv.GetValue("FairShip2Fedra.useefficiencymap",0); //use the map instead of the constant value down
