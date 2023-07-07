@@ -6,16 +6,17 @@
 RED=$'\033[0;31m' #Red coloring                                                                                                                                                  
 NC=$'\033[0m' #No coloring
 
-SIMFILE=$(ls sndLHC.Ntuple-TGeant4-*.root)
+SIMFILE=$(ls sndLHC*.root)
+GEOFILE=$(ls geofile*.root)
 [ ! -d "$SIMFILE" ] && echo "${RED}++${NC} You are about to convert $SIMFILE ${RED}++${NC}"
 echo "${RED}++${NC} Bricks and plates folders will be created in the following directory: $(pwd) ${RED}++${NC}"
-cp /home/simsndlhc/macros-snd/FEDRA/preparebricks.sh .
-cp /home/simsndlhc/macros-snd/FEDRA/doreco.sh .
-cp /home/simsndlhc/macros-snd/FEDRA/csvconversion.sh .
-cp /home/simsndlhc/macros-snd/FEDRA/addvertexinfo.sh .
-cp /home/simsndlhc/macros-snd/FEDRA/fromsndsw2FEDRA.C .
-cp /home/simsndlhc/macros-snd/FEDRA/FairShip2Fedra.rootrc .
-cp /home/simsndlhc/macros-snd/GetEntries.C .
+cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/preparebricks.sh .
+cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/doreco.sh .
+cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/csvconversion.sh .
+cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/addvertexinfo.sh .
+cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/fromsndsw2FEDRA.C .
+cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/FairShip2Fedra.rootrc .
+cp $SNDSW_ROOT/shipLHC/scripts/fromsndsw2FEDRA/GetEntries.C .
 for i in $(seq 1 5)
 	do
 		mkdir b0000${i}{1..4}
@@ -24,10 +25,8 @@ for i in $(seq 1 5)
 echo "++++++++++++++++"
 echo "FairShip2Fedra parameters are the following:"
 cat FairShip2Fedra.rootrc
-for ibrick in $(seq 0 19)
-	do
-		root -l -q fromsndsw2FEDRA.C\(\"$SIMFILE\",$ibrick\)
-	done
+ulimit -n 1500 #to create many files together
+root -l -q fromsndsw2FEDRA.C\(\"$SIMFILE\",\"$GEOFILE\"\)
 echo "${RED}++${NC} Proceeding to doreco.sh ${RED}++${NC}"
 source doreco.sh
 echo "${RED}++${NC} Done ${RED}++${NC}"
