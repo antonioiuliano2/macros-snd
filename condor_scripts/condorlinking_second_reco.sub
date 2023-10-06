@@ -3,6 +3,10 @@ arguments = $(ClusterID) $(ProcId) $(CELL)
 output = output/reco_secondlinkingcells.$(ClusterId).$(ProcId).out
 error = error/reco_secondlinkingcells.$(ClusterId).$(ProcId).err
 log = log/reco_secondlinkingcells.$(ClusterId).log
-+JobFlavour = "workday"
++JobFlavour = "microcentury"
+request_memory = 4GB
 notification = Never
-queue CELL in 18,19
+requirements = Machine =!= LastRemoteHost
+on_exit_remove          = (ExitBySignal == False) && ((ExitCode == 1) || (ExitCode == 0))
+max_retries             = 3
+queue CELL from reco.dat
