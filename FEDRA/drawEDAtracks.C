@@ -5,7 +5,7 @@ void drawEDAtracks(){
  TCut firstcut("nseg>=4"); //first general cut
  //TCut firstcut("nseg==57");
 //getting tracks set from file
- EdbEDA* gEDA = new EdbEDA("/home/scanner/sndlhc/RUN0/b000431/trackfiles/31_7/b000431.0.0.0.trk.root",-1,firstcut,kFALSE);
+ EdbEDA* gEDA = new EdbEDA("linked_tracks.root",-1,firstcut,kFALSE);
  EdbEDATrackSet *alltrackset = gEDA->GetTrackSet("TS"); 
  EdbEDATrackSet *selectedtrackset = gEDA->GetTrackSet("SF");
 

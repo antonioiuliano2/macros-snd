@@ -80,7 +80,7 @@ void loadEDA_vertextracks(bool newversion = true, TString vertexfilename= "verte
  const int nvertices = 1;
  int vertexlist[nvertices] = {1968}; //1968
  //EDA tracks loading and initialization
- gEDA = new EdbEDA("b000431.0.0.0.trk.root",-1,"1",kFALSE);
+ gEDA = new EdbEDA("linked_tracks.root",-1,"t.eX>145000&&t.eTY<26000",kFALSE);
  gEDA->GetTrackSet("TS")->SetDraw(kFALSE);
  //SETTING PIDs
  EdbPVRec * pvrec_linkedtracks = gEDA->GetTrackSet("TS")->GetPVRec();
