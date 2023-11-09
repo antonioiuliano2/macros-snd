@@ -2,11 +2,11 @@
 //in the b000001 folder, there should be already a folder called 
 //plots with subfolders: thicknesses, link_reports, al_reports
 //TString: class which allows path concatenation. Access the char* object with Data()
-const int brick = 22; //3 with large angles
+const int brick = 23; //3 with large angles
 const int firstplate = 5;
 const int lastplate = 6;
-const int plates[6] = {7, 12, 18, 19, 20, 21};
-const int nplates = 6;
+const int plates[7] = {39, 41, 46, 47, 48, 49, 50};
+const int nplates = 7;
 
 TString path = TString("/home/scanner/sndlhc/RUN1");
 

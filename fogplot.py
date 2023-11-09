@@ -2,8 +2,11 @@ import ROOT as r
 import sys
 #plofile plots, averaging over all points
 r.gStyle.SetOptStat(0)
-botfog = r.TProfile("botfog","Fog plot of bot layer;z[#mum];fog(1/1000#mum^3)",15,150,300,0.,50.)
-topfog = r.TProfile("topfog","Fog plot of top layer;z[#mum];fog(1/1000#mum^3)",15,400,550,0.,50.)
+botfog = r.TProfile("botfog","Fog plot of bot layer;z[#mum];fog(1/1000#mum^3)",40,150,550,0.,50.)#19
+topfog = r.TProfile("topfog","Fog plot of top layer;z[#mum];fog(1/1000#mum^3)",40,150,550,0.,50.)#19
+
+#botfog = r.TProfile("botfog","Fog plot of bot layer;z[#mum];fog(1/1000#mum^3)",40,150,559,0.,50.)#49
+#topfog = r.TProfile("topfog","Fog plot of top layer;z[#mum];fog(1/1000#mum^3)",40,150,559,0.,50.)#49
 
 endoffile = False
 
@@ -30,11 +33,11 @@ with open(filepath,"r") as fogfile:
 print("we have in total {} views".format(int(ntotview)))
 
 cfogall = r.TCanvas()
-cfogall.Divide(2,1)
-cfogall.cd(1)
+#cfogall.Divide(2,1)
+#cfogall.cd(1)
 botfog.Draw("hist C*")
-cfogall.cd(2)
-topfog.Draw("hist C*")
+#cfogall.cd(2)
+topfog.Draw("hist C* SAME")
 
 #graphs for singlew view
 botviewgraph = r.TGraph()

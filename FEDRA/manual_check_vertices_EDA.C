@@ -62,12 +62,19 @@ void next_manualcheck(){
   }
   manualcheck->GetEntry(ivtx_next);
   draw_vertex(vID_next);
- 
+
+  system(Form("mkdir %i",(int) vID_next));
+  gEDA->SavePictures();
+  system(Form("mv x.gif %i/",(int) vID_next));
+  system(Form("mv y.gif %i/",(int) vID_next));
+  system(Form("mv z.gif %i/",(int) vID_next));
+  system(Form("mv b.gif %i/",(int) vID_next));
+
   ivtx_next++;
 }
 
 
-void manual_check_vertices_EDA(TString vertexfilename= "vertextree0.root", TCut vtxcut = "n>2", TString qualitytree_filename = "example_manualcheck_file.root"){
+void manual_check_vertices_EDA(TString vertexfilename= "vertextree.root", TCut vtxcut = "n>2", TString qualitytree_filename = "example_manualcheck_file.root"){
  
  using namespace VERTEX_PAR;
  TFile * inputfile = TFile::Open(vertexfilename.Data());

@@ -2,7 +2,7 @@
 //created 5 June 2023 by A.Iuliano
 void splitcouplestree(int brickID, int plateID){
  //histo file
-  
+ MemInfo_t *memory_info = new MemInfo_t();
  //histograms to be stored
  TStopwatch *timing = new TStopwatch();
  timing->Start();
@@ -121,6 +121,9 @@ void splitcouplestree(int brickID, int plateID){
  } //end loop
  timing->Stop();
  timing->Print();
+
+ gSystem->GetMemInfo(memory_info);
+ cout<<"Used memory "<<memory_info->fMemUsed<<endl;
 
  for (int ix = 0; ix < nx; ix++){
   for (int iy = 0; iy < ny; iy++){

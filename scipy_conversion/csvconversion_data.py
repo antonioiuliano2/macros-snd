@@ -158,12 +158,12 @@ firstplate = int(df.name[4:7])
 
 df['Plate'] = lastplate - df['PID']
 
-print ("Dataframe ready, now adding tracks")
+print ("Dataframe ready, NOT adding tracks")
 
-import fedra2scipy_utils
+#import fedra2scipy_utils
 
-df = fedra2scipy_utils.addtrackindex(df, sys.argv[2])
-df = df.drop(labels='PID',axis=1)
+#df = fedra2scipy_utils.addtrackindex(df, sys.argv[2]) #for now, do not add tracks!
+#df = df.drop(labels='PID',axis=1)
 
 df.to_csv('brick{}_{}_{}.csv'.format(nbrick,lastplate,firstplate),index=False) #should contain from plate to plate info, so we can get PID info
 

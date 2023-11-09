@@ -2,12 +2,12 @@
 //in the b000001 folder, there should be already a folder called 
 //plots with subfolders: thicknesses, link_reports, al_reports
 //TString: class which allows path concatenation. Access the char* object with Data()
-const int brick = 24; //3 with large angles
+const int brick = 43; //3 with large angles
 const int firstplate = 7;
-const int lastplate = 7;
-
-TString path = TString("/home/scanner/sndlhc/RUN1");
-
+const int lastplate = 11;
+//TString path = TString("/home/scanner/sndlhc/RUN1");
+//TString path = TString("/home/scanner/sndlhc/RUN2");
+TString path = TString("/home/scanner/sndlhc/RUN3");
 
 //TString run = "GSI5";
 //TString brick = TString(run.Data()[3]); //syntax is GSI1,GSI2,GSI3,GSI4
@@ -108,6 +108,7 @@ void drawallthicknesses(){
     double meanthickness_emu = 0.;
     
     for (int i = firstplate; i <= lastplate; i++){
+        cout << Form((path+"/b%06d/p%03d/%i.%i.0.0.raw.root").Data(),brick,i,brick,i)<< endl;
         TFile *f = TFile::Open(Form((path+"/b%06d/p%03d/%i.%i.0.0.raw.root").Data(),brick,i,brick,i));
         if (!f) continue;
         if (!f->Get("Views")){ cout<<"Not found tree Views, raw file probably corrupted, skipping"<<endl; continue;}
