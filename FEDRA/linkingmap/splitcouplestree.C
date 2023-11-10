@@ -32,12 +32,12 @@ void splitcouplestree(int brickID, int plateID, int testcellix, int testcelliy){
    //couples to write into
    if(ix!= testcellix || iy != testcelliy) continue;
    outputtree[ix][iy] = new EdbCouplesTree();
-   outputtree[ix][iy]->InitCouplesTree("couples",Form("/eos/experiment/sndlhc/emulsionData/2022/emureco_Napoli/RUN1/b000021/p%0*i/%i.%i.%i.%i.cp.root",3,plateID,brickID,plateID,ix+1,iy+1),"RECREATE");
+   outputtree[ix][iy]->InitCouplesTree("couples",Form("/eos/experiment/sndlhc/emulsionData/2022/emureco_Napoli/RUN1/b%0*i/p%0*i/%i.%i.%i.%i.cp.root",6,brickID,3,plateID,brickID,plateID,ix+1,iy+1),"RECREATE");
   }
  }
  cout<<"reading input tree"<<endl;
  EdbCouplesTree *mytree = new EdbCouplesTree();
- mytree->InitCouplesTree("couples",Form("/eos/experiment/sndlhc/emulsionData/2022/emureco_Napoli/RUN1/b000021/p%0*i/%i.%i.0.0.cp.root",3,plateID,brickID,plateID),"READ");
+ mytree->InitCouplesTree("couples",Form("/eos/experiment/sndlhc/emulsionData/2022/emureco_Napoli/RUN1/b%0*i/p%0*i/%i.%i.0.0.cp.root",6,brickID,3,plateID,brickID,plateID),"READ");
  mytree->eCut = "eCHI2P<2.4&&s.eW>20&&eN1<=1&&eN2<=1&&s1.eFlag>=0&&s2.eFlag>=0"; //selecting couples for tracking
 
  TEventList *lst = mytree->InitCutList();
