@@ -140,18 +140,12 @@ def builddataframe(brick, path = "..", cutstring = "1", major = 0, minor = 0, ne
 
  return df
 
-def applyconversion(nbrick):
- '''convert couples ROOT files into a csv'''
-
- #df = builddataframe(nbrick,  cutstring = "eCHI2P<2.0&&s.eW>10&&eN1==1&&eN2==1")
- df = builddataframe(nbrick,  cutstring = "eN1==1&&eN2==1")
-
- return df
-
 #the two steps can now be done together, without an intermediate file
 nbrick = int(sys.argv[1])
+major = int(sys.argv[2])
+minor = int(sys.argv[3])
 #starting all conversion steps
-df = applyconversion(nbrick)
+df = builddataframe(nbrick,cutstring="eN1<=1&&eN2<=1&&s1.eFlag>=0&&s2.eFlag>=0",major = major, minor = minor)
 
 lastplate = int(df.name[0:3])
 firstplate = int(df.name[4:7])
