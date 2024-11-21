@@ -10,7 +10,7 @@ void set_default(TEnv &cenv){ //setting default parameters, if not presents from
  cenv.SetValue("FairShip2Fedra.useefficiencymap",0);
  cenv.SetValue("FairShip2Fedra.emuefficiency",0.85); //only if useefficiency map is set to false
  cenv.SetValue("FairShip2Fedra.dosmearing",1);
- cenv.SetValue("FairShip2Fedra.maxtheta",1); //angular max of scanning
+ cenv.SetValue("FairShip2Fedra.maxtheta",1.); //angular max of scanning
  cenv.SetValue("FairShip2Fedra.minmomentum",0.1); //do not pass particles beyond this value, track ID would be -2
  cenv.SetValue("FairShip2Fedra.ngrains",70); // to set weight
  cenv.SetValue("FairShip2Fedra.angres",0.003);//used for smearing, if dosmearing = true
@@ -109,7 +109,7 @@ void prepareECCSim(TString simfilename, TString geofilename){
  TTreeReaderArray<ShipMCTrack> tracks(reader,"MCTrack");
  TTreeReaderArray<EmulsionDetPoint> emulsionhits(reader,"EmulsionDetPoint");
 
- int nevents = 50;
+ int nevents = reader.GetEntries();
  cout<<"Start processing nevents: "<<nevents<<endl;  
 
  //empty EdbSegP for micro-tracks;
@@ -119,15 +119,15 @@ void prepareECCSim(TString simfilename, TString geofilename){
  double charge,mass;
  Int_t Flag = 1;
  for (int i = 0; i < nevents; i++){
-    cout<<"processing event "<<i<<" out of "<<nevents<<endl;
-    reader.SetEntry(i);
-    int inECCevent = i;
+  if (i%1000==0) cout<<"processing event "<<i<<" out of "<<nevents<<endl;
+  reader.SetEntry(i);
+  int inECCevent = i;
     
     //loop into MCPoints
     for (const EmulsionDetPoint& emupoint:emulsionhits){   
-        bool savehit = true; //by default I save all hits
+     bool savehit = true; //by default I save all hits
 
-        float momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
+     float momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
 
         int detID = emupoint.GetDetectorID();
         
