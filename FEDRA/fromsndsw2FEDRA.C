@@ -116,7 +116,7 @@ void fromsndsw2FEDRA(TString simfilename, TString geofilename){
       float momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
       int detID = emupoint.GetDetectorID();
       int trackID = emupoint.GetTrackID();
-      int eloss = emupoint.GetEnergyLoss();
+      float eloss = emupoint.GetEnergyLoss();
       
       int motherID;
       if (trackID >= 0) motherID = tracks[trackID].GetMotherId();

@@ -172,7 +172,7 @@ void fromsndsw2FEDRA_muonduplication(){
       //no you don't want to do this//     if (j % 2 == 0) continue;
       momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
       int detID = emupoint.GetDetectorID();
-      int eloss = emupoint.GetEnergyLoss();
+      float eloss = emupoint.GetEnergyLoss();
       pdgcode = emupoint.PdgCode();
       trackID = emupoint.GetTrackID();
       if (trackID >= 0) motherID = nusignaltracks[trackID].GetMotherId();
@@ -270,7 +270,7 @@ void fromsndsw2FEDRA_muonduplication(){
         bool savehit = true; //by default I save all hits
         //no you don't want to do this//     if (j % 2 == 0) continue;
         int detID = emupoint.GetDetectorID();
-        int eloss = emupoint.GetEnergyLoss();
+        float eloss = emupoint.GetEnergyLoss();
         momentum = TMath::Sqrt(pow(emupoint.GetPx(),2) + pow(emupoint.GetPy(),2) + pow(emupoint.GetPz(),2));
         pdgcode = emupoint.PdgCode();
         trackID = emupoint.GetTrackID();
