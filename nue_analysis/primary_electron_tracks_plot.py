@@ -34,15 +34,18 @@ for ievent in range(nevents):
   #getting same event in processed tree from MC simulation
   #nsegMCtree.GetEntry(ievent)
   #nsegMCtrue = nsegMCtree.nseg_primarye
-  
-  vertexdf = r.RDataFrame("vtx",vertexpath+"b000021.0.0.{}.vtx.root".format(ievent+1))
-  vertexdf_flag = vertexdf.Filter("flag==0")
-  
-  vertexdf_evertex = vertexdf_flag.Filter("ROOT::VecOps::Any(TrackID=={})".format(inputtree.trid)) #check if the interesting track is in any vertex with flag 0 
-  result_mult = vertexdf_evertex.Take[int]("n")
   multiplicity = 0
-  if (result_mult.size()>0):
+  try: #it may crash if refit is not present, I consider it as 0
+  
+   vertexdf = r.RDataFrame("vtx",vertexpath+"b000021.0.0.{}.vtx.root".format(ievent+1))
+   vertexdf_flag = vertexdf.Filter("flag==0")
+  
+   vertexdf_evertex = vertexdf_flag.Filter("ROOT::VecOps::Any(TrackID=={})".format(inputtree.trid)) #check if the interesting track is in any vertex with flag 0 
+   result_mult = vertexdf_evertex.Take[int]("n")
+   if (result_mult.size()>0):
     multiplicity = result_mult.GetValue()[0]
+  except:
+   multiplicity = -1 #vtx refit was not done
   hn.Fill(multiplicity)
  
   purity = inputtree.nsegtrue/inputtree.nseg 
@@ -67,7 +70,7 @@ hnseg2D.Draw("COLZ")
 cn = r.TCanvas()
 hn.Draw()
 
-cn.Print("mult_vertices_primaryelectron.png")
+cn.Print("mult_vertices_primaryelectron.root")
 
 print("Events with at least {} segments: {} over {}, rate {}".format(
   min_nsegtrue,ntracked_primarye,nevents,ntracked_primarye/nevents))
