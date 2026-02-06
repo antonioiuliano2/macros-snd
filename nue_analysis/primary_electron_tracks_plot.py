@@ -5,7 +5,9 @@ import fedrarootlogon
 inputfile = r.TFile.Open("total_primaryelectroninfo.root") 
 inputtree = inputfile.Get("treeexample")
 #getting one entry for each MCEvent and primary electron segment info
-inputtree.BuildIndex("s.eMCEvt","s.eMCTrack")
+
+inputtree.SetAlias("s_eFlag","s.eFlag")
+inputtree.SetAlias("s_eMCTrack","s.eMCTrack")
 
 vertexpath = "/eos/experiment/sndlhc/MonteCarlo/FEDRA/nuecc/nuecc_muon1.3E5/b000021/"
 #MCelectroninfofile = r.TFile.Open("electroninfo.root")
@@ -18,19 +20,23 @@ hnseg2D_vsMCTrue = r.TH2I("hnseg2D_vsMCTrue","number of segments of electron MCT
 
 hpurity = r.TH1D("hpurity","electron tracking purity;purity[%]",20,0,1)
 
-min_nsegtrue = 3 #require at least 3 segments from the true electron to accept the event
+min_nsegtrue = 2 #require at least 3 segments from the true electron to accept the event
 
 htracks_split = r.TH1I("htrackssplit","how many reco tracks the electron is split into;ntracks",10,0,10)
-
-hn = r.TH1I("hn","multiplicity of vertices with electron",30,0,30)
+#multiplicity plots with tighter selection of input tracks
+hn = r.TH1I("hn","no track subselection",30,0,30)
+hn_minnseg = r.TH1I("hn_minnseg","at least 2 base-tracks from the primary electron",30,0,30)
+hn_startsignal = r.TH1I("hn_startsignal","starts with a base-track from signal simulation",30,0,30)
+hn_startelectron = r.TH1I("hn_startelectron","starts with a base-track from primary electron",30,0,30)
 
 ntracked_primarye = 0
 for ievent in range(nevents):
-
- check = inputtree.GetEntryWithIndex(ievent,1) #primary electron for each event
- 
+ #track segments for that event
+ inputtree.Draw(">>lst","s.eMCEvt=={}".format(ievent))
+ lst = r.gDirectory.GetList().FindObject("lst")
  #check if -1 if the event is not found
- if check > 0:
+ if lst.GetN() > 0:
+  inputtree.GetEntry(lst.GetEntry(0))
   #getting same event in processed tree from MC simulation
   #nsegMCtree.GetEntry(ievent)
   #nsegMCtrue = nsegMCtree.nseg_primarye
@@ -52,7 +58,14 @@ for ievent in range(nevents):
   
   if inputtree.nsegtrue >= min_nsegtrue:
     ntracked_primarye = ntracked_primarye + 1
-  
+    hn_minnseg.Fill(multiplicity)
+    
+    if (inputtree.s_eFlag == 1):
+      hn_startsignal.Fill(multiplicity)
+      
+      if (inputtree.s_eMCTrack == 1):
+        hn_startelectron.Fill(multiplicity)
+        
   hnseg2D.Fill(inputtree.nseg, inputtree.nsegtrue)
   #hnseg2D_vsMCTrue.Fill(nsegMCtrue, inputtree.nsegtrue)
   hpurity.Fill(purity)
@@ -68,7 +81,16 @@ hnseg2D.Draw("COLZ")
 #c2D_MC = r.TCanvas()
 #hnseg2D_vsMCTrue.Draw("COLZ")
 cn = r.TCanvas()
+
+hn_minnseg.SetLineColor(r.kRed)
+hn_startsignal.SetLineColor(r.kMagenta)
+hn_startelectron.SetLineColor(r.kOrange)
+
 hn.Draw()
+hn_minnseg.Draw("SAMES")
+hn_startelectron.Draw("SAMES")
+hn_startsignal.Draw("SAMES")
+cn.BuildLegend()
 
 cn.Print("mult_vertices_primaryelectron.root")
 
