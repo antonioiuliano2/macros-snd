@@ -3,11 +3,8 @@ import fedrarootlogon
 
 #/afs/cern.ch/work/a/aiulian/public/nueecc_study
 inputfile = r.TFile.Open("total_primaryelectroninfo.root") 
-inputtree = inputfile.Get("treeexample")
+inputtree = inputfile.Get("tracks")
 #getting one entry for each MCEvent and primary electron segment info
-
-inputtree.SetAlias("s_eFlag","s.eFlag")
-inputtree.SetAlias("s_eMCTrack","s.eMCTrack")
 
 vertexpath = "/eos/experiment/sndlhc/MonteCarlo/FEDRA/nuecc/nuecc_muon1.3E5/b000021/"
 #MCelectroninfofile = r.TFile.Open("electroninfo.root")
@@ -59,11 +56,10 @@ for ievent in range(nevents):
   if inputtree.nsegtrue >= min_nsegtrue:
     ntracked_primarye = ntracked_primarye + 1
     hn_minnseg.Fill(multiplicity)
-    
-    if (inputtree.s_eFlag == 1):
+    if (inputtree.s[0].Flag() == 1):
       hn_startsignal.Fill(multiplicity)
       
-      if (inputtree.s_eMCTrack == 1):
+      if (inputtree.s[0].MCTrack() == 1):
         hn_startelectron.Fill(multiplicity)
         
   hnseg2D.Fill(inputtree.nseg, inputtree.nsegtrue)
