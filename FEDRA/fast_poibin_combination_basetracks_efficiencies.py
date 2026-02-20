@@ -33,8 +33,8 @@ print("Probability of having exactly k base-tracks, starting from {}".format(min
 #pmf is Probability Mass Function, i.e. the probability of having k successes over n trials
 print(poibin.pmf[min_nfilms:]*100)
 print("\n")
-#cdf is Cumulative Distribution Function, i.e. the probability of having at maximum k successes
-print("Probability of having at least {} base-tracks:\n{:.5}".format(min_nfilms, (1 -poibin.cdf[min_nfilms])*100))
+#cdf is Cumulative Distribution Function, i.e. the probability of having at maximum k successes (included!)
+print("Probability of having at least {} base-tracks:\n{:.5}".format(min_nfilms, (1 -poibin.cdf[min_nfilms-1])*100))
 print("\n")
 #just printing computation time info
 stopwatch.Stop()
