@@ -12,13 +12,10 @@ def GetEfficiencyArray(inputfile):
 
     with r.TFile.Open("efficiency_plate_allquarters.root") as ifile:
      heff = ifile["hexpected_clone"]
-
-     c0 = r.TCanvas()
-     heff.Draw() #Draw to create the graph
-     c0.Update()
+     
      #get efficiency value
     
-     geff = heff.GetPaintedGraph()
+     geff = heff.CreateGraph()
      arr_eff = np.array(geff.GetY())
      #remove zeros from not existing plates
      arr_eff = arr_eff[arr_eff != 0]
