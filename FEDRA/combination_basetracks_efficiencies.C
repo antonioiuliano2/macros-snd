@@ -17,12 +17,12 @@ int countiterations = 0;
 
 
 const int nfilms = 25; //number of films
-const int firstfilm = 15; //starting from
-const int lastfilm = 39; //ending into
+const int firstfilm = 7; //starting from
+const int lastfilm = 32; //ending into
 //should we take into account holes?
-const int min_nfilms = 12; //how many films we require
+const int min_nfilms = 18; //how many films we require
 
-TString eff_filename("efficiency_plate_RUN1_onesquarecm_39_15.root");
+TString eff_filename("efficiency_plate_allquarters.root");
 
 double plateefficiency[nfilms];
 
@@ -83,6 +83,8 @@ void go(int offset, int k) {
 }
 
 int main() {
+  TStopwatch stopwatch = TStopwatch();
+
   int n = nfilms;
   int mink = min_nfilms;
   SetEfficiencyArray();
@@ -96,6 +98,8 @@ int main() {
     }
   cout<<totprob<<endl;
   
+  stopwatch.Stop();
+  stopwatch.Print();
   return 0;
 }
 
@@ -116,6 +120,7 @@ vector<double> eff_ClopperPears(int foundevents, int totalevents){
 }
 
 void compute_efferrors(){
+
   const int ntracks_total = 658220 + 658568 + 610817 + 633040; //tracks with nseg>=18 in the RUN0 sample (sum all 4 quarters);
 
   const int nefficiencies = 9; //number of samples computed efficiency
@@ -127,5 +132,6 @@ void compute_efferrors(){
    vector<double> efficiency = eff_ClopperPears(ntracks_total * eff_list[ieff]/100.,ntracks_total);
    cout<<"value "<<efficiency[0]<<" limit: ["<<efficiency[1]<<","<<efficiency[2]<<"]"<<endl;
   }
+
 
 }
