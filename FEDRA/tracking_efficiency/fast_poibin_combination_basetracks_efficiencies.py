@@ -9,7 +9,7 @@ min_nfilms = 18
 def GetEfficiencyArray(inputfile):
     '''open root file with hefficiency, get list of values'''
 
-    with r.TFile.Open("efficiency_plate_allquarters.root") as ifile:
+    with r.TFile.Open(iniputfile) as ifile:
      heff = ifile["hexpected_clone"]
      
      #get efficiency value
