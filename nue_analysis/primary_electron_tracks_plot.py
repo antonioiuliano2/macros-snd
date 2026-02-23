@@ -10,7 +10,7 @@ vertexpath = "/eos/experiment/sndlhc/MonteCarlo/FEDRA/nuecc/nuecc_muon1.3E5/b000
 #MCelectroninfofile = r.TFile.Open("electroninfo.root")
 #nsegMCtree = MCelectroninfofile.Get("nsegtrue") #why did I call everything nsegtrue?
 
-nevents = 4000 #max number of MCTrue Events (4000)
+nevents = inputtree.GetEntries() #max number of MCTrue Events (4000)
 
 hnseg2D = r.TH2I("hnseg2D","number of segments in the track vs belonging to the primary electron;nseg;nseg_e",61,0,61,61,0,61)
 hnseg2D_vsMCTrue = r.TH2I("hnseg2D_vsMCTrue","number of segments of electron MCTrue vs in upstream FEDRA track;nseg_e_MCtrue;nseg_e_tracked;",61,0,61,61,0,61)
@@ -29,31 +29,28 @@ hn_startelectron = r.TH1I("hn_startelectron","starts with a base-track from prim
 ntracked_primarye = 0
 for ievent in range(nevents):
  #track segments for that event
- inputtree.Draw(">>lst","s.eMCEvt=={}".format(ievent))
- lst = r.gDirectory.GetList().FindObject("lst")
- #check if -1 if the event is not found
- if lst.GetN() > 0:
-  inputtree.GetEntry(lst.GetEntry(0))
-  #getting same event in processed tree from MC simulation
-  #nsegMCtree.GetEntry(ievent)
-  #nsegMCtrue = nsegMCtree.nseg_primarye
-  multiplicity = 0
-  try: #it may crash if refit is not present, I consider it as 0
+ inputtree.GetEntry(ievent)
+ MCEventID = inputtree.s[0].MCEvt()
+ #getting same event in processed tree from MC simulation
+ #nsegMCtree.GetEntry(MCEventID)
+ #nsegMCtrue = nsegMCtree.nseg_primarye
+ multiplicity = 0
+ try: #it may crash if refit is not present, I consider it as 0
   
-   vertexdf = r.RDataFrame("vtx",vertexpath+"b000021.0.0.{}.vtx.root".format(ievent+1))
+   vertexdf = r.RDataFrame("vtx",vertexpath+"b000021.0.0.{}.vtx.root".format(MCEventID+1))
    vertexdf_flag = vertexdf.Filter("flag==0")
   
    vertexdf_evertex = vertexdf_flag.Filter("ROOT::VecOps::Any(TrackID=={})".format(inputtree.trid)) #check if the interesting track is in any vertex with flag 0 
    result_mult = vertexdf_evertex.Take[int]("n")
    if (result_mult.size()>0):
     multiplicity = result_mult.GetValue()[0]
-  except:
+ except:
    multiplicity = -1 #vtx refit was not done
-  hn.Fill(multiplicity)
  
-  purity = inputtree.nsegtrue/inputtree.nseg 
+ hn.Fill(multiplicity)
+ purity = inputtree.nsegtrue/inputtree.nseg 
   
-  if inputtree.nsegtrue >= min_nsegtrue:
+ if inputtree.nsegtrue >= min_nsegtrue:
     ntracked_primarye = ntracked_primarye + 1
     hn_minnseg.Fill(multiplicity)
     if (inputtree.s[0].Flag() == 1):
@@ -62,10 +59,10 @@ for ievent in range(nevents):
       if (inputtree.s[0].MCTrack() == 1):
         hn_startelectron.Fill(multiplicity)
         
-  hnseg2D.Fill(inputtree.nseg, inputtree.nsegtrue)
-  #hnseg2D_vsMCTrue.Fill(nsegMCtrue, inputtree.nsegtrue)
-  hpurity.Fill(purity)
-  htracks_split.Fill(inputtree.ntracks_split)
+ hnseg2D.Fill(inputtree.nseg, inputtree.nsegtrue)
+ #hnseg2D_vsMCTrue.Fill(nsegMCtrue, inputtree.nsegtrue)
+ hpurity.Fill(purity)
+ htracks_split.Fill(inputtree.ntracks_split)
  
 #plotting histograms 
 c1 = r.TCanvas()
