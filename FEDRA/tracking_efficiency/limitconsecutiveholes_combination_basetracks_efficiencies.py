@@ -20,9 +20,12 @@ def GetEfficiencyArray(inputfile):
      
      return arr_eff
  
-def solve_with_constraints(n, k_target, p_list, max_fail=3):
-    # state: (successes, consecutive_failures) -> probability
+import pandas as pd
+
+def compute_trial_evolution(n, k_target, p_list, max_fail=3):
+    # state: (successes, current_consecutive_failures) -> probability
     dp = {(0, 0): 1.0}
+    evolution_data = []
 
     for i in range(n):
         new_dp = {}
@@ -30,26 +33,37 @@ def solve_with_constraints(n, k_target, p_list, max_fail=3):
         q = 1 - p
         
         for (k, f), prob in dp.items():
-            # Scenario A: Success at trial i
-            # Consecutive failures resets to 0
+            # Scenario: Success
             state_s = (k + 1, 0)
             new_dp[state_s] = new_dp.get(state_s, 0) + prob * p
             
-            # Scenario B: Failure at trial i
-            # Only allowed if consecutive failures < max_fail
+            # Scenario: Failure (Only allowed if < max_fail)
             if f < max_fail:
                 state_f = (k, f + 1)
                 new_dp[state_f] = new_dp.get(state_f, 0) + prob * q
-        print("CHECK: ", new_dp)
+        
         dp = new_dp
+        
+        # Calculate stats for this trial
+        current_alive_prob = sum(dp.values())
+        avg_successes = sum(k * prob for (k, f), prob in dp.items()) / current_alive_prob
+        
+        evolution_data.append({
+            "Trial": str(i + 1).zfill(2),
+            "Survival_Prob": round(current_alive_prob, 4),
+            "Avg_Successes": round(avg_successes, 2),
+            "Prob_of_Dead_Paths": round(1 - current_alive_prob, 4)
+        })
 
-    # Sum all probabilities where total successes >= k_target
-    total_prob = sum(prob for (k, f), prob in dp.items() if k >= k_target)
-    return total_prob
+    # Final filter for k_target
+    final_prob = sum(prob for (k, f), prob in dp.items() if k >= k_target)
+    
+    return pd.DataFrame(evolution_data), final_prob
 
-# Example usage:
-#get eff array
+# Example: 57 trials, target 40, varied p_list
 arr_eff = GetEfficiencyArray("DATA_efficiencyB21.root")
-#p_list_57 = [0.7] * 57 # Replace with your actual list of 57 probabilities
-result = solve_with_constraints(57, 40, arr_eff,3)
-print(f"Probability: {result:.6f}")
+print(arr_eff)
+df_evolution, final_result = compute_trial_evolution(57, 40, arr_eff)
+#df_evolution, final_result = compute_trial_evolution(57, 40, [0.75]*57)
+print(df_evolution.head(57)) # Showing all steps
+print(f"\nFinal Probability (>=40 successes & No 4-Fail Streaks): {final_result:.6f}")
