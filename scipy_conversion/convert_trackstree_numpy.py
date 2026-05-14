@@ -37,18 +37,10 @@ ROOT::RDF::RNode PreprocessTracks(ROOT::RDataFrame df) {
 # In Python
 df_raw = r.RDataFrame("tracks", "b000021.0.0.97.trk.root")
 
-# Passiamo l'RDataFrame alla funzione C++
-# ROOT.RDF.RNode è il tipo generico per i nodi del grafo
 df_processed = r.PreprocessTracks(df_raw)
 
-# Ora puoi usarlo normalmente in Python
-
-#read the RNtuple
-#rdf = r.RDataFrame("tracks_NTuple","volumetracks_rdataframe.root")
-#read the TTree and convert it on the fly, no intermediate file
-rdf = r.RDataFrame("tracks","b000021.0.0.97.trk.root")
 #convert into a pandas dataframe
-df = pd.DataFrame(df_processed.Range(31,32).AsNumpy(columns = ["s.eID","s.ePID","s.eX","s.eY","s.eZ","s.eTX","s.eTY","s.eMCTrack","s.eP","s.eFlag","s_PdgCode","s_MotherId","trid"]))
+df = pd.DataFrame(df_processed.AsNumpy(columns = ["s.eID","s.ePID","s.eX","s.eY","s.eZ","s.eTX","s.eTY","s.eMCTrack","s.eP","s.eFlag","s_PdgCode","s_MotherId","trid"]))
 #renameing them to remove the s.e prefix
 df.columns = ["ID","PID","X","Y","Z","TX","TY","MCTrack","P","Flag","PdgCode","MotherId","trid"]
 #explode into 1D (i.e. each row is a segment, not a track)
