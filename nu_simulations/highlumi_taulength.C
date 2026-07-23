@@ -5,12 +5,12 @@ void highlumi_taulength(){
   const double Nnutaubar = 1.2e+2; //expected number of tau antineutrinos in the Target
 
   TString xrootdprepath("root://eospublic.cern.ch/");
-  //TString prepath("/eos/experiment/sndlhc/users/aiulian/ADVSND/August_2024_con_scavo/2026_07_22_nutau_AdvSND_August2024/");
-  TString prepath("/eos/experiment/sndlhc/MonteCarlo/AdvSND/TP_2025/nu_tau_mock_digi_2/volume_volAdvTarget/");
+  TString prepath("/eos/experiment/sndlhc/users/aiulian/ADVSND/August_2024_con_scavo/2026_07_22_nutau_AdvSND_August2024/");
+  //TString prepath("/eos/experiment/sndlhc/MonteCarlo/AdvSND/TP_2025/nu_tau_mock_digi_2/volume_volAdvTarget/");
   
   TChain treechain("cbmsim");
   int nfirstfile = 1;
-  int nlastfile = 190;
+  int nlastfile = 100;
   for (int ifile = nfirstfile; ifile<=nlastfile;ifile++){
     treechain.Add((xrootdprepath+prepath+TString(Form("%i/sndLHC.Genie-TGeant4.root",ifile))).Data());
   }
