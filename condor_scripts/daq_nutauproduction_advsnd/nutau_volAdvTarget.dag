@@ -1,0 +1,14 @@
+VARS ALL_NODES NEVENTS="100000" NJOBS="100" NEUTRINO="16" TOPVOLUME="+volAdvTarget" OUTPUTDIR="/eos/experiment/sndlhc/users/aiulian/ADVSND/August_2024_con_scavo/2026_07_22_nutau_AdvSND_August2024"
+Job generate_input_file generate_input_file.sub
+Job convert_ghep_gst convert_ghep_gst.sub
+Job transport_neutrinos transport_neutrinos.sub
+DOT dag.dot UPDATE
+
+Parent generate_input_file Child convert_ghep_gst
+Parent convert_ghep_gst Child transport_neutrinos
+
+
+PRE_SKIP ALL_NODES 2
+
+# SAVE_POINT_FILE generate_input_file
+# SAVE_POINT_FILE convert_ghep_gst

@@ -1,0 +1,15 @@
+executable            = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/generate_input_file.sh
+NEVENTSPERJOB = $INT(NEVENTS) / $INT(NJOBS)
+arguments             = $(ProcId) $INT(NEVENTSPERJOB) $(NEUTRINO) $(TOPVOLUME) $(OUTPUTDIR)
+output                = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/generate_input_file.$(ClusterId).$(ProcId).out
+error                 = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/generate_input_file.$(ClusterId).$(ProcId).err
+log                   = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/generate_input_file.$(ClusterId).log
+getenv = False
+notification = Never
+transfer_output_files = ""
+RequestCpus = 1
+on_exit_remove = (ExitBySignal == False) && (ExitCode == 0)
+max_retries = 3
+requirements = (OpSysAndVer =?= "AlmaLinux9")
++JobFlavour = "testmatch"
+queue $(NJOBS)

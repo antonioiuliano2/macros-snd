@@ -1,0 +1,15 @@
+executable            = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/transport_neutrinos.sh
+NEVENTSPERJOB = $(NEVENTS) / $(NJOBS)
+arguments             = $(ProcId) sndlhc_$(TOPVOLUME)_$INT(NEVENTSPERJOB)_ADVSNDG18_02a_01_000.0.gst.root $INT(NEVENTSPERJOB) $(OUTPUTDIR)
+output                = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/transport_neutrinos.$(ClusterId).$(ProcId).out
+error                 = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/transport_neutrinos.$(ClusterId).$(ProcId).err
+log                   = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/transport_neutrinos.$(ClusterId).log
+getenv = False
+transfer_output_files = ""
+notification = Never
+RequestCpus = 1
+on_exit_remove = (ExitBySignal == False) && (ExitCode == 0)
+max_retries = 3
+requirements = (OpSysAndVer =?= "AlmaLinux9")
++JobFlavour             ="tomorrow"
+queue $(NJOBS)

@@ -1,0 +1,15 @@
+executable            = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/convert_ghep_gst.sh
+NEVENTSPERJOB = $(NEVENTS) / $(NJOBS)
+arguments             = $(ProcId) sndlhc_$(TOPVOLUME)_$INT(NEVENTSPERJOB)_ADVSNDG18_02a_01_000.0.ghep.root $(OUTPUTDIR)
+output                = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/convert_ghep_gst.$(ClusterId).$(ProcId).out
+error                 = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/convert_ghep_gst.$(ClusterId).$(ProcId).err
+log                   = /afs/cern.ch/work/a/aiulian/public/AdvSND_versione_con_scavo/custom_condor/logs/convert_ghep_gst.$(ClusterId).log
+getenv = False
+notification = Never
+RequestCpus = 1
+transfer_output_files = ""
+on_exit_remove = (ExitBySignal == False) && (ExitCode == 0)
+max_retries = 3
+requirements = (OpSysAndVer =?= "AlmaLinux9")
++JobFlavour             ="longlunch"
+queue $(NJOBS)
